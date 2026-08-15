@@ -3,6 +3,7 @@ import { cssPropertyName } from '../../../lib/edits/css';
 import { importPageEdits, parseImport } from '../../../lib/edits/import';
 import { normalizePageUrl } from '../../../lib/edits/storage';
 import { resolveRecord } from '../../../lib/selector/resolve';
+import { revealElement } from '../reveal';
 import type { EditRecord } from '../../../lib/edits/types';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
@@ -68,7 +69,9 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
               onMouseLeave={() => onHighlight(null)}
               onClick={() => {
                 const el = resolveRecord(record, document);
-                if (el) onSelectRecord(el);
+                if (!el) return;
+                revealElement(el);
+                onSelectRecord(el);
               }}
             >
               <div className="pgve-change-head">

@@ -115,3 +115,26 @@ test('hovering a change highlights its element; clicking selects it; the switch 
   expect(controller.getPage().records[0].enabled).toBe(false);
   expect(el.textContent).toBe('Original');
 });
+
+test('clicking a change brings its element into view before selecting it', () => {
+  const controller = new EditsController(null, document, NOW);
+  const title = document.getElementById('title')!;
+  controller.recordEdit(title, 'text', 'textContent', 'Original', 'Changed');
+
+  // happy-dom reports every rect as zero, so place the element below the fold by hand.
+  vi.spyOn(title, 'getBoundingClientRect').mockReturnValue({ top: 2400, bottom: 2460 } as DOMRect);
+  const scrollIntoView = vi.fn();
+  Object.defineProperty(Element.prototype, 'scrollIntoView', {
+    value: scrollIntoView,
+    configurable: true,
+    writable: true,
+  });
+
+  const onSelectRecord = vi.fn();
+  render(<ChangesTab controller={controller} onToast={vi.fn()} onHighlight={vi.fn()} onSelectRecord={onSelectRecord} />);
+  fireEvent.click(screen.getByText(/h1#title/));
+
+  expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ block: 'center' }));
+  expect(onSelectRecord).toHaveBeenCalledWith(title);
+  vi.restoreAllMocks();
+});
