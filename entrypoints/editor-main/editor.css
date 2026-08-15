@@ -10,15 +10,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-panel { position: fixed; top: 0; right: 0; width: 320px; height: auto; max-height: 100vh; z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; background: #ffffff; color: #111827; font: 13px/1.5 ui-sans-serif, system-ui, sans-serif; box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15); border-radius: 0 0 0 8px; }
 .pgve-header { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #e5e7eb; cursor: grab; user-select: none; touch-action: none; }
 .pgve-header:active { cursor: grabbing; }
-.pgve-header-actions { display: flex; align-items: center; gap: 10px; }
-.pgve-header-actions button { border: none; background: none; cursor: pointer; font-size: 12px; color: #6b7280; }
-.pgve-header-actions .pgve-toggle-active { color: #2563eb; font-weight: 600; }
 .pgve-actions { display: flex; gap: 6px; }
 .pgve-actions button { padding: 4px 10px; border: 1px solid #d1d5db; border-radius: 4px; background: #f9fafb; cursor: pointer; }
 .pgve-header button { border: none; background: none; cursor: pointer; font-size: 14px; }
-.pgve-tabs { display: flex; border-bottom: 1px solid #e5e7eb; }
-.pgve-tabs button { flex: 1; padding: 8px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; }
-.pgve-tabs .pgve-tab-active { border-bottom-color: #2563eb; font-weight: 600; }
 .pgve-empty { padding: 16px; color: #6b7280; }
 .pgve-sections { padding: 12px; display: flex; flex-direction: column; gap: 16px; }
 .pgve-section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 8px; }
@@ -57,3 +51,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-change-diff { word-break: break-all; }
 .pgve-change-warning { color: #b45309; font-size: 12px; }
 .pgve-change button { align-self: flex-start; padding: 2px 8px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; cursor: pointer; }
+
+.pgve-segmented { display: flex; margin: 8px 12px 0; border: 1px solid #d1d5db; border-radius: 8px; padding: 2px; gap: 2px; }
+.pgve-segment { flex: 1; padding: 6px 0; border: none; border-radius: 6px; background: none; cursor: pointer; font-size: 12px; color: #374151; }
+.pgve-segment-active { background: #ff3b30; color: #fff; font-weight: 600; }
+.pgve-action-row { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; margin-top: 8px; }
+.pgve-action-row button { flex: 1; padding: 6px 4px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; cursor: pointer; font-size: 11px; }
+.pgve-action-row button:disabled { opacity: 0.45; cursor: default; }
+.pgve-selection-card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.pgve-selection-label { font-weight: 600; word-break: break-all; }
+.pgve-disclosure { border-bottom: 1px solid #f3f4f6; }
+.pgve-disclosure-header { width: 100%; display: flex; gap: 6px; align-items: center; padding: 8px 0; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; }
+.pgve-disclosure-body { padding: 2px 0 10px; }
+.pgve-footer { display: block; width: 100%; padding: 10px 12px; border: none; border-top: 1px solid #e5e7eb; background: #fff; cursor: pointer; text-align: left; color: #6b7280; margin-top: auto; }
+.pgve-footer-active { color: #ff3b30; font-weight: 600; }
+.pgve-back-row { display: block; width: 100%; text-align: left; padding: 8px 12px; border: none; background: none; cursor: pointer; color: #6b7280; }
+.pgve-badge { position: fixed; left: 16px; bottom: 16px; z-index: 2147483647; padding: 8px 14px; border: none; border-radius: 999px; background: #1f2933; color: #fff; font: 12px/1.4 ui-sans-serif, system-ui, sans-serif; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); }
+.pgve-onboarding { padding: 16px 12px; display: flex; flex-direction: column; gap: 10px; }
+.pgve-onboarding h3 { font-size: 13px; }
+.pgve-onboarding ol { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.pgve-onboarding button { align-self: flex-start; padding: 6px 14px; border: none; border-radius: 6px; background: #ff3b30; color: #fff; cursor: pointer; }
+.pgve-preview-note { padding: 12px; color: #92400e; background: #fef3c7; margin: 10px 12px; border-radius: 6px; }

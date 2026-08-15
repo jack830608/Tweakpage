@@ -1,8 +1,12 @@
-import { useRef, useState, useSyncExternalStore } from 'react';
+import { useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { EditsController } from '../controller';
 import { useDraggable } from '../hooks/useDraggable';
-import { Breadcrumb } from './Breadcrumb';
+import { ActionRow } from './ActionRow';
 import { ChangesTab } from './ChangesTab';
+import { CollapsibleSection } from './CollapsibleSection';
+import { ModeSwitch } from './ModeSwitch';
+import { OnboardingCard } from './OnboardingCard';
+import { SelectionCard } from './SelectionCard';
 import { BackgroundSection } from './sections/BackgroundSection';
 import { ImageSection } from './sections/ImageSection';
 import { SizeSection } from './sections/SizeSection';
@@ -10,71 +14,145 @@ import { SpacingSection } from './sections/SpacingSection';
 import { TextSection } from './sections/TextSection';
 import { TypographySection } from './sections/TypographySection';
 
-type Tab = 'edit' | 'changes';
+type View = 'edit' | 'changes';
+export type InteractionMode = 'edit' | 'browse';
 
 export interface PanelProps {
   controller: EditsController;
   selected: Element | null;
+  mode: InteractionMode;
+  onModeChange: (mode: InteractionMode) => void;
+  showOnboarding: boolean;
+  onDismissOnboarding: () => void;
   onSelect: (el: Element) => void;
   onDeselect: () => void;
   onClose: () => void;
 }
 
-export function Panel({ controller, selected, onSelect, onDeselect, onClose }: PanelProps) {
-  const [tab, setTab] = useState<Tab>('edit');
+const INTERACTION_OPTIONS = [
+  { value: 'edit', label: '✏ Edit' },
+  { value: 'browse', label: '🖐 Browse' },
+] as const;
+
+const COMPARE_OPTIONS = [
+  { value: 'edited', label: 'Edited' },
+  { value: 'original', label: 'Original' },
+] as const;
+
+const SECTION_DEFS: Array<{
+  title: string;
+  render: (element: Element, controller: EditsController) => ReactNode;
+}> = [
+  { title: 'Text', render: (el, c) => <TextSection element={el} controller={c} /> },
+  { title: 'Typography', render: (el, c) => <TypographySection element={el} controller={c} /> },
+  { title: 'Background', render: (el, c) => <BackgroundSection element={el} controller={c} /> },
+  { title: 'Image', render: (el, c) => <ImageSection element={el} controller={c} /> },
+  { title: 'Size', render: (el, c) => <SizeSection element={el} controller={c} /> },
+  { title: 'Spacing', render: (el, c) => <SpacingSection element={el} controller={c} /> },
+];
+
+export function Panel(props: PanelProps) {
+  const { controller, mode, onModeChange, onClose } = props;
+  const [view, setView] = useState<View>('edit');
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    Text: true,
+    Typography: true,
+  });
   const count = useSyncExternalStore(controller.subscribe, controller.getPage).records.length;
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
   const panelRef = useRef<HTMLElement>(null);
   const { style, handleProps } = useDraggable(panelRef);
+
   return (
     <aside className="pgve-panel" ref={panelRef} style={style}>
       <header className="pgve-header" {...handleProps}>
-        <strong>Tweakpage</strong>
-        <span className="pgve-header-actions">
+        <strong><span aria-hidden="true">⠿ </span>Tweakpage</strong>
+        <button type="button" onClick={onClose} aria-label="Close">✕</button>
+      </header>
+      <ModeSwitch
+        ariaLabel="Interaction mode"
+        options={INTERACTION_OPTIONS}
+        value={mode}
+        onChange={onModeChange}
+      />
+      <ModeSwitch
+        ariaLabel="Compare"
+        options={COMPARE_OPTIONS}
+        value={previewing ? 'original' : 'edited'}
+        onChange={(value) => controller.setPreviewOriginal(value === 'original')}
+      />
+      <ActionRow controller={controller} selected={props.selected} onDeselect={props.onDeselect} />
+      {view === 'changes' ? (
+        <div>
+          <button type="button" className="pgve-back-row" onClick={() => setView('edit')}>
+            ‹ Back to editing
+          </button>
+          <ChangesTab controller={controller} />
+        </div>
+      ) : (
+        <>
+          <EditView
+            controller={controller}
+            selected={props.selected}
+            previewing={previewing}
+            showOnboarding={props.showOnboarding}
+            onDismissOnboarding={props.onDismissOnboarding}
+            onSelect={props.onSelect}
+            openSections={openSections}
+            onToggleSection={(title) =>
+              setOpenSections((open) => ({ ...open, [title]: !open[title] }))
+            }
+          />
           <button
             type="button"
-            className={previewing ? 'pgve-toggle-active' : ''}
-            aria-pressed={previewing}
-            onClick={() => controller.setPreviewOriginal(!previewing)}
+            className={count > 0 ? 'pgve-footer pgve-footer-active' : 'pgve-footer'}
+            onClick={() => setView('changes')}
           >
-            Show original
+            {`${count} changes · Review ›`}
           </button>
-          <button type="button" onClick={onClose} aria-label="Close">✕</button>
-        </span>
-      </header>
-      <nav className="pgve-tabs">
-        <button
-          type="button"
-          className={tab === 'edit' ? 'pgve-tab-active' : ''}
-          onClick={() => setTab('edit')}
-        >
-          Edit
-        </button>
-        <button
-          type="button"
-          className={tab === 'changes' ? 'pgve-tab-active' : ''}
-          onClick={() => setTab('changes')}
-        >
-          {`Changes (${count})`}
-        </button>
-      </nav>
-      {tab === 'edit' ? (
-        <EditTab controller={controller} selected={selected} onSelect={onSelect} onDeselect={onDeselect} />
-      ) : (
-        <ChangesTab controller={controller} />
+        </>
       )}
     </aside>
   );
 }
 
-function EditTab({ controller, selected, onSelect, onDeselect }: Omit<PanelProps, 'onClose'>) {
+interface EditViewProps {
+  controller: EditsController;
+  selected: Element | null;
+  previewing: boolean;
+  showOnboarding: boolean;
+  onDismissOnboarding: () => void;
+  onSelect: (el: Element) => void;
+  openSections: Record<string, boolean>;
+  onToggleSection: (title: string) => void;
+}
+
+function EditView({
+  controller,
+  selected,
+  previewing,
+  showOnboarding,
+  onDismissOnboarding,
+  onSelect,
+  openSections,
+  onToggleSection,
+}: EditViewProps) {
+  if (showOnboarding) {
+    return <OnboardingCard onDismiss={onDismissOnboarding} />;
+  }
+  if (previewing) {
+    return (
+      <p className="pgve-preview-note">
+        Viewing the original page — switch back to Edited to continue editing.
+      </p>
+    );
+  }
   if (!selected) {
     return (
       <div>
         <p className="pgve-empty">Select an element on the page to edit it.</p>
         <p className="pgve-empty">
-          Hold ⌥ Alt to click through the page (open menus, switch tabs). Drag this panel by
-          its title bar.
+          Switch to Browse to use the page normally. Drag this panel by its title bar.
         </p>
       </div>
     );
@@ -84,30 +162,17 @@ function EditTab({ controller, selected, onSelect, onDeselect }: Omit<PanelProps
   }
   return (
     <div className="pgve-sections">
-      <Breadcrumb element={selected} onSelect={onSelect} />
-      <div className="pgve-actions">
-        <button
-          type="button"
-          onClick={() => {
-            controller.recordEdit(
-              selected,
-              'style',
-              'display',
-              getComputedStyle(selected).display,
-              'none',
-            );
-            onDeselect();
-          }}
+      <SelectionCard element={selected} onSelect={onSelect} />
+      {SECTION_DEFS.map(({ title, render }) => (
+        <CollapsibleSection
+          key={title}
+          title={title}
+          open={!!openSections[title]}
+          onToggle={() => onToggleSection(title)}
         >
-          Hide element
-        </button>
-      </div>
-      <TextSection element={selected} controller={controller} />
-      <TypographySection element={selected} controller={controller} />
-      <BackgroundSection element={selected} controller={controller} />
-      <ImageSection element={selected} controller={controller} />
-      <SizeSection element={selected} controller={controller} />
-      <SpacingSection element={selected} controller={controller} />
+          {render(selected, controller)}
+        </CollapsibleSection>
+      ))}
     </div>
   );
 }

@@ -13,7 +13,6 @@ export function ImageSection({ element, controller }: SectionProps) {
   if (element.tagName !== 'IMG') return null;
   return (
     <section className="pgve-section">
-      <h3>Image</h3>
       <label>
         Image URL
         <input type="text" aria-label="Image URL" value={url} onChange={(e) => setUrl(e.target.value)} />

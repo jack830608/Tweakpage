@@ -19,15 +19,13 @@ export function TextSection({ element, controller }: SectionProps) {
   const value = record?.newValue ?? element.textContent ?? '';
   return (
     <section className="pgve-section">
-      <h3>
-        Text <ResetButton controller={controller} element={element} property="textContent" />
-      </h3>
       <textarea
         aria-label="Text"
         rows={3}
         value={value}
         onChange={(e) => controller.recordEdit(element, 'text', 'textContent', original, e.target.value)}
       />
+      <ResetButton controller={controller} element={element} property="textContent" />
       {element.firstElementChild !== null && (
         <p className="pgve-hint">
           This element contains formatted parts — editing text here replaces them with

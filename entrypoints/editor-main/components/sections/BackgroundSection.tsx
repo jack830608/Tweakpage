@@ -14,7 +14,6 @@ export function BackgroundSection({ element, controller }: SectionProps) {
   const original = useMemo(() => getComputedStyle(element).backgroundColor, [element]);
   return (
     <section className="pgve-section">
-      <h3>Background</h3>
       <ColorField
         label="Background color"
         value={rgbToHex(cs.backgroundColor)}

@@ -1,33 +1,42 @@
 import { fakeBrowser } from 'wxt/testing';
-import { beforeEach, expect, test, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { Panel } from './Panel';
 import { getBreadcrumb } from './Breadcrumb';
 import { EditsController } from '../controller';
 
 const NOW = () => '2026-08-15T10:00:00.000Z';
 
+afterEach(cleanup);
+
 beforeEach(() => {
   fakeBrowser.reset();
   document.head.innerHTML = '';
   document.body.innerHTML =
     '<h1 id="title" style="font-size: 32px; font-weight: 700; line-height: 40px; color: rgb(51, 51, 51)">Original</h1>';
+  history.replaceState({}, '', '/page');
 });
 
 function setup(selected: Element | null = document.getElementById('title')) {
   const controller = new EditsController(null, document, NOW);
   const onSelect = vi.fn();
   const onDeselect = vi.fn();
+  const onModeChange = vi.fn();
+  const onDismissOnboarding = vi.fn();
   render(
     <Panel
       controller={controller}
       selected={selected}
+      mode="edit"
+      onModeChange={onModeChange}
+      showOnboarding={false}
+      onDismissOnboarding={onDismissOnboarding}
       onSelect={onSelect}
       onDeselect={onDeselect}
       onClose={vi.fn()}
     />,
   );
-  return { controller, onSelect, onDeselect };
+  return { controller, onSelect, onDeselect, onModeChange, onDismissOnboarding };
 }
 
 test('shows the empty state without a selection', () => {
@@ -57,6 +66,16 @@ test('color hex input records a color edit', () => {
   fireEvent.change(screen.getByLabelText('Color hex'), { target: { value: '#ff0000' } });
   const record = controller.getPage().records.find((r) => r.property === 'color')!;
   expect(record.newValue).toBe('#ff0000');
+});
+
+test('collapsed sections expand on demand', () => {
+  const { controller } = setup();
+  expect(screen.queryByLabelText('padding top')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: /Spacing/ }));
+  fireEvent.change(screen.getByLabelText('padding top'), { target: { value: '24' } });
+  expect(controller.getPage().records.find((r) => r.property === 'paddingTop')!.newValue).toBe(
+    '24px',
+  );
 });
 
 test('iframes show the unsupported notice', () => {
@@ -101,27 +120,55 @@ test('no flattening warning for plain text elements', () => {
   expect(screen.queryByText(/replaces them with\s+plain text/)).toBeNull();
 });
 
-test('hide element records a display none edit and deselects', () => {
-  const { controller, onDeselect } = setup();
-  fireEvent.click(screen.getByRole('button', { name: 'Hide element' }));
-  const record = controller.getPage().records.find((r) => r.property === 'display')!;
-  expect(record.type).toBe('style');
-  expect(record.newValue).toBe('none');
-  expect(onDeselect).toHaveBeenCalled();
-});
-
-test('show original toggle reverts and restores edits', () => {
-  setup();
-  fireEvent.change(screen.getByLabelText('Text'), { target: { value: 'Changed' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Show original' }));
-  expect(document.getElementById('title')!.textContent).toBe('Original');
-  fireEvent.click(screen.getByRole('button', { name: 'Show original' }));
-  expect(document.getElementById('title')!.textContent).toBe('Changed');
-});
-
 test('line height input keeps the typed value instead of snapping to computed px', () => {
   setup();
   const input = screen.getByLabelText('Line height') as HTMLInputElement;
   fireEvent.change(input, { target: { value: '1.5' } });
   expect(input.value).toBe('1.5');
+});
+
+test('compare segmented toggles the original preview with an explanatory note', () => {
+  const { controller } = setup();
+  fireEvent.change(screen.getByLabelText('Text'), { target: { value: 'Changed' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Original' }));
+  expect(controller.isPreviewingOriginal()).toBe(true);
+  expect(document.getElementById('title')!.textContent).toBe('Original');
+  expect(screen.getByText(/Viewing the original page/)).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Edited' }));
+  expect(document.getElementById('title')!.textContent).toBe('Changed');
+});
+
+test('footer navigates to the changes view and back', () => {
+  setup();
+  fireEvent.change(screen.getByLabelText('Text'), { target: { value: 'Changed' } });
+  fireEvent.click(screen.getByRole('button', { name: /Review/ }));
+  expect(screen.getByText(/h1#title/)).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: /Back to editing/ }));
+  expect(screen.getByLabelText('Text')).toBeTruthy();
+});
+
+test('onboarding card renders when showOnboarding and dismisses', () => {
+  const controller = new EditsController(null, document, NOW);
+  const onDismissOnboarding = vi.fn();
+  render(
+    <Panel
+      controller={controller}
+      selected={null}
+      mode="edit"
+      onModeChange={vi.fn()}
+      showOnboarding
+      onDismissOnboarding={onDismissOnboarding}
+      onSelect={vi.fn()}
+      onDeselect={vi.fn()}
+      onClose={vi.fn()}
+    />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+  expect(onDismissOnboarding).toHaveBeenCalled();
+});
+
+test('interaction mode switch reports mode changes', () => {
+  const { onModeChange } = setup();
+  fireEvent.click(screen.getByRole('button', { name: /Browse/ }));
+  expect(onModeChange).toHaveBeenCalledWith('browse');
 });

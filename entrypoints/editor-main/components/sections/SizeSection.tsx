@@ -21,7 +21,6 @@ export function SizeSection({ element, controller }: SectionProps) {
   }, [element]);
   return (
     <section className="pgve-section">
-      <h3>Size</h3>
       {FIELDS.map(({ label, property }) => (
         <label key={property}>
           {label}

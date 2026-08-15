@@ -48,7 +48,6 @@ export function SpacingSection({ element, controller }: SectionProps) {
   const rect = element.getBoundingClientRect();
   return (
     <section className="pgve-section">
-      <h3>Spacing</h3>
       <div className="pgve-box pgve-box--margin">
         <span className="pgve-box-label">margin</span>
         {SIDES.map((side) => field('margin', side))}

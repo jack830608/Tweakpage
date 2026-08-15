@@ -26,7 +26,6 @@ export function TypographySection({ element, controller }: SectionProps) {
   }, [element]);
   return (
     <section className="pgve-section">
-      <h3>Typography</h3>
       <label>
         Font size
         <input
