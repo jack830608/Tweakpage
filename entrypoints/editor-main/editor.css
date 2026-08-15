@@ -3,7 +3,7 @@
 button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- tokens ---------- */
-.pgve-panel, .pgve-badge, .pgve-toast, .pgve-outline-label {
+:host {
   --surface: #ffffff;
   --sunken: #f6f6f7;
   --border: #e4e4e7;
@@ -11,9 +11,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
   --ink: #18181b;
   --ink-2: #52525b;
   --ink-3: #9d9da6;
-  --accent: #4f46e5;
-  --accent-ink: #4338ca;
-  --accent-soft: #eef2ff;
+  --accent: #059669;
+  --accent-ink: #047857;
+  --accent-soft: #ecfdf5;
+  /* The selection outline sits on someone else's page, whose background has nothing to
+     do with the viewer's OS theme, so it keeps one mid-tone in both and leans on its
+     white halo for contrast. */
+  --outline: #059669;
   --warn-ink: #92400e;
   --warn-bg: #fef3c7;
   --dark: #18181b;
@@ -25,7 +29,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   --shadow-panel: 0 0 0 1px rgba(24, 24, 27, 0.09), 0 16px 40px rgba(24, 24, 27, 0.18);
   --shadow-pop: 0 6px 20px rgba(24, 24, 27, 0.28);
   --shadow-lift: 0 1px 2px rgba(24, 24, 27, 0.1);
-  --ring: 0 0 0 2px rgba(79, 70, 229, 0.35);
+  --ring: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
   --ease: 0.13s ease;
 }
 
@@ -34,8 +38,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Outlines have to read against whatever the page puts behind them, so each one is
    drawn twice: a white halo under a colored stroke stays visible on light and dark
    backgrounds alike. box-shadow does the halo because outline can't stack. */
-.pgve-outline--hover { outline: 2px dashed #4f46e5; outline-offset: 1px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: rgba(79, 70, 229, 0.08); }
-.pgve-outline--selected { outline: 3px solid #4f46e5; outline-offset: 1px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95), 0 0 0 6px rgba(79, 70, 229, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: rgba(79, 70, 229, 0.12); }
+.pgve-outline--hover { outline: 2px dashed var(--outline); outline-offset: 1px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: color-mix(in srgb, var(--outline) 8%, transparent); }
+.pgve-outline--selected { outline: 3px solid var(--outline); outline-offset: 1px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95), 0 0 0 6px color-mix(in srgb, var(--outline) 30%, transparent), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: color-mix(in srgb, var(--outline) 12%, transparent); }
 .pgve-outline-label { position: absolute; top: -26px; left: 0; display: inline-flex; align-items: center; background: var(--dark); color: #fff; font: 500 11px/1.5 var(--sans); padding: 3px 8px; border-radius: 5px; white-space: nowrap; box-shadow: var(--shadow-lift); }
 
 /* ---------- panel shell ---------- */
@@ -52,9 +56,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-header button { border: none; background: none; cursor: pointer; color: var(--ink-3); font-size: 13px; padding: 2px 6px; border-radius: var(--r-control); }
 .pgve-header button:hover { color: var(--ink); background: var(--sunken); }
 .pgve-header-buttons { display: inline-flex; align-items: center; gap: 2px; }
-.pgve-pill { position: fixed; right: 16px; bottom: 16px; z-index: 2147483647; display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border: none; border-radius: 999px; background: var(--surface, #ffffff); color: var(--ink, #18181b); font: 600 12.5px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ui-sans-serif, system-ui, sans-serif; cursor: pointer; box-shadow: 0 0 0 1px rgba(24, 24, 27, 0.09), 0 8px 24px rgba(24, 24, 27, 0.22); }
-.pgve-pill svg { color: #9d9da6; }
-.pgve-pill-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #4f46e5; color: #fff; font-size: 11px; }
+.pgve-pill { position: fixed; right: 16px; bottom: 16px; z-index: 2147483647; display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border: none; border-radius: 999px; background: var(--surface); color: var(--ink); font: 600 12.5px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ui-sans-serif, system-ui, sans-serif; cursor: pointer; box-shadow: 0 0 0 1px rgba(24, 24, 27, 0.09), 0 8px 24px rgba(24, 24, 27, 0.22); }
+.pgve-pill svg { color: var(--ink-3); }
+.pgve-pill-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 11px; }
 
 /* ---------- mode switches ---------- */
 .pgve-segmented { display: flex; margin: 0 12px 6px; background: var(--sunken); border-radius: 8px; padding: 2px; gap: 2px; }
@@ -190,7 +194,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- dark mode ---------- */
 @media (prefers-color-scheme: dark) {
-  .pgve-panel, .pgve-badge, .pgve-toast, .pgve-outline-label {
+  :host {
     --surface: #212126;
     --sunken: #2b2b31;
     --border: #3a3a41;
@@ -198,16 +202,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
     --ink: #f4f4f5;
     --ink-2: #b0b0b8;
     --ink-3: #7c7c85;
-    --accent: #818cf8;
-    --accent-ink: #a5b0fc;
-    --accent-soft: rgba(99, 102, 241, 0.2);
+    --accent: #34d399;
+    --accent-ink: #6ee7b7;
+    --accent-soft: rgba(16, 185, 129, 0.2);
     --warn-ink: #fbbf24;
     --warn-bg: rgba(180, 83, 9, 0.2);
     --dark: #0b0b0d;
     --shadow-panel: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 16px 40px rgba(0, 0, 0, 0.55);
     --shadow-pop: 0 6px 20px rgba(0, 0, 0, 0.6);
     --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.45);
-    --ring: 0 0 0 2px rgba(129, 140, 248, 0.45);
+    --ring: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
   }
   .pgve-box--margin { background: rgba(180, 83, 9, 0.15); }
   .pgve-box--padding { background: rgba(22, 101, 52, 0.18); }

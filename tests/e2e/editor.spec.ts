@@ -161,6 +161,52 @@ test('selection outline stays legible against the page', async ({ context }) => 
   const shadow = await outline.evaluate((el) => getComputedStyle(el).boxShadow);
   expect(shadow).not.toBe('none');
   expect(shadow).toContain('rgba(255, 255, 255');
+
+  // The stroke has to come from the token. Hard-coded copies are how the outline, the
+  // badge and the pill drifted apart from the accent in the first place.
+  const colors = await page.evaluate(() => {
+    const host = document.getElementById('tweakpage-host')!;
+    const probe = document.createElement('div');
+    probe.style.color = getComputedStyle(host).getPropertyValue('--outline').trim();
+    document.body.append(probe);
+    const token = getComputedStyle(probe).color;
+    probe.remove();
+    const box = host.shadowRoot!.querySelector('.pgve-outline--selected')!;
+    return { token, painted: getComputedStyle(box).outlineColor };
+  });
+  expect(colors.token).not.toBe('');
+  expect(colors.painted).toBe(colors.token);
+});
+
+test('the minimized pill follows the colour scheme', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.getByRole('button', { name: 'Minimize' }).click();
+  const pill = page.locator('.pgve-pill');
+  await expect(pill).toBeVisible();
+
+  // The pill used to sit outside the token scope and stayed light in dark mode.
+  const surfaceOf = () =>
+    page.evaluate(() => {
+      const host = document.getElementById('tweakpage-host')!;
+      const probe = document.createElement('div');
+      probe.style.color = getComputedStyle(host).getPropertyValue('--surface').trim();
+      document.body.append(probe);
+      const token = getComputedStyle(probe).color;
+      probe.remove();
+      const el = host.shadowRoot!.querySelector('.pgve-pill')!;
+      return { token, painted: getComputedStyle(el).backgroundColor };
+    });
+
+  await page.emulateMedia({ colorScheme: 'light' });
+  const light = await surfaceOf();
+  expect(light.painted).toBe(light.token);
+
+  await page.emulateMedia({ colorScheme: 'dark' });
+  const dark = await surfaceOf();
+  expect(dark.painted).toBe(dark.token);
+  expect(dark.painted).not.toBe(light.painted);
 });
 
 test('spacing box-model editor fits inside the panel', async ({ context }) => {
