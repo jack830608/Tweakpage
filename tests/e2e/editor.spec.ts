@@ -21,7 +21,7 @@ test('edit → persist → replay → export', async ({ context }) => {
   await expect(page.locator('h1')).toHaveCSS('color', 'rgb(255, 0, 0)');
 
   await activateEditor(context);
-  await page.getByRole('button', { name: /^Changes/ }).click();
+  await page.getByRole('button', { name: /Review/ }).click();
   await page.getByRole('button', { name: 'Export JSON' }).click();
 
   // Export JSON is delivered via chrome.downloads from the background service worker (a
@@ -53,6 +53,7 @@ test('spacing box-model editor fits inside the panel', async ({ context }) => {
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
+  await page.getByRole('button', { name: /Spacing/ }).click();
 
   const inputBox = (await page.getByLabel('padding top').boundingBox())!;
   expect(inputBox.width).toBeLessThan(60);
@@ -85,7 +86,7 @@ test('panel can be dragged to a new position and stays in the viewport', async (
   expect(after.y).toBeGreaterThanOrEqual(0);
 });
 
-test('show original toggles all edits off and back on', async ({ context }) => {
+test('compare switch previews the original and the badge exits preview', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
@@ -93,11 +94,29 @@ test('show original toggles all edits off and back on', async ({ context }) => {
   await page.getByLabel('Text', { exact: true }).fill('New headline');
   await expect(page.locator('h1')).toHaveText('New headline');
 
-  await page.getByRole('button', { name: 'Show original' }).click();
+  await page.getByRole('button', { name: 'Original', exact: true }).click();
   await expect(page.locator('h1')).toHaveText('Original Headline');
+  const badge = page.getByRole('button', { name: /Viewing original/ });
+  await expect(badge).toBeVisible();
   await page.waitForTimeout(200);
   await expect(page.locator('h1')).toHaveText('Original Headline');
 
-  await page.getByRole('button', { name: 'Show original' }).click();
+  await badge.click();
   await expect(page.locator('h1')).toHaveText('New headline');
+});
+
+test('browse mode passes clicks through; edit mode selects', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  await page.getByRole('button', { name: '🖐 Browse' }).click();
+  await expect(page.getByRole('button', { name: /Browsing/ })).toBeVisible();
+  await page.locator('#anchor-link').click();
+  expect(page.url()).toContain('#test-anchor');
+
+  await page.getByRole('button', { name: '✏ Edit' }).click();
+  await page.locator('h1').click();
+  await expect(page.locator('.pgve-selection-label')).toBeVisible();
+  expect(page.url()).toContain('#test-anchor');
 });

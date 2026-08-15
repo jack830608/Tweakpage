@@ -22,6 +22,7 @@ export async function activateEditor(context: BrowserContext): Promise<void> {
   await worker.evaluate(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const c = (globalThis as any).chrome;
+    await c.storage.local.set({ 'tweakpage:onboarded': true });
     const [tab] = await c.tabs.query({ active: true, currentWindow: true });
     await c.tabs.sendMessage(tab.id, { type: 'pg:toggle' });
   });

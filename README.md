@@ -17,18 +17,20 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 
 ## Usage
 
-1. Click the **Tweakpage** toolbar icon on any page (badge shows `ON`).
-2. Hover — dashed outline shows what you're pointing at. Click to select.
-3. Edit in the panel: Text, Typography, Background, Image, Size, Spacing — or **Hide element**.
-   Drag the panel by its title bar if it covers what you are editing (it snaps back to the top-right when reopened).
-   Use the breadcrumb to move to a parent/child element.
-4. **Changes** tab: review every edit, delete one, revert all, **Export JSON**, **Copy Markdown**.
-5. **Show original** (panel header) toggles all edits off/on for before-after comparison.
-6. Hold `⌥ Alt` to click through the page (open menus, switch tabs) without selecting.
-7. `Esc` deselects; `Esc` again (or the icon) closes the editor. Edits stay applied and survive reloads.
+1. Click the **Tweakpage** toolbar icon on any page (badge shows `ON`). First launch shows a
+   three-step intro card.
+2. **Edit / Browse** (top switch): Edit selects elements on hover/click; Browse lets you use
+   the page normally (menus, tabs, links) — a badge reminds you while browsing. Holding
+   `⌥ Alt` in Edit mode is a temporary Browse.
+3. **Edited / Original** (second switch): flips the whole page between your edited version
+   and the untouched original — the page badge takes you back.
+4. Select an element and edit it in the collapsible sections: Text, Typography, Background,
+   Image, Size, Spacing. Use the breadcrumb to reach parents/children.
+5. Action row: **Hide element**, **Copy summary** (Markdown for engineers), **Export JSON**.
+6. Footer **Review** opens the change list (delete individual edits, revert all).
+7. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel by its title
+   bar. Edits stay applied and survive reloads.
 
-Not supported yet: elements inside iframes, importing JSON, uploading local images.
-- Text editing on elements with nested formatting flattens it to plain text (a warning is shown in the panel).
 
 ## Development
 

@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { watchUrlChanges } from '../../lib/applier/navigation';
-import { loadPageEdits } from '../../lib/edits/storage';
+import { loadPageEdits, normalizePageUrl } from '../../lib/edits/storage';
 import { EditsController } from './controller';
 import { EditorHost } from './EditorHost';
 import css from './editor.css?inline';
@@ -17,7 +17,13 @@ export function boot(): void {
   const container = document.createElement('div');
   shadow.append(style, container);
   document.documentElement.appendChild(host);
-  watchUrlChanges(window, () => {
+  let lastPage = normalizePageUrl(location.href);
+  watchUrlChanges(window, (url) => {
+    // Hash/query-only changes keep the same storage key — anchors and hash-tab
+    // navigation must not kill the editor session.
+    const nextPage = normalizePageUrl(url);
+    if (nextPage === lastPage) return;
+    lastPage = nextPage;
     document.dispatchEvent(new CustomEvent('pg-editor:deactivate'));
   });
   void loadPageEdits(location.href)
