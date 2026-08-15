@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { rgbToHex } from '../../../../lib/css-values';
+import { isTransparent, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { ColorField } from '../ColorField';
 import { ResetButton } from '../ResetButton';
@@ -16,7 +16,7 @@ export function BackgroundSection({ element, controller }: SectionProps) {
     <section className="pgve-section">
       <ColorField
         label="Background color"
-        value={rgbToHex(cs.backgroundColor)}
+        value={isTransparent(cs.backgroundColor) ? null : rgbToHex(cs.backgroundColor)}
         onChange={(hex) => controller.recordEdit(element, 'style', 'backgroundColor', original, hex)}
       />
       <ResetButton controller={controller} element={element} property="backgroundColor" />

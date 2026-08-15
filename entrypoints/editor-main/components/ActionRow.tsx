@@ -3,30 +3,42 @@ import { browser } from 'wxt/browser';
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
+import type { ToastContent } from './Toast';
 
 interface ActionRowProps {
   controller: EditsController;
   selected: Element | null;
   onDeselect: () => void;
+  onToast: (toast: ToastContent) => void;
 }
 
-export function ActionRow({ controller, selected, onDeselect }: ActionRowProps) {
+export function ActionRow({ controller, selected, onDeselect, onToast }: ActionRowProps) {
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
 
   const onHide = () => {
     if (!selected) return;
     controller.recordEdit(selected, 'style', 'display', getComputedStyle(selected).display, 'none');
+    const record = controller.recordFor(selected, 'display');
     onDeselect();
+    onToast({
+      message: 'Element hidden',
+      actionLabel: 'Undo',
+      onAction: () => {
+        if (record) controller.deleteRecord(record.id);
+      },
+    });
   };
   const onJson = () => {
     const page = controller.getPage();
     const stamp = new Date().toISOString().slice(0, 10).replaceAll('-', '');
     downloadFile(exportFilename(page.url, stamp), toJson(page));
+    onToast({ message: 'JSON exported — check your downloads' });
   };
   const onMarkdown = async () => {
     const markdown = toMarkdown(controller.getPage(), new Date().toISOString().slice(0, 10));
     try {
       await navigator.clipboard.writeText(markdown);
+      onToast({ message: 'Summary copied to clipboard' });
     } catch {
       window.prompt('Copy the change list below:', markdown);
     }

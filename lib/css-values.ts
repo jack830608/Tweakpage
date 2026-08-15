@@ -15,3 +15,10 @@ export function pxToNumber(value: string): number {
   const n = Number.parseFloat(value);
   return Number.isFinite(n) ? Math.round(n) : 0;
 }
+
+export function isTransparent(value: string): boolean {
+  const trimmed = value.trim().toLowerCase();
+  if (trimmed === '' || trimmed === 'transparent') return true;
+  const m = trimmed.match(/^rgba\(\s*\d+[,\s]+\d+[,\s]+\d+[,\s/]+([\d.]+)\s*\)$/);
+  return m !== null && Number.parseFloat(m[1]) === 0;
+}

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { pxToNumber, rgbToHex } from './css-values';
+import { isTransparent, pxToNumber, rgbToHex } from './css-values';
 
 test('rgbToHex parses rgb() and rgba()', () => {
   expect(rgbToHex('rgb(255, 0, 0)')).toBe('#ff0000');
@@ -21,4 +21,12 @@ test('pxToNumber parses and rounds px values', () => {
   expect(pxToNumber('19.2px')).toBe(19);
   expect(pxToNumber('normal')).toBe(0);
   expect(pxToNumber('')).toBe(0);
+});
+
+test('isTransparent detects unset backgrounds', () => {
+  expect(isTransparent('rgba(0, 0, 0, 0)')).toBe(true);
+  expect(isTransparent('transparent')).toBe(true);
+  expect(isTransparent('')).toBe(true);
+  expect(isTransparent('rgb(255, 0, 0)')).toBe(false);
+  expect(isTransparent('rgba(255, 0, 0, 0.5)')).toBe(false);
 });

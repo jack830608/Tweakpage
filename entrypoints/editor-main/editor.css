@@ -20,7 +20,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-section input[type='number'], .pgve-section input[type='text'], .pgve-section select { width: 130px; padding: 4px 6px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; }
 .pgve-section textarea { width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; resize: vertical; }
 .pgve-section button { padding: 4px 10px; border: 1px solid #d1d5db; border-radius: 4px; background: #f9fafb; cursor: pointer; }
-.pgve-section button.pgve-reset { padding: 0 4px; border: none; background: none; color: #2563eb; font-size: 14px; }
+.pgve-section button.pgve-reset { padding: 0 4px; border: none; background: none; color: #2563eb; font-size: 14px; width: 22px; flex: none; }
+.pgve-reset-slot { width: 22px; flex: none; display: inline-block; }
 .pgve-hint { font-size: 11px; color: #b45309; margin: 4px 0 0; }
 
 .pgve-breadcrumb { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -72,3 +73,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-onboarding ol { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
 .pgve-onboarding button { align-self: flex-start; padding: 6px 14px; border: none; border-radius: 6px; background: #ff3b30; color: #fff; cursor: pointer; }
 .pgve-preview-note { padding: 12px; color: #92400e; background: #fef3c7; margin: 10px 12px; border-radius: 6px; }
+
+.pgve-toast { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 2147483647; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 8px; background: #1f2933; color: #fff; font: 12px/1.4 ui-sans-serif, system-ui, sans-serif; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); }
+.pgve-toast button { border: none; background: none; color: #ff8a80; font-weight: 700; cursor: pointer; }

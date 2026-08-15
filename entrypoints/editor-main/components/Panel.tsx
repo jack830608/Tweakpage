@@ -1,5 +1,6 @@
 import { useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { EditsController } from '../controller';
+import type { ToastContent } from './Toast';
 import { useDraggable } from '../hooks/useDraggable';
 import { ActionRow } from './ActionRow';
 import { ChangesTab } from './ChangesTab';
@@ -26,6 +27,7 @@ export interface PanelProps {
   onDismissOnboarding: () => void;
   onSelect: (el: Element) => void;
   onDeselect: () => void;
+  onToast: (toast: ToastContent) => void;
   onClose: () => void;
 }
 
@@ -81,7 +83,7 @@ export function Panel(props: PanelProps) {
         value={previewing ? 'original' : 'edited'}
         onChange={(value) => controller.setPreviewOriginal(value === 'original')}
       />
-      <ActionRow controller={controller} selected={props.selected} onDeselect={props.onDeselect} />
+      <ActionRow controller={controller} selected={props.selected} onDeselect={props.onDeselect} onToast={props.onToast} />
       {view === 'changes' ? (
         <div>
           <button type="button" className="pgve-back-row" onClick={() => setView('edit')}>

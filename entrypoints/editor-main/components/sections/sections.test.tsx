@@ -72,3 +72,12 @@ test('size inputs record width and height edits in px', () => {
   expect(height.oldValue).toBe('100px');
   expect(height.newValue).toBe('64px');
 });
+
+test('transparent background shows an empty value instead of black', () => {
+  document.body.innerHTML = '<div id="box">x</div>';
+  const controller = new EditsController(null, document, NOW);
+  render(<BackgroundSection element={document.getElementById('box')!} controller={controller} />);
+  const hex = screen.getByLabelText('Background color hex') as HTMLInputElement;
+  expect(hex.value).toBe('');
+  expect(hex.placeholder).toBe('none');
+});

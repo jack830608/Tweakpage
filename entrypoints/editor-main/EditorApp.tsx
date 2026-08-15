@@ -4,6 +4,7 @@ import type { EditsController } from './controller';
 import { Overlay } from './components/Overlay';
 import { Panel, type InteractionMode } from './components/Panel';
 import { StatusBadge } from './components/StatusBadge';
+import { Toast, type ToastContent } from './components/Toast';
 import { useElementPicker } from './hooks/useElementPicker';
 
 const ONBOARDED_KEY = 'tweakpage:onboarded';
@@ -21,6 +22,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   const [selected, setSelected] = useState<Element | null>(null);
   const [mode, setMode] = useState<InteractionMode>('edit');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [toast, setToast] = useState<ToastContent | null>(null);
 
   useEffect(() => {
     browser.storage.local
@@ -70,6 +72,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         onExitPreview={() => controller.setPreviewOriginal(false)}
         onExitBrowse={() => setMode('edit')}
       />
+      {toast && <Toast {...toast} onDismiss={() => setToast(null)} />}
       <Panel
         controller={controller}
         selected={activeSelected}
@@ -79,6 +82,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         onDismissOnboarding={dismissOnboarding}
         onSelect={setSelected}
         onDeselect={() => setSelected(null)}
+        onToast={setToast}
         onClose={onRequestClose}
       />
     </>

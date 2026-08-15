@@ -2,21 +2,27 @@ import { useEffect, useState } from 'react';
 
 interface ColorFieldProps {
   label: string;
-  value: string;
+  value: string | null;
   onChange: (hex: string) => void;
 }
 
 export function ColorField({ label, value, onChange }: ColorFieldProps) {
-  const [draft, setDraft] = useState(value);
-  useEffect(() => setDraft(value), [value]);
+  const [draft, setDraft] = useState(value ?? '');
+  useEffect(() => setDraft(value ?? ''), [value]);
   return (
     <label>
       {label}
       <span className="pgve-color-field">
-        <input type="color" aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} />
+        <input
+          type="color"
+          aria-label={label}
+          value={value ?? '#ffffff'}
+          onChange={(e) => onChange(e.target.value)}
+        />
         <input
           type="text"
           aria-label={`${label} hex`}
+          placeholder={value === null ? 'none' : undefined}
           value={draft}
           onChange={(e) => {
             setDraft(e.target.value);

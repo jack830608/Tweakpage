@@ -8,7 +8,7 @@ interface ResetButtonProps {
 
 export function ResetButton({ controller, element, property }: ResetButtonProps) {
   const record = controller.recordFor(element, property);
-  if (!record) return null;
+  if (!record) return <span className="pgve-reset-slot" aria-hidden="true" />;
   return (
     <button
       type="button"

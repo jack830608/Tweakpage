@@ -4,6 +4,7 @@ import { ModeSwitch } from './ModeSwitch';
 import { CollapsibleSection } from './CollapsibleSection';
 import { StatusBadge } from './StatusBadge';
 import { OnboardingCard } from './OnboardingCard';
+import { Toast } from './Toast';
 
 afterEach(cleanup);
 
@@ -71,4 +72,17 @@ test('onboarding card lists three steps and dismisses', () => {
   expect(screen.getAllByRole('listitem')).toHaveLength(3);
   fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
   expect(onDismiss).toHaveBeenCalled();
+});
+
+test('toast shows a message, fires its action, and auto-dismisses', () => {
+  vi.useFakeTimers();
+  const onAction = vi.fn();
+  const onDismiss = vi.fn();
+  render(<Toast message="Element hidden" actionLabel="Undo" onAction={onAction} onDismiss={onDismiss} />);
+  expect(screen.getByText('Element hidden')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(onAction).toHaveBeenCalled();
+  vi.advanceTimersByTime(5000);
+  expect(onDismiss).toHaveBeenCalled();
+  vi.useRealTimers();
 });
