@@ -123,3 +123,27 @@ test('background image url applies as a css url value; invalid urls are ignored'
     'url("https://example.com/a.png")',
   );
 });
+
+test('font family records a style edit and rejects unsafe values', () => {
+  document.body.innerHTML =
+    '<h2 id="head" style="font-size: 20px; color: rgb(0,0,0); font-family: Arial">Hi</h2>';
+  const controller = new EditsController(null, document, NOW);
+  render(<TypographySection element={document.getElementById('head')!} controller={controller} />);
+  const input = screen.getByLabelText('Font family');
+  fireEvent.change(input, { target: { value: 'Georgia; } body { display: none' } });
+  expect(controller.getPage().records).toHaveLength(0);
+  fireEvent.change(input, { target: { value: 'Georgia' } });
+  expect(controller.getPage().records.find((r) => r.property === 'fontFamily')!.newValue).toBe('Georgia');
+});
+
+test('border width auto-adds a solid style when none, and border color records', () => {
+  document.body.innerHTML = '<div id="box" style="border: 0 none rgb(0,0,0)">x</div>';
+  const controller = new EditsController(null, document, NOW);
+  render(<AppearanceSection element={document.getElementById('box')!} controller={controller} />);
+  fireEvent.change(screen.getByLabelText('Border width'), { target: { value: '2' } });
+  const records = controller.getPage().records;
+  expect(records.find((r) => r.property === 'borderWidth')!.newValue).toBe('2px');
+  expect(records.find((r) => r.property === 'borderStyle')!.newValue).toBe('solid');
+  fireEvent.change(screen.getByLabelText('Border color hex'), { target: { value: '#112233' } });
+  expect(controller.getPage().records.find((r) => r.property === 'borderColor')!.newValue).toBe('#112233');
+});

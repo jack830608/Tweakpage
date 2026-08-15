@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { pxToNumber } from '../../../../lib/css-values';
+import { isTransparent, pxToNumber, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
+import { ColorField } from '../ColorField';
 import { ResetButton } from '../ResetButton';
 
 interface SectionProps {
@@ -15,6 +16,9 @@ export function AppearanceSection({ element, controller }: SectionProps) {
     return {
       borderRadius: s.getPropertyValue('border-top-left-radius'),
       opacity: s.opacity,
+      borderWidth: s.getPropertyValue('border-top-width'),
+      borderStyle: s.getPropertyValue('border-top-style'),
+      borderColor: s.getPropertyValue('border-top-color'),
     };
   }, [element]);
 
@@ -25,6 +29,14 @@ export function AppearanceSection({ element, controller }: SectionProps) {
     if (raw === '') return;
     const value = Math.max(0, Number(raw));
     controller.recordEdit(element, 'style', 'borderRadius', original.borderRadius, `${value}px`);
+  };
+  const setBorderWidth = (raw: string) => {
+    if (raw === '') return;
+    const value = Math.max(0, Number(raw));
+    controller.recordEdit(element, 'style', 'borderWidth', original.borderWidth, `${value}px`);
+    if (value > 0 && getComputedStyle(element).getPropertyValue('border-top-style') === 'none') {
+      controller.recordEdit(element, 'style', 'borderStyle', original.borderStyle, 'solid');
+    }
   };
   const setOpacity = (raw: string) => {
     if (raw === '') return;
@@ -77,6 +89,23 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         </span>
         <ResetButton controller={controller} element={element} property="opacity" />
       </label>
+      <label>
+        Border width
+        <input
+          type="number"
+          min={0}
+          aria-label="Border width"
+          value={pxToNumber(cs.getPropertyValue('border-top-width'))}
+          onChange={(e) => setBorderWidth(e.target.value)}
+        />
+        <ResetButton controller={controller} element={element} property="borderWidth" />
+      </label>
+      <ColorField
+        label="Border color"
+        value={isTransparent(cs.getPropertyValue('border-top-color')) ? null : rgbToHex(cs.getPropertyValue('border-top-color'))}
+        onChange={(hex) => controller.recordEdit(element, 'style', 'borderColor', original.borderColor, hex)}
+        trailing={<ResetButton controller={controller} element={element} property="borderColor" />}
+      />
     </section>
   );
 }

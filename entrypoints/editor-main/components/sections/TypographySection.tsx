@@ -17,6 +17,7 @@ export function TypographySection({ element, controller }: SectionProps) {
     const s = getComputedStyle(element);
     return {
       fontSize: s.fontSize,
+      fontFamily: s.fontFamily,
       fontWeight: s.fontWeight,
       lineHeight: s.lineHeight,
       color: s.color,
@@ -24,6 +25,10 @@ export function TypographySection({ element, controller }: SectionProps) {
       letterSpacing: s.letterSpacing,
       textTransform: s.textTransform,
     };
+  }, [element]);
+  const [fontDraft, setFontDraft] = useState(() => firstFont(original.fontFamily));
+  useEffect(() => {
+    setFontDraft(firstFont(getComputedStyle(element).fontFamily));
   }, [element]);
   const [lineHeightDraft, setLineHeightDraft] = useState(() =>
     original.lineHeight === 'normal' ? '' : original.lineHeight,
@@ -34,6 +39,35 @@ export function TypographySection({ element, controller }: SectionProps) {
   }, [element]);
   return (
     <section className="pgve-section">
+      <label>
+        Font family
+        <input
+          type="text"
+          aria-label="Font family"
+          list="pgve-font-suggestions"
+          value={fontDraft}
+          onChange={(e) => {
+            const value = e.target.value;
+            setFontDraft(value);
+            if (value.trim() === '' || /[;{}]/.test(value)) return;
+            controller.recordEdit(element, 'style', 'fontFamily', original.fontFamily, value.trim());
+          }}
+        />
+        <ResetButton controller={controller} element={element} property="fontFamily" />
+      </label>
+      <datalist id="pgve-font-suggestions">
+        <option value="system-ui" />
+        <option value="Arial" />
+        <option value="Helvetica Neue" />
+        <option value="Verdana" />
+        <option value="Georgia" />
+        <option value="Times New Roman" />
+        <option value="Courier New" />
+        <option value="Menlo" />
+        <option value="serif" />
+        <option value="sans-serif" />
+        <option value="monospace" />
+      </datalist>
       <label>
         Font size
         <input
@@ -126,6 +160,11 @@ export function TypographySection({ element, controller }: SectionProps) {
       />
     </section>
   );
+}
+
+function firstFont(fontFamily: string): string {
+  const first = fontFamily.split(',')[0]?.trim() ?? '';
+  return first.replace(/^["']|["']$/g, '');
 }
 
 function normalizeAlign(align: string): string {
