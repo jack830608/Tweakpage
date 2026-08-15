@@ -1,7 +1,18 @@
-# Tweakpage
+<p align="center">
+  <img src="public/icon/128.png" width="96" alt="Tweakpage icon">
+</p>
 
-Chrome extension for visually editing any web page — for marketing folks who want
-to try out copy, colors, sizes, spacing, and images without touching code.
+<h1 align="center">Tweakpage</h1>
+
+<p align="center">
+  Visually edit any web page — tweak copy, colors, spacing and images,
+  replay your edits on reload, and export a clean change list for engineers.
+</p>
+
+![Tweakpage editing a demo page](docs/assets/screenshot.png)
+
+Built for marketing folks (and anyone else) who want to try out page changes
+without touching code.
 
 Every edit is recorded as a structured diff (selector + property + old → new), so you can:
 
