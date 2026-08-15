@@ -55,24 +55,27 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .pgve-segmented { display: flex; margin: 8px 12px 0; border: 1px solid #d1d5db; border-radius: 8px; padding: 2px; gap: 2px; }
 .pgve-segment { flex: 1; padding: 6px 0; border: none; border-radius: 6px; background: none; cursor: pointer; font-size: 12px; color: #374151; }
-.pgve-segment-active { background: #ff3b30; color: #fff; font-weight: 600; }
-.pgve-action-row { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; margin-top: 8px; }
-.pgve-action-row button { flex: 1; padding: 6px 4px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; cursor: pointer; font-size: 12px; white-space: nowrap; }
-.pgve-action-row button:disabled { opacity: 0.45; cursor: default; }
+.pgve-segment-active { background: #2563eb; color: #fff; font-weight: 600; }
+.pgve-share { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; margin-top: 8px; }
+.pgve-share-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9ca3af; }
+.pgve-share-buttons { display: flex; gap: 6px; }
+.pgve-share-buttons button { flex: 1; padding: 6px 4px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; cursor: pointer; font-size: 12px; white-space: nowrap; }
 .pgve-selection-card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.pgve-selection-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.pgve-selection-head button { flex: none; padding: 3px 8px; border: 1px solid #d1d5db; border-radius: 4px; background: #f9fafb; cursor: pointer; font-size: 11px; white-space: nowrap; }
 .pgve-selection-label { font-weight: 600; word-break: break-all; }
 .pgve-disclosure { border-bottom: 1px solid #f3f4f6; }
 .pgve-disclosure-header { width: 100%; display: flex; gap: 6px; align-items: center; padding: 8px 0; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; }
 .pgve-disclosure-body { padding: 2px 0 10px; }
 .pgve-footer { display: block; width: 100%; padding: 10px 12px; border: none; border-top: 1px solid #e5e7eb; background: #fff; cursor: pointer; text-align: left; color: #6b7280; margin-top: auto; }
-.pgve-footer-active { color: #ff3b30; font-weight: 600; }
+.pgve-footer-active { color: #2563eb; font-weight: 600; }
 .pgve-back-row { display: block; width: 100%; text-align: left; padding: 8px 12px; border: none; background: none; cursor: pointer; color: #6b7280; }
 .pgve-badge { position: fixed; left: 16px; bottom: 16px; z-index: 2147483647; padding: 8px 14px; border: none; border-radius: 999px; background: #1f2933; color: #fff; font: 12px/1.4 ui-sans-serif, system-ui, sans-serif; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); }
 .pgve-onboarding { padding: 16px 12px; display: flex; flex-direction: column; gap: 10px; }
 .pgve-onboarding h3 { font-size: 13px; }
 .pgve-onboarding ol { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
-.pgve-onboarding button { align-self: flex-start; padding: 6px 14px; border: none; border-radius: 6px; background: #ff3b30; color: #fff; cursor: pointer; }
+.pgve-onboarding button { align-self: flex-start; padding: 6px 14px; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
 .pgve-preview-note { padding: 12px; color: #92400e; background: #fef3c7; margin: 10px 12px; border-radius: 6px; }
 
 .pgve-toast { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 2147483647; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 8px; background: #1f2933; color: #fff; font: 12px/1.4 ui-sans-serif, system-ui, sans-serif; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); }
-.pgve-toast button { border: none; background: none; color: #ff8a80; font-weight: 700; cursor: pointer; }
+.pgve-toast button { border: none; background: none; color: #93c5fd; font-weight: 700; cursor: pointer; }

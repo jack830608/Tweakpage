@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } fro
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
 import { useDraggable } from '../hooks/useDraggable';
-import { ActionRow } from './ActionRow';
+import { ShareRow } from './ShareRow';
 import { ChangesTab } from './ChangesTab';
 import { CollapsibleSection } from './CollapsibleSection';
 import { ModeSwitch } from './ModeSwitch';
@@ -90,14 +90,7 @@ export function Panel(props: PanelProps) {
         value={previewing ? 'original' : 'edited'}
         onChange={(value) => controller.setPreviewOriginal(value === 'original')}
       />
-      <ActionRow
-        controller={controller}
-        selected={props.selected}
-        onDeselect={props.onDeselect}
-        onSelect={props.onSelect}
-        onToast={props.onToast}
-        onSnapshot={props.onSnapshot}
-      />
+      <ShareRow controller={controller} onToast={props.onToast} onSnapshot={props.onSnapshot} />
       {view === 'changes' ? (
         <div>
           <button type="button" className="pgve-back-row" onClick={() => setView('edit')}>
@@ -114,6 +107,8 @@ export function Panel(props: PanelProps) {
             showOnboarding={props.showOnboarding}
             onDismissOnboarding={props.onDismissOnboarding}
             onSelect={props.onSelect}
+            onDeselect={props.onDeselect}
+            onToast={props.onToast}
             openSections={openSections}
             onToggleSection={(title) =>
               setOpenSections((open) => ({ ...open, [title]: !open[title] }))
@@ -139,6 +134,8 @@ interface EditViewProps {
   showOnboarding: boolean;
   onDismissOnboarding: () => void;
   onSelect: (el: Element) => void;
+  onDeselect: () => void;
+  onToast: (toast: ToastContent) => void;
   openSections: Record<string, boolean>;
   onToggleSection: (title: string) => void;
 }
@@ -150,6 +147,8 @@ function EditView({
   showOnboarding,
   onDismissOnboarding,
   onSelect,
+  onDeselect,
+  onToast,
   openSections,
   onToggleSection,
 }: EditViewProps) {
@@ -178,7 +177,13 @@ function EditView({
   }
   return (
     <div className="pgve-sections">
-      <SelectionCard element={selected} onSelect={onSelect} />
+      <SelectionCard
+        element={selected}
+        controller={controller}
+        onSelect={onSelect}
+        onDeselect={onDeselect}
+        onToast={onToast}
+      />
       {SECTION_DEFS.filter(({ applies }) => !applies || applies(selected)).map(({ title, render }) => (
         <CollapsibleSection
           key={title}

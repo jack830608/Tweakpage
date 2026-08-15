@@ -1,37 +1,16 @@
-import { useSyncExternalStore } from 'react';
 import { browser } from 'wxt/browser';
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
 
-interface ActionRowProps {
+interface ShareRowProps {
   controller: EditsController;
-  selected: Element | null;
-  onDeselect: () => void;
-  onSelect: (el: Element) => void;
   onToast: (toast: ToastContent) => void;
   onSnapshot: () => void;
 }
 
-export function ActionRow({ controller, selected, onDeselect, onSelect, onToast, onSnapshot }: ActionRowProps) {
-  const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
-
-  const onHide = () => {
-    if (!selected) return;
-    const el = selected;
-    controller.recordEdit(el, 'style', 'display', getComputedStyle(el).display, 'none');
-    const record = controller.recordFor(el, 'display');
-    onDeselect();
-    onToast({
-      message: 'Element hidden',
-      actionLabel: 'Undo',
-      onAction: () => {
-        if (record) controller.deleteRecord(record.id);
-        onSelect(el);
-      },
-    });
-  };
+export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
   const onJson = () => {
     const page = controller.getPage();
     const stamp = new Date().toISOString().slice(0, 10).replaceAll('-', '');
@@ -49,35 +28,29 @@ export function ActionRow({ controller, selected, onDeselect, onSelect, onToast,
   };
 
   return (
-    <div className="pgve-action-row">
-      <button
-        type="button"
-        aria-label="Hide element"
-        title="Hide the selected element"
-        disabled={!selected || previewing}
-        onClick={onHide}
-      >
-        🙈 Hide
-      </button>
-      <button
-        type="button"
-        aria-label="Copy summary"
-        title="Copy a Markdown summary for engineers"
-        onClick={() => void onMarkdown()}
-      >
-        📋 Copy
-      </button>
-      <button type="button" aria-label="Export JSON" title="Download the edits as JSON" onClick={onJson}>
-        ⤓ Export
-      </button>
-      <button
-        type="button"
-        aria-label="Snapshot before and after"
-        title="Save before & after screenshots"
-        onClick={onSnapshot}
-      >
-        📸 Snap
-      </button>
+    <div className="pgve-share">
+      <span className="pgve-share-label">Share</span>
+      <div className="pgve-share-buttons">
+        <button
+          type="button"
+          aria-label="Copy summary"
+          title="Copy a Markdown summary for engineers"
+          onClick={() => void onMarkdown()}
+        >
+          📋 Copy
+        </button>
+        <button type="button" aria-label="Export JSON" title="Download the edits as JSON" onClick={onJson}>
+          ⤓ Export
+        </button>
+        <button
+          type="button"
+          aria-label="Snapshot before and after"
+          title="Save before & after screenshots"
+          onClick={onSnapshot}
+        >
+          📸 Snap
+        </button>
+      </div>
     </div>
   );
 }
