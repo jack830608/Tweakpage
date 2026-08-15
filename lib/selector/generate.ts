@@ -9,11 +9,13 @@ export interface GeneratedSelector {
 }
 
 export function generateSelector(el: Element): GeneratedSelector {
-  let primary: string;
-  try {
-    primary = finder(el, { className: isStableClass });
-  } catch {
-    primary = nthChildPath(el);
+  let primary: string | null = dataAttrSelector(el);
+  if (!primary) {
+    try {
+      primary = finder(el, { className: isStableClass });
+    } catch {
+      primary = nthChildPath(el);
+    }
   }
   const fallbacks = [nthChildPath(el)].filter((s) => s !== primary);
   const text = el.textContent?.trim().slice(0, 60) || undefined;
@@ -23,6 +25,22 @@ export function generateSelector(el: Element): GeneratedSelector {
     textFingerprint: text,
     elementLabel: buildElementLabel(el),
   };
+}
+
+function dataAttrSelector(el: Element): string | null {
+  if (el.id) return null;
+  const doc = el.ownerDocument;
+  for (const { name, value } of Array.from(el.attributes)) {
+    if (!name.startsWith('data-') || !/^[a-z0-9-]+$/i.test(name.slice(5))) continue;
+    if (!value || value.length > 40 || /\d{3,}/.test(value)) continue;
+    const selector = `[${name}="${value.replace(/(["\\])/g, '\\$1')}"]`;
+    try {
+      if (doc.querySelectorAll(selector).length === 1) return selector;
+    } catch {
+      continue;
+    }
+  }
+  return null;
 }
 
 export function nthChildPath(el: Element): string {

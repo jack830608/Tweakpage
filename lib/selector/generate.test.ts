@@ -58,3 +58,26 @@ test('buildElementLabel uses tag, stable class, and trimmed text', () => {
     'h2.hero-title "Unleash Your Sound and more an"',
   );
 });
+
+test('prefers a unique data-* attribute over stable classes', () => {
+  document.body.innerHTML =
+    '<button class="cta-button" data-testid="buy-now">Buy</button><button class="cta-button">Other</button>';
+  const el = document.querySelector('[data-testid="buy-now"]')!;
+  const gen = generateSelector(el);
+  expect(gen.selector).toBe('[data-testid="buy-now"]');
+  expect(document.querySelectorAll(gen.selector)).toHaveLength(1);
+});
+
+test('id still wins over data-* attributes', () => {
+  document.body.innerHTML = '<div id="hero" data-testid="hero-section">x</div>';
+  const gen = generateSelector(document.getElementById('hero')!);
+  expect(gen.selector.startsWith('[data-')).toBe(false);
+  expect(document.querySelector(gen.selector)).toBe(document.getElementById('hero'));
+});
+
+test('skips unstable data-* values (long or digit-heavy)', () => {
+  document.body.innerHTML =
+    '<p class="lead" data-reactid="12345">a</p><p class="other">b</p>';
+  const gen = generateSelector(document.querySelector('.lead')!);
+  expect(gen.selector).not.toContain('data-reactid');
+});
