@@ -4,10 +4,14 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
     name: 'Tweakpage',
+    icons: { 16: 'icon/16.png', 32: 'icon/32.png', 48: 'icon/48.png', 128: 'icon/128.png' },
     description: 'Visually edit any page and export the changes.',
     permissions: ['storage', 'downloads'],
     host_permissions: ['http://*/*', 'https://*/*'],
-    action: { default_title: 'Tweakpage' },
+    action: {
+      default_title: 'Tweakpage',
+      default_icon: { 16: 'icon/16.png', 32: 'icon/32.png', 48: 'icon/48.png', 128: 'icon/128.png' },
+    },
     web_accessible_resources: [
       { resources: ['editor-main.js'], matches: ['http://*/*', 'https://*/*'] },
     ],
