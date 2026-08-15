@@ -2,7 +2,7 @@ import { pxToDisplay, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
-import { ResetButton } from '../ResetButton';
+import { Field } from '../Field';
 
 interface SectionProps {
   element: Element;
@@ -39,8 +39,7 @@ export function TypographySection({ element, controller }: SectionProps) {
 
   return (
     <section className="pgve-section">
-      <label>
-        <span className="pgve-prop">font-family</span>
+      <Field name="font-family" property="fontFamily" controller={controller} element={element}>
         <input
           type="text"
           aria-label="Font family"
@@ -53,8 +52,7 @@ export function TypographySection({ element, controller }: SectionProps) {
             controller.recordEdit(element, 'style', 'fontFamily', fontFamily.original, value.trim());
           }}
         />
-        <ResetButton controller={controller} element={element} property="fontFamily" />
-      </label>
+      </Field>
       <datalist id="pgve-font-suggestions">
         <option value="system-ui" />
         <option value="Arial" />
@@ -68,8 +66,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         <option value="sans-serif" />
         <option value="monospace" />
       </datalist>
-      <label>
-        <span className="pgve-prop">font-size</span>
+      <Field name="font-size" property="fontSize" controller={controller} element={element}>
         <input
           type="number"
           min={1}
@@ -82,10 +79,8 @@ export function TypographySection({ element, controller }: SectionProps) {
             controller.recordEdit(element, 'style', 'fontSize', fontSize.original, `${Number(raw)}px`);
           }}
         />
-        <ResetButton controller={controller} element={element} property="fontSize" />
-      </label>
-      <label>
-        <span className="pgve-prop">font-weight</span>
+      </Field>
+      <Field name="font-weight" property="fontWeight" controller={controller} element={element}>
         <select
           aria-label="Font weight"
           value={fontWeight.value}
@@ -97,10 +92,8 @@ export function TypographySection({ element, controller }: SectionProps) {
             <option key={w} value={w}>{w}</option>
           ))}
         </select>
-        <ResetButton controller={controller} element={element} property="fontWeight" />
-      </label>
-      <label>
-        <span className="pgve-prop">line-height</span>
+      </Field>
+      <Field name="line-height" property="lineHeight" controller={controller} element={element}>
         <input
           type="text"
           aria-label="Line height"
@@ -114,10 +107,8 @@ export function TypographySection({ element, controller }: SectionProps) {
             controller.recordEdit(element, 'style', 'lineHeight', lineHeight.original, value.trim());
           }}
         />
-        <ResetButton controller={controller} element={element} property="lineHeight" />
-      </label>
-      <label>
-        <span className="pgve-prop">text-align</span>
+      </Field>
+      <Field name="text-align" property="textAlign" controller={controller} element={element}>
         <select
           aria-label="Text align"
           value={textAlign.value}
@@ -129,10 +120,8 @@ export function TypographySection({ element, controller }: SectionProps) {
           <option value="center">center</option>
           <option value="right">right</option>
         </select>
-        <ResetButton controller={controller} element={element} property="textAlign" />
-      </label>
-      <label>
-        <span className="pgve-prop">letter-spacing</span>
+      </Field>
+      <Field name="letter-spacing" property="letterSpacing" controller={controller} element={element}>
         <input
           type="number"
           step={0.1}
@@ -151,10 +140,8 @@ export function TypographySection({ element, controller }: SectionProps) {
             );
           }}
         />
-        <ResetButton controller={controller} element={element} property="letterSpacing" />
-      </label>
-      <label>
-        <span className="pgve-prop">text-transform</span>
+      </Field>
+      <Field name="text-transform" property="textTransform" controller={controller} element={element}>
         <select
           aria-label="Text transform"
           value={textTransform.value}
@@ -173,14 +160,15 @@ export function TypographySection({ element, controller }: SectionProps) {
           <option value="lowercase">lowercase</option>
           <option value="capitalize">Capitalize</option>
         </select>
-        <ResetButton controller={controller} element={element} property="textTransform" />
-      </label>
+      </Field>
       <ColorField
-        label={<span className="pgve-prop">color</span>}
+        name="color"
+        property="color"
+        controller={controller}
+        element={element}
         ariaLabel="Color"
         value={color.value}
         onChange={(hex) => controller.recordEdit(element, 'style', 'color', color.original, hex)}
-        trailing={<ResetButton controller={controller} element={element} property="color" />}
       />
     </section>
   );

@@ -191,5 +191,8 @@
   },
   "stale_reload": {
     "message": "Reload page"
+  },
+  "reset_spacing": {
+    "message": "Reset spacing"
   }
 }

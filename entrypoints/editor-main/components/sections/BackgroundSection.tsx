@@ -2,7 +2,7 @@ import { isTransparent, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
-import { ResetButton } from '../ResetButton';
+import { Field } from '../Field';
 import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
@@ -37,24 +37,29 @@ export function BackgroundSection({ element, controller }: SectionProps) {
   return (
     <section className="pgve-section">
       <ColorField
-        label={<span className="pgve-prop">background-color</span>}
+        name="background-color"
+        property="backgroundColor"
+        controller={controller}
+        element={element}
         ariaLabel="Background color"
         value={color.value === '' ? null : color.value}
         onChange={(hex) =>
           controller.recordEdit(element, 'style', 'backgroundColor', color.original, hex)
         }
-        trailing={<ResetButton controller={controller} element={element} property="backgroundColor" />}
       />
-      <label>
-        <span className="pgve-prop">background-image</span>
+      <Field
+        name="background-image"
+        property="backgroundImage"
+        controller={controller}
+        element={element}
+      >
         <input
           type="text"
           aria-label="Background image URL"
           value={image.value}
           onChange={(e) => image.setDraft(e.target.value)}
         />
-        <ResetButton controller={controller} element={element} property="backgroundImage" />
-      </label>
+      </Field>
       <button type="button" aria-label="Apply background image" onClick={onApplyImage}>
         {t('apply')}
       </button>

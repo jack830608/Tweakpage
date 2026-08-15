@@ -2,6 +2,23 @@ import { fakeBrowser } from 'wxt/testing';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ColorField } from './ColorField';
+import { EditsController } from '../controller';
+
+function renderField(onChange: (hex: string) => void) {
+  document.body.innerHTML = '<div id="target">Hi</div>';
+  const controller = new EditsController(null, document, () => '2026-08-15T10:00:00.000Z');
+  render(
+    <ColorField
+      name="color"
+      property="color"
+      controller={controller}
+      element={document.getElementById('target')!}
+      ariaLabel="Color"
+      value="#000000"
+      onChange={onChange}
+    />,
+  );
+}
 
 afterEach(() => {
   cleanup();
@@ -10,6 +27,7 @@ afterEach(() => {
 
 beforeEach(() => {
   fakeBrowser.reset();
+  history.replaceState({}, '', '/page');
 });
 
 test('eyedropper picks a color from the page', async () => {
@@ -22,7 +40,7 @@ test('eyedropper picks a color from the page', async () => {
     },
   );
   const onChange = vi.fn();
-  render(<ColorField label="Color" ariaLabel="Color" value="#000000" onChange={onChange} />);
+  renderField(onChange);
   fireEvent.click(screen.getByRole('button', { name: 'Color eyedropper' }));
   await Promise.resolve();
   await Promise.resolve();
@@ -32,7 +50,7 @@ test('eyedropper picks a color from the page', async () => {
 test('recent colors render as swatches and apply on click', async () => {
   await fakeBrowser.storage.local.set({ 'tweakpage:recent-colors': ['#112233'] });
   const onChange = vi.fn();
-  render(<ColorField label="Color" ariaLabel="Color" value="#000000" onChange={onChange} />);
+  renderField(onChange);
   const swatch = await screen.findByRole('button', { name: 'Use #112233' });
   fireEvent.click(swatch);
   expect(onChange).toHaveBeenCalledWith('#112233');
@@ -40,7 +58,7 @@ test('recent colors render as swatches and apply on click', async () => {
 
 test('committing a color records it as recent', async () => {
   const onChange = vi.fn();
-  render(<ColorField label="Color" ariaLabel="Color" value="#000000" onChange={onChange} />);
+  renderField(onChange);
   fireEvent.change(screen.getByLabelText('Color hex'), { target: { value: '#445566' } });
   await Promise.resolve();
   await Promise.resolve();

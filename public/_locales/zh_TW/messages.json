@@ -191,5 +191,8 @@
   },
   "stale_reload": {
     "message": "重新整理頁面"
+  },
+  "reset_spacing": {
+    "message": "重設間距"
   }
 }

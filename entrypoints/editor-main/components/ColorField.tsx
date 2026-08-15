@@ -1,20 +1,33 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { addRecentColor, getRecentColors } from '../../../lib/recent-colors';
+import type { EditsController } from '../controller';
+import { Field } from './Field';
 import { EyedropperIcon } from './icons';
 
 interface ColorFieldProps {
-  label: ReactNode;
+  /** The CSS property as the user sees it, e.g. "background-color". */
+  name: string;
+  property: string;
+  controller: EditsController;
+  element: Element;
   ariaLabel: string;
   value: string | null;
   onChange: (hex: string) => void;
-  trailing?: ReactNode;
 }
 
 interface EyeDropperResult {
   sRGBHex: string;
 }
 
-export function ColorField({ label, ariaLabel: aria, value, onChange, trailing }: ColorFieldProps) {
+export function ColorField({
+  name,
+  property,
+  controller,
+  element,
+  ariaLabel: aria,
+  value,
+  onChange,
+}: ColorFieldProps) {
   const [draft, setDraft] = useState(value ?? '');
   const [recent, setRecent] = useState<string[]>([]);
   useEffect(() => setDraft(value ?? ''), [value]);
@@ -43,8 +56,7 @@ export function ColorField({ label, ariaLabel: aria, value, onChange, trailing }
 
   return (
     <>
-      <label>
-        {label}
+      <Field name={name} property={property} controller={controller} element={element}>
         <span className="pgve-color-field">
           <input
             type="color"
@@ -73,23 +85,27 @@ export function ColorField({ label, ariaLabel: aria, value, onChange, trailing }
             </button>
           )}
         </span>
-        {trailing}
-      </label>
+      </Field>
       {recent.length > 0 && (
-        <div className="pgve-swatches">
-          {recent.map((color) => (
-            <button
-              key={color}
-              type="button"
-              aria-label={`Use ${color}`}
-              title={color}
-              style={{ background: color }}
-              onClick={() => {
-                setDraft(color);
-                commit(color);
-              }}
-            />
-          ))}
+        // Same grid as a field row, so the swatches line up under the color inputs
+        // instead of being nudged into place with a hard-coded offset.
+        <div className="pgve-field pgve-swatches-row">
+          <span aria-hidden="true" />
+          <div className="pgve-swatches">
+            {recent.map((color) => (
+              <button
+                key={color}
+                type="button"
+                aria-label={`Use ${color}`}
+                title={color}
+                style={{ background: color }}
+                onClick={() => {
+                  setDraft(color);
+                  commit(color);
+                }}
+              />
+            ))}
+          </div>
         </div>
       )}
     </>

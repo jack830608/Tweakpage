@@ -1,7 +1,7 @@
 import { pxToDisplay } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
-import { ResetButton } from '../ResetButton';
+import { Field } from '../Field';
 
 interface SectionProps {
   element: Element;
@@ -40,8 +40,7 @@ function SizeField({ ariaLabel, property, element, controller }: SizeFieldProps)
   const computed = getComputedStyle(element).getPropertyValue(property);
   const field = useFieldDraft(controller, element, property, computed, pxToDisplay, sameNumber);
   return (
-    <label>
-      <span className="pgve-prop">{property}</span>
+    <Field name={property} property={property} controller={controller} element={element}>
       <input
         type="number"
         min={0}
@@ -54,7 +53,6 @@ function SizeField({ ariaLabel, property, element, controller }: SizeFieldProps)
           controller.recordEdit(element, 'style', property, field.original, `${Number(raw)}px`);
         }}
       />
-      <ResetButton controller={controller} element={element} property={property} />
-    </label>
+    </Field>
   );
 }
