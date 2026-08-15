@@ -28,8 +28,9 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 
 ## Usage
 
-1. Click the **Tweakpage** toolbar icon on any page (badge shows `ON`). First launch shows a
-   three-step intro card.
+1. Click the **Tweakpage** toolbar icon and hit **Edit this page** (the popup also lists every
+   page holding saved edits — open or clear them from there; the badge shows each page's edit
+   count). First launch shows a three-step intro card.
 2. **Edit / Browse** (top switch): Edit selects elements on hover/click; Browse lets you use
    the page normally (menus, tabs, links) — a badge reminds you while browsing. Holding
    `⌥ Alt` in Edit mode is a temporary Browse.
@@ -44,9 +45,11 @@ Every edit is recorded as a structured diff (selector + property + old → new),
    (before & after screenshots of the visible page).
 6. Footer **Review** opens the change list (delete individual edits, revert all, **Import JSON**
    from a teammate — edits for other pages are stored and apply when you open them).
-7. `⌘Z` / `⇧⌘Z` (or `Ctrl+Z` / `Ctrl+Y` style) undo and redo edits.
-8. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel by its title
-   bar. Edits stay applied and survive reloads.
+7. `⌘Z` / `⇧⌘Z` (or `Ctrl+Z`) undo and redo edits. Each change in Review can be toggled,
+   hovered (highlights the element), or clicked (selects it).
+8. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere (it
+   remembers its spot) or minimize it to a corner pill. Dark mode follows your system, and
+   the UI ships in English and Traditional Chinese. Edits stay applied and survive reloads.
 
 
 ## Development
