@@ -130,6 +130,8 @@ node_modules/
 .wxt/
 test-results/
 playwright-report/
+.worktrees/
+.superpowers/
 ```
 
 `entrypoints/background.ts` (stub so the build has an entrypoint; wired in Task 11 — `defineBackground` is a WXT auto-imported global, no import needed):
