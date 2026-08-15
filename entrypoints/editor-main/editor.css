@@ -133,8 +133,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- box model ---------- */
 .pgve-box { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; grid-template-rows: 28px auto 28px; gap: 2px; align-items: center; justify-items: center; padding: 4px; border: 1px dashed var(--border-strong); border-radius: var(--r-control); position: relative; }
-.pgve-box--margin { background: #fdf6ec; }
-.pgve-box--padding { background: #eef7f0; width: 100%; min-width: 0; grid-column: 2; grid-row: 2; }
+.pgve-box--margin { background: var(--sunken); }
+.pgve-box--padding { background: var(--surface); border-style: solid; border-color: var(--border); width: 100%; min-width: 0; grid-column: 2; grid-row: 2; }
 .pgve-box-label { position: absolute; top: 3px; left: 7px; font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
 .pgve-section .pgve-box input[type='number'] { width: 44px; padding: 2px 4px; border: 1px solid var(--border); border-radius: 5px; text-align: center; background: var(--surface); }
 .pgve-box-input--top { grid-column: 2; grid-row: 1; }
@@ -213,8 +213,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
     --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.45);
     --ring: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
   }
-  .pgve-box--margin { background: rgba(180, 83, 9, 0.15); }
-  .pgve-box--padding { background: rgba(22, 101, 52, 0.18); }
   .pgve-swatches button { border-color: rgba(255, 255, 255, 0.18); }
   .pgve-color-field input[type='color'] { background: var(--sunken); }
 }
