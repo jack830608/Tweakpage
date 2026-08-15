@@ -1,0 +1,24 @@
+import { expect, test } from 'vitest';
+import { pxToNumber, rgbToHex } from './css-values';
+
+test('rgbToHex parses rgb() and rgba()', () => {
+  expect(rgbToHex('rgb(255, 0, 0)')).toBe('#ff0000');
+  expect(rgbToHex('rgba(17, 34, 51, 0.5)')).toBe('#112233');
+});
+
+test('rgbToHex normalizes hex forms', () => {
+  expect(rgbToHex('#A1B2C3')).toBe('#a1b2c3');
+  expect(rgbToHex('#abc')).toBe('#aabbcc');
+});
+
+test('rgbToHex falls back to black for unparseable values', () => {
+  expect(rgbToHex('transparent')).toBe('#000000');
+  expect(rgbToHex('var(--brand)')).toBe('#000000');
+});
+
+test('pxToNumber parses and rounds px values', () => {
+  expect(pxToNumber('32px')).toBe(32);
+  expect(pxToNumber('19.2px')).toBe(19);
+  expect(pxToNumber('normal')).toBe(0);
+  expect(pxToNumber('')).toBe(0);
+});
