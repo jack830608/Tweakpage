@@ -21,7 +21,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   }, []);
   const onEscape = useCallback(() => {
     setSelected((current) => {
-      if (!current) onRequestClose();
+      if (!current?.isConnected) onRequestClose();
       return null;
     });
   }, [onRequestClose]);
