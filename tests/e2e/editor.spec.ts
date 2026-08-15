@@ -128,6 +128,24 @@ test('every field records what was typed and resets back to the original', async
   await expect(page.getByRole('button', { name: 'Review changes' })).toContainText('0');
 });
 
+test('clicking a change scrolls the page back to its element', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.getByLabel('Text', { exact: true }).fill('Scrolled headline');
+
+  await page.evaluate(() => window.scrollTo(0, 1800));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
+
+  await page.getByRole('button', { name: 'Review changes' }).click();
+  await page.locator('.pgve-change').first().click();
+
+  // Smooth scrolling settles over a few frames.
+  await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 }).toBeLessThan(300);
+  await expect(page.locator('.pgve-outline--selected')).toBeVisible();
+});
+
 test('header and change count stay reachable when the panel scrolls', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
