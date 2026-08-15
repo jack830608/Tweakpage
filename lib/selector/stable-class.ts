@@ -1,9 +1,16 @@
-const FRAMEWORK_HASH = /^(css|sc|jss|emotion)[-_]?/i;
-
 export function isStableClass(cls: string): boolean {
   if (cls.length <= 2) return false;
-  if (FRAMEWORK_HASH.test(cls)) return false;
+  if (/^(css-|sc-|jss\d|emotion-)/i.test(cls)) return false;
   if (/\d{3,}/.test(cls)) return false;
-  const hashLike = /^[a-z0-9]+$/i.test(cls) && /\d/.test(cls) && !/[-_]/.test(cls);
-  return !hashLike;
+  const modulesTail = cls.split('__').pop();
+  if (cls.includes('__') && modulesTail && /^[a-z0-9]{4,}$/i.test(modulesTail) && /\d/.test(modulesTail)) {
+    return false;
+  }
+  if (/^_+[a-z0-9]{4,}$/i.test(cls)) return false;
+  if (!/[-_]/.test(cls) && /\d/.test(cls)) {
+    const digitCount = (cls.match(/\d/g) ?? []).length;
+    const mixedCase = /[a-z]/.test(cls) && /[A-Z]/.test(cls);
+    if (digitCount >= 2 || mixedCase) return false;
+  }
+  return true;
 }
