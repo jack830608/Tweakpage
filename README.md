@@ -48,8 +48,8 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 - `pnpm dev` — WXT dev mode with HMR
 - `pnpm test` — unit/component tests (vitest)
 - `pnpm e2e` — builds, then runs the Playwright smoke test
-- Spec: `docs/superpowers/specs/2026-08-15-pg-visual-editor-design.md`
-- Plan: `docs/superpowers/plans/2026-08-15-pg-visual-editor-mvp.md`
+- Spec: `docs/superpowers/specs/2026-08-15-tweakpage-design.md`
+- Plan: `docs/superpowers/plans/2026-08-15-tweakpage-mvp.md`
 
 ## Manual QA checklist (per release)
 

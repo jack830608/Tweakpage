@@ -7,7 +7,7 @@ test('edit → persist → replay → export', async ({ context }) => {
   await page.goto('http://localhost:4173/');
 
   await activateEditor(context);
-  await expect(page.locator('#pg-visual-editor-host aside')).toBeVisible();
+  await expect(page.locator('#tweakpage-host aside')).toBeVisible();
 
   await page.locator('h1').click();
   await page.getByLabel('Text', { exact: true }).fill('New headline');
@@ -58,7 +58,7 @@ test('spacing box-model editor fits inside the panel', async ({ context }) => {
   const inputBox = (await page.getByLabel('padding top').boundingBox())!;
   expect(inputBox.width).toBeLessThan(60);
 
-  const panelBox = (await page.locator('#pg-visual-editor-host aside').boundingBox())!;
+  const panelBox = (await page.locator('#tweakpage-host aside').boundingBox())!;
   const marginBox = (await page.locator('.pgve-box--margin').boundingBox())!;
   const paddingBox = (await page.locator('.pgve-box--padding').boundingBox())!;
   expect(paddingBox.x + paddingBox.width).toBeLessThanOrEqual(marginBox.x + marginBox.width + 1);
@@ -70,7 +70,7 @@ test('panel can be dragged to a new position and stays in the viewport', async (
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
 
-  const panel = page.locator('#pg-visual-editor-host aside');
+  const panel = page.locator('#tweakpage-host aside');
   const before = (await panel.boundingBox())!;
   const header = (await page.locator('.pgve-header').boundingBox())!;
 

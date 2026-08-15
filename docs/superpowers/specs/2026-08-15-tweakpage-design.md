@@ -246,7 +246,7 @@ Pick a JSON file → validate schema version → merge into that URL's stored ed
 ## 13. Project structure
 
 ```
-pg-visual-editor/
+tweakpage/
 ├── wxt.config.ts
 ├── entrypoints/
 │   ├── background.ts

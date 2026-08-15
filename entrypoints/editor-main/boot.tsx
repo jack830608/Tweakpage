@@ -5,7 +5,7 @@ import { EditsController } from './controller';
 import { EditorHost } from './EditorHost';
 import css from './editor.css?inline';
 
-const HOST_ID = 'pg-visual-editor-host';
+const HOST_ID = 'tweakpage-host';
 
 export function boot(): void {
   if (document.getElementById(HOST_ID)) return;

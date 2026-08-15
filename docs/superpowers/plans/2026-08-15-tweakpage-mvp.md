@@ -8,7 +8,7 @@
 
 **Tech Stack:** WXT (MV3 framework) + React 19 + TypeScript (strict), @medv/finder (selector generation), vitest + happy-dom + @testing-library/react (unit/component), Playwright (smoke E2E). Package manager: **pnpm** (v10 — build-script approvals apply).
 
-**Spec:** `docs/superpowers/specs/2026-08-15-pg-visual-editor-design.md` — the plan argues from the spec; executors read both.
+**Spec:** `docs/superpowers/specs/2026-08-15-tweakpage-design.md` — the plan argues from the spec; executors read both.
 
 ## Global Constraints
 
@@ -41,7 +41,7 @@
 
 ```json
 {
-  "name": "pg-visual-editor",
+  "name": "tweakpage",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -1647,7 +1647,7 @@ export default defineUnlistedScript(() => {
 
 ```ts
 export function boot(): void {
-  console.info('[pg-visual-editor] editor loaded');
+  console.info('[tweakpage] editor loaded');
 }
 ```
 
@@ -1670,7 +1670,7 @@ Expected: build succeeds; the applier content-script JS exists and is **< 15 KB*
 
 1. `chrome://extensions` → enable Developer mode → "Load unpacked" → select `.output/chrome-mv3/`.
 2. Open `https://example.com`, click the PG Visual Editor toolbar icon.
-3. DevTools console shows `[pg-visual-editor] editor loaded` exactly once, even after multiple clicks.
+3. DevTools console shows `[tweakpage] editor loaded` exactly once, even after multiple clicks.
 4. Seed a stored edit from the extension's service-worker console (chrome://extensions → "service worker"):
    ```js
    chrome.storage.local.set({ 'page:https://example.com/': { version: 1, url: 'https://example.com/', title: 'x', updatedAt: 'now', records: [{ id: 'r1', selector: 'h1', fallbackSelectors: [], elementLabel: 'h1', type: 'text', property: 'textContent', oldValue: 'Example Domain', newValue: 'Hello from PGVE', enabled: true, createdAt: 'now', updatedAt: 'now' }] } })
@@ -1922,7 +1922,7 @@ git commit -m "feat: EditsController as the editor's single mutation path"
 **Interfaces:**
 - Consumes: `EditsController` (Task 12), `loadPageEdits` (Task 8), toggle protocol (Task 11).
 - Produces:
-  - `boot.tsx`: `boot(): void` — idempotent; creates host div `#pg-visual-editor-host`, open shadow root, injects `editor.css` (`?inline` import), loads stored edits, renders `<EditorHost>`.
+  - `boot.tsx`: `boot(): void` — idempotent; creates host div `#tweakpage-host`, open shadow root, injects `editor.css` (`?inline` import), loads stored edits, renders `<EditorHost>`.
   - `EditorHost.tsx`: `EditorHost({ controller, host })` — owns `active` state (starts `true`), toggles on `pg-editor:toggle`, reports `{ type: 'pg:state', active }` to background, renders `<EditorApp>` when active.
   - `EditorApp.tsx`: `EditorApp({ controller, host, onRequestClose })` — panel shell in this task; Tasks 14–15 extend it.
 
@@ -1937,7 +1937,7 @@ import { EditsController } from './controller';
 import { EditorHost } from './EditorHost';
 import css from './editor.css?inline';
 
-const HOST_ID = 'pg-visual-editor-host';
+const HOST_ID = 'tweakpage-host';
 
 export function boot(): void {
   if (document.getElementById(HOST_ID)) return;
@@ -3305,7 +3305,7 @@ test('edit → persist → replay → export', async ({ context }) => {
   await page.goto('http://localhost:4173/');
 
   await activateEditor(context);
-  await expect(page.locator('#pg-visual-editor-host aside')).toBeVisible();
+  await expect(page.locator('#tweakpage-host aside')).toBeVisible();
 
   await page.locator('h1').click();
   await page.getByLabel('Text', { exact: true }).fill('New headline');
@@ -3374,8 +3374,8 @@ Not supported yet: elements inside iframes, importing JSON, uploading local imag
 - `pnpm dev` — WXT dev mode with HMR
 - `pnpm test` — unit/component tests (vitest)
 - `pnpm e2e` — builds, then runs the Playwright smoke test
-- Spec: `docs/superpowers/specs/2026-08-15-pg-visual-editor-design.md`
-- Plan: `docs/superpowers/plans/2026-08-15-pg-visual-editor-mvp.md`
+- Spec: `docs/superpowers/specs/2026-08-15-tweakpage-design.md`
+- Plan: `docs/superpowers/plans/2026-08-15-tweakpage-mvp.md`
 
 ## Manual QA checklist (per release)
 
