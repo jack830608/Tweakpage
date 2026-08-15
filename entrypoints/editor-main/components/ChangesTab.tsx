@@ -2,7 +2,6 @@ import { useSyncExternalStore } from 'react';
 import { cssPropertyName } from '../../../lib/edits/css';
 import type { EditRecord } from '../../../lib/edits/types';
 import type { EditsController } from '../controller';
-import { ExportButtons } from './ExportButtons';
 
 export function ChangesTab({ controller }: { controller: EditsController }) {
   const page = useSyncExternalStore(controller.subscribe, controller.getPage);
@@ -10,7 +9,6 @@ export function ChangesTab({ controller }: { controller: EditsController }) {
   return (
     <div className="pgve-changes">
       <div className="pgve-changes-actions">
-        <ExportButtons controller={controller} />
         <button type="button" onClick={() => controller.revertAllEdits()}>Revert all</button>
       </div>
       <ul>

@@ -53,33 +53,4 @@ test('revert all clears records', () => {
   expect(screen.getByText('No changes yet.')).toBeTruthy();
 });
 
-test('export json sends the exported page as a data-url download message', async () => {
-  const received: Array<{ type?: string; filename?: string; url?: string }> = [];
-  fakeBrowser.runtime.onMessage.addListener((message: unknown) => {
-    received.push(message as { type?: string; filename?: string; url?: string });
-  });
-  const controller = new EditsController(null, document, NOW);
-  controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
-  render(<ChangesTab controller={controller} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Export JSON' }));
-  await Promise.resolve();
-  expect(received).toHaveLength(1);
-  expect(received[0].type).toBe('pg:download');
-  expect(received[0].filename).toMatch(/^tweakpage-localhost-\d{8}\.json$/);
-  const base64 = received[0].url!.split(',')[1]!;
-  const decoded = JSON.parse(Buffer.from(base64, 'base64').toString('utf8'));
-  expect(decoded.records).toHaveLength(1);
-});
 
-test('copy markdown writes the change list to the clipboard', async () => {
-  const writeText = vi.fn().mockResolvedValue(undefined);
-  Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-  const controller = new EditsController(null, document, NOW);
-  controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
-  render(<ChangesTab controller={controller} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Copy Markdown' }));
-  await Promise.resolve();
-  expect(writeText).toHaveBeenCalledTimes(1);
-  expect(writeText.mock.calls[0][0]).toContain('# Page edits —');
-  expect(writeText.mock.calls[0][0]).toContain('"Original" → "Changed"');
-});

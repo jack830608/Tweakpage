@@ -1,9 +1,23 @@
+import { useSyncExternalStore } from 'react';
 import { browser } from 'wxt/browser';
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
 
-export function ExportButtons({ controller }: { controller: EditsController }) {
+interface ActionRowProps {
+  controller: EditsController;
+  selected: Element | null;
+  onDeselect: () => void;
+}
+
+export function ActionRow({ controller, selected, onDeselect }: ActionRowProps) {
+  const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
+
+  const onHide = () => {
+    if (!selected) return;
+    controller.recordEdit(selected, 'style', 'display', getComputedStyle(selected).display, 'none');
+    onDeselect();
+  };
   const onJson = () => {
     const page = controller.getPage();
     const stamp = new Date().toISOString().slice(0, 10).replaceAll('-', '');
@@ -17,11 +31,15 @@ export function ExportButtons({ controller }: { controller: EditsController }) {
       window.prompt('Copy the change list below:', markdown);
     }
   };
+
   return (
-    <>
-      <button type="button" onClick={onJson}>Export JSON</button>
-      <button type="button" onClick={() => void onMarkdown()}>Copy Markdown</button>
-    </>
+    <div className="pgve-action-row">
+      <button type="button" disabled={!selected || previewing} onClick={onHide}>
+        🙈 Hide element
+      </button>
+      <button type="button" onClick={() => void onMarkdown()}>📋 Copy summary</button>
+      <button type="button" onClick={onJson}>⤓ Export JSON</button>
+    </div>
   );
 }
 
