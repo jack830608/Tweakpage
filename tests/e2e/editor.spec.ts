@@ -196,28 +196,28 @@ test('selection outline stays legible against the page', async ({ context }) => 
   expect(colors.painted).toBe(colors.token);
 });
 
-test('the panel is translucent at rest and solid once you reach for it', async ({ context }) => {
+test('the panel fades at rest and comes back solid once you reach for it', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
+  await page.locator('h1').click();
   const panel = page.locator('#tweakpage-host aside');
   const box = (await panel.boundingBox())!;
+  const opacityOf = (selector: string) =>
+    page.evaluate((sel) => {
+      const el = document.getElementById('tweakpage-host')!.shadowRoot!.querySelector(sel)!;
+      return Number(getComputedStyle(el).opacity);
+    }, selector);
 
-  const alphaOf = (color: string) => {
-    const parts = color.match(/rgba?\(([^)]+)\)/)?.[1].split(',').map((n) => Number(n.trim())) ?? [];
-    return parts.length === 4 ? parts[3] : 1;
-  };
-  const background = () => panel.evaluate((el) => getComputedStyle(el).backgroundColor);
-
-  await page.mouse.move(200, 400);
+  await page.mouse.move(200, 500);
   await page.waitForTimeout(300);
-  expect(alphaOf(await background()), 'the page should show through at rest').toBeLessThan(1);
-  // Opacity on the panel would fade the text with it; the blur is what keeps it readable.
-  expect(await panel.evaluate((el) => getComputedStyle(el).backdropFilter)).toContain('blur');
+  expect(await opacityOf('.pgve-panel'), 'the page should show through at rest').toBeLessThan(1);
+  // The outline is a sibling, not a child: fading the panel must not dim what it points at.
+  expect(await opacityOf('.pgve-outline--selected')).toBe(1);
 
   await page.mouse.move(box.x + box.width / 2, box.y + 120);
   await page.waitForTimeout(300);
-  expect(alphaOf(await background()), 'reaching for the panel should make it solid').toBe(1);
+  expect(await opacityOf('.pgve-panel'), 'reaching for the panel should make it solid').toBe(1);
 });
 
 test('the minimized pill follows the colour scheme', async ({ context }) => {

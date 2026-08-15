@@ -5,9 +5,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- tokens ---------- */
 :host {
   --surface: #ffffff;
-  /* The panel rests translucent so the page stays readable behind it, and turns
-     solid the moment you reach for it. */
-  --veil: rgba(255, 255, 255, 0.72);
   --sunken: #f6f6f7;
   --border: #e4e4e7;
   --border-strong: #cfcfd4;
@@ -46,18 +43,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-outline-label { position: absolute; top: -26px; left: 0; display: inline-flex; align-items: center; background: var(--dark); color: #fff; font: 500 11px/1.5 var(--sans); padding: 3px 8px; border-radius: 5px; white-space: nowrap; box-shadow: var(--shadow-lift); }
 
 /* ---------- panel shell ---------- */
-.pgve-panel { position: fixed; top: 12px; right: 12px; width: 320px; height: auto; max-height: calc(100vh - 24px); z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--veil); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); transition: background 0.18s ease; color: var(--ink); font: 400 12.5px/1.5 var(--sans); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
-/* Reaching for the panel makes it solid; leaving it hands the page back. */
-.pgve-panel:hover, .pgve-panel:focus-within { background: var(--surface); }
-.pgve-panel:hover .pgve-header, .pgve-panel:focus-within .pgve-header,
-.pgve-panel:hover .pgve-footer, .pgve-panel:focus-within .pgve-footer { background: var(--surface); }
-/* Some people can't read text over a moving background at all. */
+.pgve-panel { position: fixed; top: 12px; right: 12px; width: 320px; height: auto; max-height: calc(100vh - 24px); z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); color: var(--ink); opacity: 0.6; transition: opacity 0.18s ease; font: 400 12.5px/1.5 var(--sans); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
+/* Fading the whole panel is what makes it see-through everywhere: the header, the
+   footer and every input carry their own opaque fills, so tinting one layer could
+   never do it. Text legibility is handled by going solid the moment you reach for
+   it — you only ever read the panel while pointing at it. */
+.pgve-panel:hover, .pgve-panel:focus-within { opacity: 1; }
+/* Reading text over page content underneath is a real accessibility problem. */
 @media (prefers-reduced-transparency: reduce) {
-  .pgve-panel, .pgve-header, .pgve-footer {
-    background: var(--surface);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
+  .pgve-panel { opacity: 1; }
 }
 
 .pgve-panel :is(button, input, select, textarea):focus-visible { outline: none; box-shadow: var(--ring); }
@@ -65,7 +59,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* The panel scrolls internally once sections are open; the drag handle, close button
    and the change count have to stay reachable from anywhere in that scroll. */
-.pgve-header { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 11px 12px 9px; background: var(--veil); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); transition: background 0.18s ease; border-radius: var(--r-panel) var(--r-panel) 0 0; cursor: grab; user-select: none; touch-action: none; }
+.pgve-header { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 11px 12px 9px; background: var(--surface); border-radius: var(--r-panel) var(--r-panel) 0 0; cursor: grab; user-select: none; touch-action: none; }
 .pgve-header:active { cursor: grabbing; }
 .pgve-header strong { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 650; letter-spacing: -0.01em; color: var(--ink); }
 .pgve-header strong svg { color: var(--ink-3); }
@@ -198,7 +192,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-change button:hover { border-color: var(--border-strong); color: var(--ink); }
 
 /* ---------- footer ---------- */
-.pgve-footer { position: sticky; bottom: 0; z-index: 2; display: block; width: 100%; padding: 10px 12px; border: none; border-top: 1px solid var(--border); background: var(--veil); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); transition: background 0.18s ease; cursor: pointer; text-align: left; color: var(--ink-3); font-size: 12px; margin-top: auto; border-radius: 0 0 var(--r-panel) var(--r-panel); }
+.pgve-footer { position: sticky; bottom: 0; z-index: 2; display: block; width: 100%; padding: 10px 12px; border: none; border-top: 1px solid var(--border); background: var(--surface); cursor: pointer; text-align: left; color: var(--ink-3); font-size: 12px; margin-top: auto; border-radius: 0 0 var(--r-panel) var(--r-panel); }
 .pgve-footer:hover { color: var(--ink); background: var(--sunken); }
 .pgve-footer-active { color: var(--accent-ink); font-weight: 600; }
 
@@ -212,7 +206,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (prefers-color-scheme: dark) {
   :host {
     --surface: #212126;
-    --veil: rgba(33, 33, 38, 0.74);
     --sunken: #2b2b31;
     --border: #3a3a41;
     --border-strong: #4a4a52;
