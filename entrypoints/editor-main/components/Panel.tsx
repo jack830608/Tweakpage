@@ -26,7 +26,6 @@ export interface PanelProps {
   showOnboarding: boolean;
   onDismissOnboarding: () => void;
   onSelect: (el: Element) => void;
-  onDeselect: () => void;
   onToast: (toast: ToastContent) => void;
   onSnapshot: () => void;
   onClose: () => void;
@@ -107,8 +106,6 @@ export function Panel(props: PanelProps) {
             showOnboarding={props.showOnboarding}
             onDismissOnboarding={props.onDismissOnboarding}
             onSelect={props.onSelect}
-            onDeselect={props.onDeselect}
-            onToast={props.onToast}
             openSections={openSections}
             onToggleSection={(title) =>
               setOpenSections((open) => ({ ...open, [title]: !open[title] }))
@@ -134,8 +131,6 @@ interface EditViewProps {
   showOnboarding: boolean;
   onDismissOnboarding: () => void;
   onSelect: (el: Element) => void;
-  onDeselect: () => void;
-  onToast: (toast: ToastContent) => void;
   openSections: Record<string, boolean>;
   onToggleSection: (title: string) => void;
 }
@@ -147,8 +142,6 @@ function EditView({
   showOnboarding,
   onDismissOnboarding,
   onSelect,
-  onDeselect,
-  onToast,
   openSections,
   onToggleSection,
 }: EditViewProps) {
@@ -175,25 +168,24 @@ function EditView({
   if (selected.tagName === 'IFRAME') {
     return <p className="pgve-empty">Editing inside iframes isn't supported.</p>;
   }
+  const hidden = controller.recordFor(selected, 'display')?.newValue === 'none';
   return (
     <div className="pgve-sections">
-      <SelectionCard
-        element={selected}
-        controller={controller}
-        onSelect={onSelect}
-        onDeselect={onDeselect}
-        onToast={onToast}
-      />
-      {SECTION_DEFS.filter(({ applies }) => !applies || applies(selected)).map(({ title, render }) => (
-        <CollapsibleSection
-          key={title}
-          title={title}
-          open={!!openSections[title]}
-          onToggle={() => onToggleSection(title)}
-        >
-          {render(selected, controller)}
-        </CollapsibleSection>
-      ))}
+      <SelectionCard element={selected} controller={controller} onSelect={onSelect} />
+      {hidden ? (
+        <p className="pgve-preview-note">Element is hidden — Unhide to edit it.</p>
+      ) : (
+        SECTION_DEFS.filter(({ applies }) => !applies || applies(selected)).map(({ title, render }) => (
+          <CollapsibleSection
+            key={title}
+            title={title}
+            open={!!openSections[title]}
+            onToggle={() => onToggleSection(title)}
+          >
+            {render(selected, controller)}
+          </CollapsibleSection>
+        ))
+      )}
     </div>
   );
 }

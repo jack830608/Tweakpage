@@ -15,28 +15,17 @@ beforeEach(() => {
   history.replaceState({}, '', '/page');
 });
 
-test('hide records a display none edit, deselects, and the undo toast reselects', () => {
+test('hide toggles to unhide and back, keeping the selection context', () => {
   const controller = new EditsController(null, document, NOW);
   const el = document.getElementById('title')!;
-  const onDeselect = vi.fn();
-  const onSelect = vi.fn();
-  const onToast = vi.fn();
-  render(
-    <SelectionCard
-      element={el}
-      controller={controller}
-      onSelect={onSelect}
-      onDeselect={onDeselect}
-      onToast={onToast}
-    />,
-  );
+  render(<SelectionCard element={el} controller={controller} onSelect={vi.fn()} />);
+
   fireEvent.click(screen.getByRole('button', { name: 'Hide element' }));
   const record = controller.getPage().records.find((r) => r.property === 'display')!;
   expect(record.newValue).toBe('none');
-  expect(onDeselect).toHaveBeenCalled();
-  const toast = onToast.mock.calls[0][0];
-  expect(toast.actionLabel).toBe('Undo');
-  toast.onAction();
+
+  const unhide = screen.getByRole('button', { name: 'Unhide element' });
+  fireEvent.click(unhide);
   expect(controller.getPage().records).toHaveLength(0);
-  expect(onSelect).toHaveBeenCalledWith(el);
+  expect(screen.getByRole('button', { name: 'Hide element' })).toBeTruthy();
 });

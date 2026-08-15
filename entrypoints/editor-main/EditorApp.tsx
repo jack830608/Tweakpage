@@ -94,7 +94,6 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         showOnboarding={showOnboarding}
         onDismissOnboarding={dismissOnboarding}
         onSelect={setSelected}
-        onDeselect={() => setSelected(null)}
         onToast={setToast}
         onSnapshot={onSnapshot}
         onClose={onRequestClose}

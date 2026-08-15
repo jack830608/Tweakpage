@@ -20,7 +20,6 @@ beforeEach(() => {
 function setup(selected: Element | null = document.getElementById('title')) {
   const controller = new EditsController(null, document, NOW);
   const onSelect = vi.fn();
-  const onDeselect = vi.fn();
   const onModeChange = vi.fn();
   const onDismissOnboarding = vi.fn();
   render(
@@ -32,13 +31,12 @@ function setup(selected: Element | null = document.getElementById('title')) {
       showOnboarding={false}
       onDismissOnboarding={onDismissOnboarding}
       onSelect={onSelect}
-      onDeselect={onDeselect}
       onToast={vi.fn()}
       onSnapshot={vi.fn()}
       onClose={vi.fn()}
     />,
   );
-  return { controller, onSelect, onDeselect, onModeChange, onDismissOnboarding };
+  return { controller, onSelect, onModeChange, onDismissOnboarding };
 }
 
 test('shows the empty state without a selection', () => {
@@ -161,7 +159,6 @@ test('onboarding card renders when showOnboarding and dismisses', () => {
       showOnboarding
       onDismissOnboarding={onDismissOnboarding}
       onSelect={vi.fn()}
-      onDeselect={vi.fn()}
       onToast={vi.fn()}
       onSnapshot={vi.fn()}
       onClose={vi.fn()}
@@ -202,4 +199,15 @@ test('invalid line height values are not recorded', () => {
   expect(controller.getPage().records).toHaveLength(0);
   fireEvent.change(screen.getByLabelText('Line height'), { target: { value: '1.5' } });
   expect(controller.getPage().records.find((r) => r.property === 'lineHeight')!.newValue).toBe('1.5');
+});
+
+test('hiding an element locks editing behind an unhide hint', () => {
+  const { controller } = setup();
+  fireEvent.click(screen.getByRole('button', { name: 'Hide element' }));
+  expect(screen.getByText(/Element is hidden/)).toBeTruthy();
+  expect(screen.queryByLabelText('Text')).toBeNull();
+  expect(controller.getPage().records.find((r) => r.property === 'display')!.newValue).toBe('none');
+  fireEvent.click(screen.getByRole('button', { name: 'Unhide element' }));
+  expect(screen.queryByText(/Element is hidden/)).toBeNull();
+  expect(screen.getByLabelText('Text')).toBeTruthy();
 });
