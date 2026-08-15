@@ -27,10 +27,10 @@ export function useElementPicker(
       onSelect(el);
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onEscape();
-      }
+      if (e.key !== 'Escape') return;
+      if (e.composedPath().includes(host)) return;
+      e.preventDefault();
+      onEscape();
     };
     document.addEventListener('mousemove', onMouseMove, true);
     document.addEventListener('click', onClick, true);

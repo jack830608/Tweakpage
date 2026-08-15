@@ -13,8 +13,12 @@ export default defineBackground(() => {
       if (message?.type === 'pg:state' && sender.tab?.id != null) {
         void browser.action.setBadgeText({ tabId: sender.tab.id, text: message.active ? 'ON' : '' });
       }
-      if (message?.type === 'pg:download' && message.filename && message.url) {
-        void browser.downloads.download({ url: message.url, filename: message.filename });
+      if (message?.type === 'pg:download' && typeof message.url === 'string' && typeof message.filename === 'string') {
+        if (!message.url.startsWith('data:application/json;base64,')) return;
+        if (!/^pg-edits-[\w.-]+\.json$/.test(message.filename)) return;
+        browser.downloads.download({ url: message.url, filename: message.filename }).catch((error: unknown) => {
+          console.warn('[pg-visual-editor] download failed', error);
+        });
       }
     },
   );

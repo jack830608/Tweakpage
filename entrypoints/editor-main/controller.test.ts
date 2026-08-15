@@ -92,3 +92,13 @@ test('recordFor finds the record for an element and property', () => {
   c.recordEdit(el, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
   expect(c.recordFor(el, 'color')?.newValue).toBe('#ff0000');
 });
+
+test('setRecords guards against recording edits after an SPA navigation changed the URL', async () => {
+  const c = controller();
+  const originalUrl = location.href;
+  const el = document.getElementById('title')!;
+  history.replaceState({}, '', '/other');
+  c.recordEdit(el, 'text', 'textContent', 'Original', 'Changed');
+  expect(c.getPage().records).toHaveLength(0);
+  expect(await loadPageEdits(originalUrl)).toBeNull();
+});

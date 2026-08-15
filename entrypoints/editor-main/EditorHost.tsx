@@ -13,8 +13,13 @@ export function EditorHost({ controller, host }: EditorHostProps) {
 
   useEffect(() => {
     const onToggle = () => setActive((a) => !a);
+    const onDeactivate = () => setActive(false);
     document.addEventListener('pg-editor:toggle', onToggle);
-    return () => document.removeEventListener('pg-editor:toggle', onToggle);
+    document.addEventListener('pg-editor:deactivate', onDeactivate);
+    return () => {
+      document.removeEventListener('pg-editor:toggle', onToggle);
+      document.removeEventListener('pg-editor:deactivate', onDeactivate);
+    };
   }, []);
 
   useEffect(() => {

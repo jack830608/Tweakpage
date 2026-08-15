@@ -7,7 +7,7 @@ export default defineContentScript({
   runAt: 'document_idle',
   main() {
     const engine = new ApplierEngine(document);
-    void engine.start(location.href);
+    engine.start(location.href).catch(() => {});
     watchUrlChanges(window, (url) => void engine.navigate(url));
 
     let editorLoaded = false;

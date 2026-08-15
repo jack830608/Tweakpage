@@ -1,4 +1,5 @@
 import { createRoot } from 'react-dom/client';
+import { watchUrlChanges } from '../../lib/applier/navigation';
 import { loadPageEdits } from '../../lib/edits/storage';
 import { EditsController } from './controller';
 import { EditorHost } from './EditorHost';
@@ -16,6 +17,9 @@ export function boot(): void {
   const container = document.createElement('div');
   shadow.append(style, container);
   document.documentElement.appendChild(host);
+  watchUrlChanges(window, () => {
+    document.dispatchEvent(new CustomEvent('pg-editor:deactivate'));
+  });
   void loadPageEdits(location.href)
     .catch(() => null)
     .then((initial) => {

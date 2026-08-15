@@ -56,6 +56,7 @@ Four components:
 - Dynamically imported only when the user clicks the toolbar icon.
 - React app mounted inside a **Shadow DOM** host element — full style isolation from the page in both directions.
 - Contains: hover/selection overlay, editing panel, changes list, export/import UI.
+- On SPA navigations the editor deactivates (the toolbar icon reopens it); edits are never recorded against a URL the panel wasn't opened on.
 
 ### 4.3 Background service worker
 
