@@ -194,5 +194,11 @@
   },
   "reset_spacing": {
     "message": "重設間距"
+  },
+  "pop_edit": {
+    "message": "編輯"
+  },
+  "pop_applied_here": {
+    "message": "已套用在目前頁面"
   }
 }

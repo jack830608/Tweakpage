@@ -55,6 +55,8 @@ export const MESSAGES: Record<string, string> = {
   pop_empty: 'No saved edits yet. Open any page and start tweaking.',
   pop_open: 'Open',
   pop_clear: 'Clear',
+  pop_edit: 'Edit',
+  pop_applied_here: 'Applied on this page',
   reset_spacing: 'Reset spacing',
   stale_note: 'Tweakpage was updated. Reload the page to keep editing — your saved edits are safe.',
   stale_reload: 'Reload page',

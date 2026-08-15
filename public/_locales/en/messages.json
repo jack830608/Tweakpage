@@ -194,5 +194,11 @@
   },
   "reset_spacing": {
     "message": "Reset spacing"
+  },
+  "pop_edit": {
+    "message": "Edit"
+  },
+  "pop_applied_here": {
+    "message": "Applied on this page"
   }
 }

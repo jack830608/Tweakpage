@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
+import { pageKey } from '../../lib/edits/storage';
 import type { PageEdits } from '../../lib/edits/types';
 import { t } from '../../lib/i18n';
 
@@ -8,8 +9,18 @@ interface PageEntry {
   page: PageEdits;
 }
 
+function keyForUrl(url: string | undefined): string | null {
+  if (!url || !/^https?:/.test(url)) return null;
+  try {
+    return pageKey(url);
+  } catch {
+    return null;
+  }
+}
+
 export function PopupApp() {
   const [entries, setEntries] = useState<PageEntry[]>([]);
+  const [currentKey, setCurrentKey] = useState<string | null>(null);
 
   const load = async () => {
     try {
@@ -27,6 +38,10 @@ export function PopupApp() {
 
   useEffect(() => {
     void load();
+    void browser.tabs
+      .query({ active: true, currentWindow: true })
+      .then(([tab]) => setCurrentKey(keyForUrl(tab?.url)))
+      .catch(() => setCurrentKey(null));
   }, []);
 
   const onEditThisPage = async () => {
@@ -39,8 +54,22 @@ export function PopupApp() {
     }
   };
 
-  const onOpen = (url: string) => {
-    void browser.tabs.create({ url });
+  // Opening a page that is already on screen used to spawn a duplicate tab every
+  // time — and the popup looked identical afterwards, so it invited another click.
+  const onOpen = async (url: string) => {
+    const wanted = keyForUrl(url);
+    try {
+      const open = await browser.tabs.query({});
+      const match = open.find((tab) => keyForUrl(tab.url) === wanted);
+      if (match?.id != null) {
+        await browser.tabs.update(match.id, { active: true });
+        if (match.windowId != null) await browser.windows.update(match.windowId, { focused: true });
+      } else {
+        await browser.tabs.create({ url });
+      }
+    } catch {
+      await browser.tabs.create({ url }).catch(() => {});
+    }
     window.close();
   };
 
@@ -62,21 +91,46 @@ export function PopupApp() {
         <p className="pop-empty">{t('pop_empty')}</p>
       ) : (
         <ul className="pop-list">
-          {entries.map(({ key, page }) => (
-            <li key={key}>
-              <div className="pop-page">
-                <div className="pop-page-title">{page.title || new URL(page.url).hostname}</div>
-                <div className="pop-page-url">{page.url.replace(/^https?:\/\//, '')}</div>
-              </div>
-              <span className="pop-count">{page.records.length}</span>
-              <button type="button" aria-label={`Open ${page.url}`} onClick={() => onOpen(page.url)}>
-                {t('pop_open')}
-              </button>
-              <button type="button" aria-label={`Clear edits for ${page.url}`} onClick={() => void onClear(key)}>
-                {t('pop_clear')}
-              </button>
-            </li>
-          ))}
+          {entries.map(({ key, page }) => {
+            const current = key === currentKey;
+            return (
+              <li key={key} className={current ? 'pop-current' : undefined}>
+                <div className="pop-page">
+                  <div className="pop-page-title">{page.title || new URL(page.url).hostname}</div>
+                  {current ? (
+                    <div className="pop-page-here">{t('pop_applied_here')}</div>
+                  ) : (
+                    <div className="pop-page-url">{page.url.replace(/^https?:\/\//, '')}</div>
+                  )}
+                </div>
+                <span className="pop-count">{page.records.length}</span>
+                {current ? (
+                  <button
+                    type="button"
+                    aria-label={`Edit ${page.url}`}
+                    onClick={() => void onEditThisPage()}
+                  >
+                    {t('pop_edit')}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label={`Open ${page.url}`}
+                    onClick={() => void onOpen(page.url)}
+                  >
+                    {t('pop_open')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  aria-label={`Clear edits for ${page.url}`}
+                  onClick={() => void onClear(key)}
+                >
+                  {t('pop_clear')}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
