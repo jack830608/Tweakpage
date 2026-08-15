@@ -110,13 +110,17 @@ test('browse mode passes clicks through; edit mode selects', async ({ context })
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
 
+  await page.locator('h1').click();
+  await expect(page.locator('.pgve-outline--selected')).toBeVisible();
+
   await page.getByRole('button', { name: '🖐 Browse' }).click();
+  await expect(page.locator('.pgve-outline--selected')).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Browsing/ })).toBeVisible();
   await page.locator('#anchor-link').click();
   expect(page.url()).toContain('#test-anchor');
 
   await page.getByRole('button', { name: '✏ Edit' }).click();
-  await page.locator('h1').click();
+  await expect(page.locator('.pgve-outline--selected')).toBeVisible();
   await expect(page.locator('.pgve-selection-label')).toBeVisible();
   expect(page.url()).toContain('#test-anchor');
 });

@@ -65,7 +65,10 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
 
   return (
     <>
-      <Overlay hovered={hovered?.isConnected ? hovered : null} selected={activeSelected} />
+      <Overlay
+        hovered={mode === 'edit' && hovered?.isConnected ? hovered : null}
+        selected={mode === 'edit' ? activeSelected : null}
+      />
       <StatusBadge
         previewing={previewing}
         browsing={mode === 'browse'}
