@@ -221,6 +221,48 @@ describe('spacing box model', () => {
   });
 });
 
+describe('width and height take CSS values, not only pixels', () => {
+  test.each([
+    ['auto', 'auto'],
+    ['50%', '50%'],
+    ['30rem', '30rem'],
+    ['fit-content', 'fit-content'],
+    ['80vw', '80vw'],
+  ])('accepts %s', (typed, recorded) => {
+    const controller = setup();
+    openSection('size');
+    fireEvent.change(control('Width'), { target: { value: typed } });
+    expect(controller.getPage().records.find((r) => r.property === 'width')!.newValue).toBe(recorded);
+    expect(control('Width').value, 'the field shows what was typed').toBe(typed);
+  });
+
+  test('a bare number still means px', () => {
+    const controller = setup();
+    openSection('size');
+    fireEvent.change(control('Height'), { target: { value: '120' } });
+    expect(controller.getPage().records.find((r) => r.property === 'height')!.newValue).toBe('120px');
+    expect(control('Height').value).toBe('120');
+  });
+
+  test('nonsense is held in the field but never recorded', () => {
+    const controller = setup();
+    openSection('size');
+    fireEvent.change(control('Width'), { target: { value: '100px; position: fixed' } });
+    expect(controller.getPage().records).toHaveLength(0);
+    expect(control('Width').value, 'mid-typing text is not thrown away').toBe('100px; position: fixed');
+  });
+
+  test('reset returns the field to the computed pixel value', () => {
+    const controller = setup();
+    openSection('size');
+    const before = control('Width').value;
+    fireEvent.change(control('Width'), { target: { value: 'auto' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Reset width' }));
+    expect(controller.getPage().records).toHaveLength(0);
+    expect(control('Width').value).toBe(before);
+  });
+});
+
 describe('border width', () => {
   test('adds a border style so the width shows, and takes it back on reset', () => {
     // An element with no border at all: border-style is 'none', so a width alone
