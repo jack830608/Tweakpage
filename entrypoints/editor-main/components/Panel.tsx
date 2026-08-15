@@ -8,6 +8,7 @@ import { CollapsibleSection } from './CollapsibleSection';
 import { ModeSwitch } from './ModeSwitch';
 import { OnboardingCard } from './OnboardingCard';
 import { SelectionCard } from './SelectionCard';
+import { AppearanceSection } from './sections/AppearanceSection';
 import { BackgroundSection } from './sections/BackgroundSection';
 import { ImageSection } from './sections/ImageSection';
 import { SizeSection } from './sections/SizeSection';
@@ -50,6 +51,7 @@ const SECTION_DEFS: Array<{
   { title: 'Typography', render: (el, c) => <TypographySection element={el} controller={c} /> },
   { title: 'Background', render: (el, c) => <BackgroundSection element={el} controller={c} /> },
   { title: 'Image', applies: (el) => el.tagName === 'IMG', render: (el, c) => <ImageSection element={el} controller={c} /> },
+  { title: 'Appearance', render: (el, c) => <AppearanceSection element={el} controller={c} /> },
   { title: 'Size', render: (el, c) => <SizeSection element={el} controller={c} /> },
   { title: 'Spacing', render: (el, c) => <SpacingSection element={el} controller={c} /> },
 ];

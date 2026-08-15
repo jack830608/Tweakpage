@@ -1,10 +1,12 @@
 import { fakeBrowser } from 'wxt/testing';
 import { beforeEach, expect, test } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
+import { AppearanceSection } from './AppearanceSection';
 import { BackgroundSection } from './BackgroundSection';
 import { ImageSection } from './ImageSection';
 import { SizeSection } from './SizeSection';
 import { SpacingSection } from './SpacingSection';
+import { TypographySection } from './TypographySection';
 import { EditsController } from '../../controller';
 
 const NOW = () => '2026-08-15T10:00:00.000Z';
@@ -80,4 +82,44 @@ test('transparent background shows an empty value instead of black', () => {
   const hex = screen.getByLabelText('Background color hex') as HTMLInputElement;
   expect(hex.value).toBe('');
   expect(hex.placeholder).toBe('none');
+});
+
+test('typography alignment, letter spacing, and transform record style edits', () => {
+  document.body.innerHTML =
+    '<h2 id="head" style="font-size: 20px; color: rgb(0,0,0); text-align: left; letter-spacing: normal; text-transform: none">Hi</h2>';
+  const controller = new EditsController(null, document, NOW);
+  render(<TypographySection element={document.getElementById('head')!} controller={controller} />);
+  fireEvent.change(screen.getByLabelText('Text align'), { target: { value: 'center' } });
+  fireEvent.change(screen.getByLabelText('Letter spacing'), { target: { value: '0.5' } });
+  fireEvent.change(screen.getByLabelText('Text transform'), { target: { value: 'uppercase' } });
+  const records = controller.getPage().records;
+  expect(records.find((r) => r.property === 'textAlign')!.newValue).toBe('center');
+  expect(records.find((r) => r.property === 'letterSpacing')!.newValue).toBe('0.5px');
+  expect(records.find((r) => r.property === 'textTransform')!.newValue).toBe('uppercase');
+});
+
+test('appearance records border radius and opacity', () => {
+  document.body.innerHTML = '<div id="box" style="border-radius: 0px; opacity: 1">x</div>';
+  const controller = new EditsController(null, document, NOW);
+  render(<AppearanceSection element={document.getElementById('box')!} controller={controller} />);
+  fireEvent.change(screen.getByLabelText('Corner radius'), { target: { value: '12' } });
+  fireEvent.change(screen.getByLabelText('Opacity'), { target: { value: '50' } });
+  const records = controller.getPage().records;
+  expect(records.find((r) => r.property === 'borderRadius')!.newValue).toBe('12px');
+  expect(records.find((r) => r.property === 'opacity')!.newValue).toBe('0.5');
+});
+
+test('background image url applies as a css url value; invalid urls are ignored', () => {
+  document.body.innerHTML = '<div id="box">x</div>';
+  const controller = new EditsController(null, document, NOW);
+  render(<BackgroundSection element={document.getElementById('box')!} controller={controller} />);
+  const input = screen.getByLabelText('Background image URL');
+  fireEvent.change(input, { target: { value: 'javascript:alert(1)' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Apply background image' }));
+  expect(controller.getPage().records).toHaveLength(0);
+  fireEvent.change(input, { target: { value: 'https://example.com/a.png' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Apply background image' }));
+  expect(controller.getPage().records.find((r) => r.property === 'backgroundImage')!.newValue).toBe(
+    'url("https://example.com/a.png")',
+  );
 });

@@ -81,3 +81,29 @@ test('importPageEdits merges into the stored page', async () => {
   expect(stored!.records).toHaveLength(2);
   expect(stored!.records.find((r) => r.property === 'color')!.newValue).toBe('#00ff00');
 });
+
+test('accepts the extended style properties', () => {
+  const result = parseImport(exportJson([
+    record({ id: 'a', property: 'textAlign', oldValue: 'left', newValue: 'center' }),
+    record({ id: 'b', property: 'letterSpacing', oldValue: 'normal', newValue: '0.5px' }),
+    record({ id: 'c', property: 'textTransform', oldValue: 'none', newValue: 'uppercase' }),
+    record({ id: 'd', property: 'borderRadius', oldValue: '0px', newValue: '12px' }),
+    record({ id: 'e', property: 'opacity', oldValue: '1', newValue: '0.5' }),
+    record({ id: 'f', property: 'backgroundImage', oldValue: 'none', newValue: 'url("https://example.com/a.png")' }),
+  ]));
+  expect(result.ok).toBe(true);
+  if (result.ok) expect(result.page.records).toHaveLength(6);
+});
+
+test('background image values must be plain http(s) or data-image urls', () => {
+  const result = parseImport(exportJson([
+    record({ id: 'a', property: 'backgroundImage', newValue: 'url("javascript:alert(1)")' }),
+    record({ id: 'b', property: 'backgroundImage', newValue: 'linear-gradient(red, blue)' }),
+    record({ id: 'c', property: 'backgroundImage', newValue: 'url("data:image/png;base64,AAAA")' }),
+  ]));
+  expect(result.ok).toBe(true);
+  if (result.ok) {
+    expect(result.page.records).toHaveLength(1);
+    expect(result.page.records[0].id).toBe('c');
+  }
+});

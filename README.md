@@ -35,8 +35,10 @@ Every edit is recorded as a structured diff (selector + property + old → new),
    `⌥ Alt` in Edit mode is a temporary Browse.
 3. **Edited / Original** (second switch): flips the whole page between your edited version
    and the untouched original — the page badge takes you back.
-4. Select an element and edit it in the collapsible sections: Text, Typography, Background,
-   Image, Size, Spacing. Use the breadcrumb to reach parents/children.
+4. Select an element and edit it in the collapsible sections: Text, Typography (incl. align,
+   letter spacing, transform), Background (color + image), Image, Appearance (corner radius,
+   opacity), Size, Spacing. Color fields have an eyedropper (pick from the page) and recent
+   swatches. Use the breadcrumb to reach parents/children.
 5. Selection card: **Hide / Unhide** the selected element (editing locks while hidden).
    Share row: **Copy** (Markdown summary for engineers), **Export JSON**, **Snap**
    (before & after screenshots of the visible page).

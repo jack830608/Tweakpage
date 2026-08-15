@@ -15,7 +15,15 @@ export function TypographySection({ element, controller }: SectionProps) {
   const cs = getComputedStyle(element);
   const original = useMemo(() => {
     const s = getComputedStyle(element);
-    return { fontSize: s.fontSize, fontWeight: s.fontWeight, lineHeight: s.lineHeight, color: s.color };
+    return {
+      fontSize: s.fontSize,
+      fontWeight: s.fontWeight,
+      lineHeight: s.lineHeight,
+      color: s.color,
+      textAlign: s.textAlign,
+      letterSpacing: s.letterSpacing,
+      textTransform: s.textTransform,
+    };
   }, [element]);
   const [lineHeightDraft, setLineHeightDraft] = useState(() =>
     original.lineHeight === 'normal' ? '' : original.lineHeight,
@@ -69,6 +77,47 @@ export function TypographySection({ element, controller }: SectionProps) {
         />
         <ResetButton controller={controller} element={element} property="lineHeight" />
       </label>
+      <label>
+        Text align
+        <select
+          aria-label="Text align"
+          value={normalizeAlign(cs.textAlign)}
+          onChange={(e) => controller.recordEdit(element, 'style', 'textAlign', original.textAlign, e.target.value)}
+        >
+          <option value="left">left</option>
+          <option value="center">center</option>
+          <option value="right">right</option>
+        </select>
+        <ResetButton controller={controller} element={element} property="textAlign" />
+      </label>
+      <label>
+        Letter spacing
+        <input
+          type="number"
+          step={0.1}
+          aria-label="Letter spacing"
+          value={pxToNumber(cs.letterSpacing)}
+          onChange={(e) => {
+            if (e.target.value === '') return;
+            controller.recordEdit(element, 'style', 'letterSpacing', original.letterSpacing, `${e.target.value}px`);
+          }}
+        />
+        <ResetButton controller={controller} element={element} property="letterSpacing" />
+      </label>
+      <label>
+        Text transform
+        <select
+          aria-label="Text transform"
+          value={cs.textTransform || 'none'}
+          onChange={(e) => controller.recordEdit(element, 'style', 'textTransform', original.textTransform, e.target.value)}
+        >
+          <option value="none">none</option>
+          <option value="uppercase">UPPERCASE</option>
+          <option value="lowercase">lowercase</option>
+          <option value="capitalize">Capitalize</option>
+        </select>
+        <ResetButton controller={controller} element={element} property="textTransform" />
+      </label>
       <ColorField
         label="Color"
         value={rgbToHex(cs.color)}
@@ -77,6 +126,11 @@ export function TypographySection({ element, controller }: SectionProps) {
       />
     </section>
   );
+}
+
+function normalizeAlign(align: string): string {
+  if (align === 'center' || align === 'right') return align;
+  return 'left';
 }
 
 function normalizeWeight(weight: string): string {
