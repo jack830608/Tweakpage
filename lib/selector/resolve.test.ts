@@ -49,3 +49,15 @@ test('returns null when everything misses', () => {
   document.body.innerHTML = '<p>text</p>';
   expect(resolveRecord(rec('.nope', ['.also-nope'], 'missing'), document)).toBeNull();
 });
+
+test('fingerprint scan is restricted to the same tag (derived from fallbacks)', () => {
+  document.body.innerHTML = '<div><span class="was-renamed">Beta</span></div>';
+  const el = document.querySelector('span')!;
+  const record = rec('.gone', ['html > body > div:nth-child(9) > span:nth-child(1)'], 'Beta');
+  expect(resolveRecord(record, document)).toBe(el);
+});
+
+test('skips the fingerprint scan when no tag can be derived', () => {
+  document.body.innerHTML = '<p>Gamma</p>';
+  expect(resolveRecord(rec('.gone', ['[data-x="y"]'], 'Gamma'), document)).toBeNull();
+});
