@@ -9,22 +9,25 @@ interface ActionRowProps {
   controller: EditsController;
   selected: Element | null;
   onDeselect: () => void;
+  onSelect: (el: Element) => void;
   onToast: (toast: ToastContent) => void;
 }
 
-export function ActionRow({ controller, selected, onDeselect, onToast }: ActionRowProps) {
+export function ActionRow({ controller, selected, onDeselect, onSelect, onToast }: ActionRowProps) {
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
 
   const onHide = () => {
     if (!selected) return;
-    controller.recordEdit(selected, 'style', 'display', getComputedStyle(selected).display, 'none');
-    const record = controller.recordFor(selected, 'display');
+    const el = selected;
+    controller.recordEdit(el, 'style', 'display', getComputedStyle(el).display, 'none');
+    const record = controller.recordFor(el, 'display');
     onDeselect();
     onToast({
       message: 'Element hidden',
       actionLabel: 'Undo',
       onAction: () => {
         if (record) controller.deleteRecord(record.id);
+        onSelect(el);
       },
     });
   };

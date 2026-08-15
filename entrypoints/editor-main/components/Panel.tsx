@@ -12,7 +12,7 @@ import { BackgroundSection } from './sections/BackgroundSection';
 import { ImageSection } from './sections/ImageSection';
 import { SizeSection } from './sections/SizeSection';
 import { SpacingSection } from './sections/SpacingSection';
-import { TextSection } from './sections/TextSection';
+import { TextSection, hasDirectText } from './sections/TextSection';
 import { TypographySection } from './sections/TypographySection';
 
 type View = 'edit' | 'changes';
@@ -43,12 +43,13 @@ const COMPARE_OPTIONS = [
 
 const SECTION_DEFS: Array<{
   title: string;
+  applies?: (element: Element) => boolean;
   render: (element: Element, controller: EditsController) => ReactNode;
 }> = [
-  { title: 'Text', render: (el, c) => <TextSection element={el} controller={c} /> },
+  { title: 'Text', applies: hasDirectText, render: (el, c) => <TextSection element={el} controller={c} /> },
   { title: 'Typography', render: (el, c) => <TypographySection element={el} controller={c} /> },
   { title: 'Background', render: (el, c) => <BackgroundSection element={el} controller={c} /> },
-  { title: 'Image', render: (el, c) => <ImageSection element={el} controller={c} /> },
+  { title: 'Image', applies: (el) => el.tagName === 'IMG', render: (el, c) => <ImageSection element={el} controller={c} /> },
   { title: 'Size', render: (el, c) => <SizeSection element={el} controller={c} /> },
   { title: 'Spacing', render: (el, c) => <SpacingSection element={el} controller={c} /> },
 ];
@@ -83,7 +84,13 @@ export function Panel(props: PanelProps) {
         value={previewing ? 'original' : 'edited'}
         onChange={(value) => controller.setPreviewOriginal(value === 'original')}
       />
-      <ActionRow controller={controller} selected={props.selected} onDeselect={props.onDeselect} onToast={props.onToast} />
+      <ActionRow
+        controller={controller}
+        selected={props.selected}
+        onDeselect={props.onDeselect}
+        onSelect={props.onSelect}
+        onToast={props.onToast}
+      />
       {view === 'changes' ? (
         <div>
           <button type="button" className="pgve-back-row" onClick={() => setView('edit')}>
@@ -165,7 +172,7 @@ function EditView({
   return (
     <div className="pgve-sections">
       <SelectionCard element={selected} onSelect={onSelect} />
-      {SECTION_DEFS.map(({ title, render }) => (
+      {SECTION_DEFS.filter(({ applies }) => !applies || applies(selected)).map(({ title, render }) => (
         <CollapsibleSection
           key={title}
           title={title}

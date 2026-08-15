@@ -172,3 +172,16 @@ test('interaction mode switch reports mode changes', () => {
   fireEvent.click(screen.getByRole('button', { name: /Browse/ }));
   expect(onModeChange).toHaveBeenCalledWith('browse');
 });
+
+test('sections that do not apply to the element are not listed', () => {
+  setup();
+  expect(screen.getByRole('button', { name: /Text/ })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /Image/ })).toBeNull();
+});
+
+test('image section is listed for images, text section is not', () => {
+  document.body.innerHTML = '<img id="pic" src="/a.png">';
+  setup(document.getElementById('pic'));
+  expect(screen.getByRole('button', { name: /Image/ })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /Text/ })).toBeNull();
+});
