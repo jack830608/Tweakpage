@@ -22,12 +22,12 @@ function hideButton(): HTMLButtonElement {
 test('hide is disabled without a selection and while previewing', () => {
   const controller = new EditsController(null, document, NOW);
   const el = document.getElementById('title')!;
-  const { rerender } = render(<ActionRow controller={controller} selected={null} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={vi.fn()} />);
+  const { rerender } = render(<ActionRow controller={controller} selected={null} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={vi.fn()} onSnapshot={vi.fn()} />);
   expect(hideButton().disabled).toBe(true);
-  rerender(<ActionRow controller={controller} selected={el} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={vi.fn()} />);
+  rerender(<ActionRow controller={controller} selected={el} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={vi.fn()} onSnapshot={vi.fn()} />);
   expect(hideButton().disabled).toBe(false);
   controller.setPreviewOriginal(true);
-  rerender(<ActionRow controller={controller} selected={el} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={vi.fn()} />);
+  rerender(<ActionRow controller={controller} selected={el} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={vi.fn()} onSnapshot={vi.fn()} />);
   expect(hideButton().disabled).toBe(true);
 });
 
@@ -50,7 +50,7 @@ test('export json sends the exported page as a data-url download message', async
   });
   const controller = new EditsController(null, document, NOW);
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
-  render(<ActionRow controller={controller} selected={null} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={vi.fn()} />);
+  render(<ActionRow controller={controller} selected={null} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={vi.fn()} onSnapshot={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: /Export JSON/ }));
   await Promise.resolve();
   expect(received).toHaveLength(1);
@@ -66,7 +66,7 @@ test('copy summary writes the change list to the clipboard', async () => {
   Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
   const controller = new EditsController(null, document, NOW);
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
-  render(<ActionRow controller={controller} selected={null} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={vi.fn()} />);
+  render(<ActionRow controller={controller} selected={null} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={vi.fn()} onSnapshot={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: /Copy summary/ }));
   await Promise.resolve();
   expect(writeText).toHaveBeenCalledTimes(1);
@@ -80,7 +80,7 @@ test('hide shows an undo toast that restores and reselects the element', () => {
   const onToast = vi.fn();
   const onSelect = vi.fn();
   render(
-    <ActionRow controller={controller} selected={el} onDeselect={vi.fn()} onSelect={onSelect} onToast={onToast} />,
+    <ActionRow controller={controller} selected={el} onDeselect={vi.fn()} onSelect={onSelect} onToast={onToast} onSnapshot={vi.fn()} />,
   );
   fireEvent.click(hideButton());
   expect(onToast).toHaveBeenCalledTimes(1);
@@ -97,9 +97,26 @@ test('copy summary reports success via toast', async () => {
   Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
   const controller = new EditsController(null, document, NOW);
   const onToast = vi.fn();
-  render(<ActionRow controller={controller} selected={null} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={onToast} />);
+  render(<ActionRow controller={controller} selected={null} onDeselect={vi.fn()} onSelect={vi.fn()} onToast={onToast} onSnapshot={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: /Copy summary/ }));
   await Promise.resolve();
   await Promise.resolve();
   expect(onToast).toHaveBeenCalledWith({ message: 'Summary copied to clipboard' });
+});
+
+test('snap button triggers the snapshot flow', () => {
+  const controller = new EditsController(null, document, NOW);
+  const onSnapshot = vi.fn();
+  render(
+    <ActionRow
+      controller={controller}
+      selected={null}
+      onDeselect={vi.fn()}
+      onSelect={vi.fn()}
+      onToast={vi.fn()}
+      onSnapshot={onSnapshot}
+    />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Snapshot before and after' }));
+  expect(onSnapshot).toHaveBeenCalled();
 });

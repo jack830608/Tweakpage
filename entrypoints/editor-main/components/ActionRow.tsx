@@ -11,9 +11,10 @@ interface ActionRowProps {
   onDeselect: () => void;
   onSelect: (el: Element) => void;
   onToast: (toast: ToastContent) => void;
+  onSnapshot: () => void;
 }
 
-export function ActionRow({ controller, selected, onDeselect, onSelect, onToast }: ActionRowProps) {
+export function ActionRow({ controller, selected, onDeselect, onSelect, onToast, onSnapshot }: ActionRowProps) {
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
 
   const onHide = () => {
@@ -68,6 +69,14 @@ export function ActionRow({ controller, selected, onDeselect, onSelect, onToast 
       </button>
       <button type="button" aria-label="Export JSON" title="Download the edits as JSON" onClick={onJson}>
         ⤓ Export
+      </button>
+      <button
+        type="button"
+        aria-label="Snapshot before and after"
+        title="Save before & after screenshots"
+        onClick={onSnapshot}
+      >
+        📸 Snap
       </button>
     </div>
   );

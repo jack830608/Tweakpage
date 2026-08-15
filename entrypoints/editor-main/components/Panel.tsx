@@ -28,6 +28,7 @@ export interface PanelProps {
   onSelect: (el: Element) => void;
   onDeselect: () => void;
   onToast: (toast: ToastContent) => void;
+  onSnapshot: () => void;
   onClose: () => void;
 }
 
@@ -95,6 +96,7 @@ export function Panel(props: PanelProps) {
         onDeselect={props.onDeselect}
         onSelect={props.onSelect}
         onToast={props.onToast}
+        onSnapshot={props.onSnapshot}
       />
       {view === 'changes' ? (
         <div>

@@ -37,9 +37,12 @@ Every edit is recorded as a structured diff (selector + property + old → new),
    and the untouched original — the page badge takes you back.
 4. Select an element and edit it in the collapsible sections: Text, Typography, Background,
    Image, Size, Spacing. Use the breadcrumb to reach parents/children.
-5. Action row: **Hide element**, **Copy summary** (Markdown for engineers), **Export JSON**.
-6. Footer **Review** opens the change list (delete individual edits, revert all).
-7. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel by its title
+5. Action row: **Hide element**, **Copy summary** (Markdown for engineers), **Export JSON**,
+   **Snap** (saves before & after screenshots of the visible page).
+6. Footer **Review** opens the change list (delete individual edits, revert all, **Import JSON**
+   from a teammate — edits for other pages are stored and apply when you open them).
+7. `⌘Z` / `⇧⌘Z` (or `Ctrl+Z` / `Ctrl+Y` style) undo and redo edits.
+8. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel by its title
    bar. Edits stay applied and survive reloads.
 
 

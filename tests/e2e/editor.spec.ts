@@ -124,3 +124,74 @@ test('browse mode passes clicks through; edit mode selects', async ({ context })
   await expect(page.locator('.pgve-selection-label')).toBeVisible();
   expect(page.url()).toContain('#test-anchor');
 });
+
+test('cmd+z undoes and shift+cmd+z redoes', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.getByLabel('Text', { exact: true }).fill('New headline');
+  await expect(page.locator('h1')).toHaveText('New headline');
+
+  await page.locator('p.lead').click();
+  await page.keyboard.press('Meta+z');
+  await expect(page.locator('h1')).toHaveText('Original Headline');
+  await page.keyboard.press('Shift+Meta+z');
+  await expect(page.locator('h1')).toHaveText('New headline');
+});
+
+test('importing a json file applies edits to the matching page', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.getByRole('button', { name: /Review/ }).click();
+  const json = JSON.stringify({
+    version: 1,
+    url: 'http://localhost:4173/',
+    title: 'T',
+    updatedAt: 'now',
+    records: [{
+      id: 'r1', selector: 'h1', fallbackSelectors: [], elementLabel: 'h1',
+      type: 'text', property: 'textContent',
+      oldValue: 'Original Headline', newValue: 'Imported headline',
+      enabled: true, createdAt: 'n', updatedAt: 'n',
+    }],
+  });
+  await page.getByLabel('Import JSON file').setInputFiles({
+    name: 'edits.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(json),
+  });
+  await expect(page.locator('h1')).toHaveText('Imported headline');
+});
+
+test('snapshot downloads before and after captures', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.getByLabel('Text', { exact: true }).fill('New headline');
+  await page.getByRole('button', { name: 'Snapshot before and after' }).click();
+
+  // Playwright reroutes downloads into its artifacts dir under random names, so assert
+  // on content: two completed downloads, both PNG, with different pixels (before ≠ after).
+  const [worker] = context.serviceWorkers();
+  const files: string[] = await worker.evaluate(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const c = (globalThis as any).chrome;
+    const deadline = Date.now() + 15_000;
+    while (Date.now() < deadline) {
+      const items = await c.downloads.search({});
+      const done = items.filter((i: { state: string }) => i.state === 'complete');
+      if (done.length >= 2) return done.map((i: { filename: string }) => i.filename);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    throw new Error('captures did not complete');
+  });
+  expect(files).toHaveLength(2);
+  const first = fs.readFileSync(files[0]);
+  const second = fs.readFileSync(files[1]);
+  expect(first.subarray(1, 4).toString()).toBe('PNG');
+  expect(second.subarray(1, 4).toString()).toBe('PNG');
+  expect(first.equals(second)).toBe(false);
+});

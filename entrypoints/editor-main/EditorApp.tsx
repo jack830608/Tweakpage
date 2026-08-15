@@ -6,6 +6,7 @@ import { Panel, type InteractionMode } from './components/Panel';
 import { StatusBadge } from './components/StatusBadge';
 import { Toast, type ToastContent } from './components/Toast';
 import { useElementPicker } from './hooks/useElementPicker';
+import { captureBeforeAfter } from './snapshot';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
 
 const ONBOARDED_KEY = 'tweakpage:onboarded';
@@ -38,6 +39,13 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     setShowOnboarding(false);
     browser.storage.local.set({ [ONBOARDED_KEY]: true }).catch(() => {});
   }, []);
+
+  const onSnapshot = useCallback(() => {
+    captureBeforeAfter(controller, host, document).then(
+      () => setToast({ message: 'Saved before & after snapshots' }),
+      () => setToast({ message: 'Snapshot failed' }),
+    );
+  }, [controller, host]);
 
   const onModeChange = useCallback((next: InteractionMode) => {
     setMode(next);
@@ -88,6 +96,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         onSelect={setSelected}
         onDeselect={() => setSelected(null)}
         onToast={setToast}
+        onSnapshot={onSnapshot}
         onClose={onRequestClose}
       />
     </>

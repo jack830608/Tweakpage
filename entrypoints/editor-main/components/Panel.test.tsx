@@ -33,6 +33,8 @@ function setup(selected: Element | null = document.getElementById('title')) {
       onDismissOnboarding={onDismissOnboarding}
       onSelect={onSelect}
       onDeselect={onDeselect}
+      onToast={vi.fn()}
+      onSnapshot={vi.fn()}
       onClose={vi.fn()}
     />,
   );
@@ -160,6 +162,8 @@ test('onboarding card renders when showOnboarding and dismisses', () => {
       onDismissOnboarding={onDismissOnboarding}
       onSelect={vi.fn()}
       onDeselect={vi.fn()}
+      onToast={vi.fn()}
+      onSnapshot={vi.fn()}
       onClose={vi.fn()}
     />,
   );
