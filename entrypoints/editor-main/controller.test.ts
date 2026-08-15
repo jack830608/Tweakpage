@@ -128,3 +128,55 @@ test('editing while previewing exits preview first', () => {
   expect(el.textContent).toBe('Changed');
   expect(document.querySelector('style[data-pg-editor]')!.textContent).toContain('#ff0000');
 });
+
+test('undo restores the previous state including dom values', () => {
+  const c = controller();
+  const el = document.getElementById('title')!;
+  c.recordEdit(el, 'text', 'textContent', 'Original', 'Changed');
+  c.recordEdit(el, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
+  expect(c.canUndo()).toBe(true);
+  c.undo();
+  expect(c.getPage().records).toHaveLength(1);
+  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  c.undo();
+  expect(c.getPage().records).toHaveLength(0);
+  expect(el.textContent).toBe('Original');
+  expect(c.canUndo()).toBe(false);
+});
+
+test('redo reapplies an undone change; a new edit clears the redo stack', () => {
+  const c = controller();
+  const el = document.getElementById('title')!;
+  c.recordEdit(el, 'text', 'textContent', 'Original', 'Changed');
+  c.undo();
+  expect(el.textContent).toBe('Original');
+  expect(c.canRedo()).toBe(true);
+  c.redo();
+  expect(el.textContent).toBe('Changed');
+  expect(c.getPage().records).toHaveLength(1);
+  c.undo();
+  c.recordEdit(el, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
+  expect(c.canRedo()).toBe(false);
+});
+
+test('continuous typing on the same field is one undo step', () => {
+  const c = controller();
+  const el = document.getElementById('title')!;
+  c.recordEdit(el, 'text', 'textContent', 'Original', 'C');
+  c.recordEdit(el, 'text', 'textContent', 'Original', 'Ch');
+  c.recordEdit(el, 'text', 'textContent', 'Original', 'Cha');
+  c.undo();
+  expect(c.getPage().records).toHaveLength(0);
+  expect(el.textContent).toBe('Original');
+});
+
+test('undo exits original preview first', () => {
+  const c = controller();
+  const el = document.getElementById('title')!;
+  c.recordEdit(el, 'text', 'textContent', 'Original', 'Changed');
+  c.setPreviewOriginal(true);
+  c.undo();
+  expect(c.isPreviewingOriginal()).toBe(false);
+  expect(el.textContent).toBe('Original');
+  expect(c.getPage().records).toHaveLength(0);
+});

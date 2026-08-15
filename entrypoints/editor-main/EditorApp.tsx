@@ -6,6 +6,7 @@ import { Panel, type InteractionMode } from './components/Panel';
 import { StatusBadge } from './components/StatusBadge';
 import { Toast, type ToastContent } from './components/Toast';
 import { useElementPicker } from './hooks/useElementPicker';
+import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
 
 const ONBOARDED_KEY = 'tweakpage:onboarded';
 
@@ -60,6 +61,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   }, [mode, onRequestClose]);
 
   useElementPicker(host, mode === 'edit', { onHover, onSelect, onEscape });
+  useUndoRedoShortcuts(host, controller);
 
   const activeSelected = selected?.isConnected ? selected : null;
 

@@ -12,6 +12,9 @@ export class EditsController {
   private listeners = new Set<() => void>();
   private selectorCache = new WeakMap<Element, GeneratedSelector>();
   private previewing = false;
+  private undoStack: EditRecord[][] = [];
+  private redoStack: EditRecord[][] = [];
+  private lastEditTarget: string | null = null;
 
   constructor(
     initial: PageEdits | null,
@@ -39,6 +42,28 @@ export class EditsController {
 
   isPreviewingOriginal = (): boolean => this.previewing;
 
+  canUndo = (): boolean => this.undoStack.length > 0;
+
+  canRedo = (): boolean => this.redoStack.length > 0;
+
+  undo(): void {
+    const target = this.undoStack.pop();
+    if (!target) return;
+    if (this.previewing) this.setPreviewOriginal(false);
+    this.lastEditTarget = null;
+    this.redoStack.push(this.page.records);
+    this.transitionTo(target);
+  }
+
+  redo(): void {
+    const target = this.redoStack.pop();
+    if (!target) return;
+    if (this.previewing) this.setPreviewOriginal(false);
+    this.lastEditTarget = null;
+    this.undoStack.push(this.page.records);
+    this.transitionTo(target);
+  }
+
   setPreviewOriginal(on: boolean): void {
     if (this.previewing === on) return;
     this.previewing = on;
@@ -54,6 +79,7 @@ export class EditsController {
   recordEdit(el: Element, type: EditType, property: string, oldValue: string, newValue: string): void {
     if (this.previewing) this.setPreviewOriginal(false);
     const gen = this.genFor(el);
+    const target = `${gen.selector}\u0000${property}`;
     const existing = findRecord(this.page.records, gen.selector, property);
     if (existing && newValue === existing.oldValue) {
       this.deleteRecord(existing.id);
@@ -62,23 +88,22 @@ export class EditsController {
     if (!existing && newValue === oldValue) return;
     this.setRecords(
       upsertRecord(this.page.records, { ...gen, type, property, oldValue, newValue }, this.now()),
+      { mergeSnapshot: target === this.lastEditTarget },
     );
+    this.lastEditTarget = target;
   }
 
   deleteRecord(id: string): void {
     if (this.previewing) this.setPreviewOriginal(false);
+    this.lastEditTarget = null;
     const record = this.page.records.find((r) => r.id === id);
     if (!record) return;
-    if (record.type !== 'style') {
-      const el = resolveRecord(record, this.doc);
-      if (el) revertDomEdit(el, record);
-    }
     this.setRecords(this.page.records.filter((r) => r.id !== id));
   }
 
   revertAllEdits(): void {
     if (this.previewing) this.setPreviewOriginal(false);
-    revertAll(this.page.records, this.doc);
+    this.lastEditTarget = null;
     this.setRecords([]);
   }
 
@@ -91,10 +116,29 @@ export class EditsController {
     return gen;
   }
 
-  private setRecords(records: EditRecord[]): void {
+  private setRecords(records: EditRecord[], { mergeSnapshot = false } = {}): void {
+    if (!mergeSnapshot) {
+      this.undoStack.push(this.page.records);
+      if (this.undoStack.length > 50) this.undoStack.shift();
+    }
+    this.redoStack = [];
+    this.transitionTo(records);
+  }
+
+  private transitionTo(records: EditRecord[]): void {
     if (normalizePageUrl(this.doc.location.href) !== this.page.url) {
       console.warn('[tweakpage] ignoring edit for stale URL', this.page.url);
       return;
+    }
+    for (const record of this.page.records) {
+      if (record.type === 'style') continue;
+      const survives = records.some(
+        (r) => r.selector === record.selector && r.property === record.property,
+      );
+      if (!survives) {
+        const el = resolveRecord(record, this.doc);
+        if (el) revertDomEdit(el, record);
+      }
     }
     this.page = { ...this.page, records, title: this.doc.title, updatedAt: this.now() };
     this.statuses = applyAll(records, this.doc);
