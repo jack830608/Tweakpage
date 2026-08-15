@@ -102,6 +102,14 @@ export class EditsController {
     this.setRecords(this.page.records.filter((r) => r.id !== id));
   }
 
+  toggleRecord(id: string): void {
+    if (this.previewing) this.setPreviewOriginal(false);
+    this.lastEditTarget = null;
+    this.setRecords(
+      this.page.records.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r)),
+    );
+  }
+
   importRecords(records: EditRecord[]): void {
     if (this.previewing) this.setPreviewOriginal(false);
     this.lastEditTarget = null;
@@ -138,9 +146,9 @@ export class EditsController {
       return;
     }
     for (const record of this.page.records) {
-      if (record.type === 'style') continue;
+      if (record.type === 'style' || !record.enabled) continue;
       const survives = records.some(
-        (r) => r.selector === record.selector && r.property === record.property,
+        (r) => r.selector === record.selector && r.property === record.property && r.enabled,
       );
       if (!survives) {
         const el = resolveRecord(record, this.doc);

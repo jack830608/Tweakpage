@@ -28,6 +28,7 @@ export interface PanelProps {
   showOnboarding: boolean;
   onDismissOnboarding: () => void;
   onSelect: (el: Element) => void;
+  onHighlight: (el: Element | null) => void;
   onToast: (toast: ToastContent) => void;
   onSnapshot: () => void;
   onClose: () => void;
@@ -98,7 +99,16 @@ export function Panel(props: PanelProps) {
           <button type="button" className="pgve-back-row" onClick={() => setView('edit')}>
             ‹ Back to editing
           </button>
-          <ChangesTab controller={controller} onToast={props.onToast} />
+          <ChangesTab
+            controller={controller}
+            onToast={props.onToast}
+            onHighlight={props.onHighlight}
+            onSelectRecord={(el) => {
+              props.onHighlight(null);
+              props.onSelect(el);
+              setView('edit');
+            }}
+          />
         </div>
       ) : (
         <>

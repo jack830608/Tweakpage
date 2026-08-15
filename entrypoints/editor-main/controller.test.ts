@@ -180,3 +180,28 @@ test('undo exits original preview first', () => {
   expect(el.textContent).toBe('Original');
   expect(c.getPage().records).toHaveLength(0);
 });
+
+test('toggling a record off reverts its dom effect and back on reapplies it', () => {
+  const c = controller();
+  const el = document.getElementById('title')!;
+  c.recordEdit(el, 'text', 'textContent', 'Original', 'Changed');
+  const id = c.getPage().records[0].id;
+  c.toggleRecord(id);
+  expect(el.textContent).toBe('Original');
+  expect(c.getPage().records[0].enabled).toBe(false);
+  expect(c.getStatus(id)).toBe('disabled');
+  c.toggleRecord(id);
+  expect(el.textContent).toBe('Changed');
+  expect(c.getPage().records[0].enabled).toBe(true);
+});
+
+test('toggling a style record off removes its css rule', () => {
+  const c = controller();
+  const el = document.getElementById('title')!;
+  c.recordEdit(el, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
+  const id = c.getPage().records[0].id;
+  c.toggleRecord(id);
+  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  c.toggleRecord(id);
+  expect(document.querySelector('style[data-pg-editor]')!.textContent).toContain('#ff0000');
+});

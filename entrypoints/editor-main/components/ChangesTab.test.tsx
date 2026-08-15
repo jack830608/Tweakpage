@@ -15,14 +15,14 @@ beforeEach(() => {
 });
 
 test('shows the empty state with no records', () => {
-  render(<ChangesTab controller={new EditsController(null, document, NOW)} onToast={vi.fn()} />);
+  render(<ChangesTab controller={new EditsController(null, document, NOW)} onToast={vi.fn()} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
   expect(screen.getByText('No changes yet.')).toBeTruthy();
 });
 
 test('lists records with label and diff, delete removes them', () => {
   const controller = new EditsController(null, document, NOW);
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
-  render(<ChangesTab controller={controller} onToast={vi.fn()} />);
+  render(<ChangesTab controller={controller} onToast={vi.fn()} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
   expect(screen.getByText(/h1#title/)).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: /Delete/ }));
   expect(controller.getPage().records).toHaveLength(0);
@@ -40,14 +40,14 @@ test('flags records that could not be applied', () => {
       },
     ],
   };
-  render(<ChangesTab controller={new EditsController(initial, document, NOW)} onToast={vi.fn()} />);
+  render(<ChangesTab controller={new EditsController(initial, document, NOW)} onToast={vi.fn()} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
   expect(screen.getByText("Couldn't apply on this page")).toBeTruthy();
 });
 
 test('revert all clears records', () => {
   const controller = new EditsController(null, document, NOW);
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
-  render(<ChangesTab controller={controller} onToast={vi.fn()} />);
+  render(<ChangesTab controller={controller} onToast={vi.fn()} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: 'Revert all' }));
   expect(controller.getPage().records).toHaveLength(0);
   expect(screen.getByText('No changes yet.')).toBeTruthy();
@@ -68,7 +68,7 @@ async function importFile(json: string): Promise<void> {
 test('importing a matching export applies edits to the current page', async () => {
   const controller = new EditsController(null, document, NOW);
   const onToast = vi.fn();
-  render(<ChangesTab controller={controller} onToast={onToast} />);
+  render(<ChangesTab controller={controller} onToast={onToast} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
   const json = JSON.stringify({
     version: 1,
     url: `${location.origin}/page`,
@@ -89,8 +89,29 @@ test('importing a matching export applies edits to the current page', async () =
 test('importing invalid json reports an error toast', async () => {
   const controller = new EditsController(null, document, NOW);
   const onToast = vi.fn();
-  render(<ChangesTab controller={controller} onToast={onToast} />);
+  render(<ChangesTab controller={controller} onToast={onToast} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
   await importFile('nope');
   expect(onToast).toHaveBeenCalledWith({ message: 'Import failed: not valid JSON' });
   expect(controller.getPage().records).toHaveLength(0);
+});
+
+test('hovering a change highlights its element; clicking selects it; the switch toggles', () => {
+  const controller = new EditsController(null, document, NOW);
+  const el = document.getElementById('title')!;
+  controller.recordEdit(el, 'text', 'textContent', 'Original', 'Changed');
+  const onHighlight = vi.fn();
+  const onSelectRecord = vi.fn();
+  render(
+    <ChangesTab controller={controller} onToast={vi.fn()} onHighlight={onHighlight} onSelectRecord={onSelectRecord} />,
+  );
+  const item = screen.getByText(/h1#title/).closest('li')!;
+  fireEvent.mouseEnter(item);
+  expect(onHighlight).toHaveBeenCalledWith(el);
+  fireEvent.mouseLeave(item);
+  expect(onHighlight).toHaveBeenLastCalledWith(null);
+  fireEvent.click(item);
+  expect(onSelectRecord).toHaveBeenCalledWith(el);
+  fireEvent.click(screen.getByRole('checkbox', { name: /Toggle text change/ }));
+  expect(controller.getPage().records[0].enabled).toBe(false);
+  expect(el.textContent).toBe('Original');
 });

@@ -2,6 +2,7 @@ import { useRef, useSyncExternalStore } from 'react';
 import { cssPropertyName } from '../../../lib/edits/css';
 import { importPageEdits, parseImport } from '../../../lib/edits/import';
 import { normalizePageUrl } from '../../../lib/edits/storage';
+import { resolveRecord } from '../../../lib/selector/resolve';
 import type { EditRecord } from '../../../lib/edits/types';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
@@ -9,9 +10,11 @@ import type { ToastContent } from './Toast';
 interface ChangesTabProps {
   controller: EditsController;
   onToast: (toast: ToastContent) => void;
+  onHighlight: (el: Element | null) => void;
+  onSelectRecord: (el: Element) => void;
 }
 
-export function ChangesTab({ controller, onToast }: ChangesTabProps) {
+export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }: ChangesTabProps) {
   const page = useSyncExternalStore(controller.subscribe, controller.getPage);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -59,8 +62,27 @@ export function ChangesTab({ controller, onToast }: ChangesTabProps) {
       ) : (
         <ul>
           {page.records.map((record) => (
-            <li key={record.id} className="pgve-change">
-              <div className="pgve-change-target">{record.elementLabel}</div>
+            <li
+              key={record.id}
+              className={record.enabled ? 'pgve-change' : 'pgve-change pgve-change-off'}
+              onMouseEnter={() => onHighlight(resolveRecord(record, document))}
+              onMouseLeave={() => onHighlight(null)}
+              onClick={() => {
+                const el = resolveRecord(record, document);
+                if (el) onSelectRecord(el);
+              }}
+            >
+              <div className="pgve-change-head">
+                <div className="pgve-change-target">{record.elementLabel}</div>
+                <input
+                  type="checkbox"
+                  className="pgve-change-switch"
+                  checked={record.enabled}
+                  aria-label={`Toggle ${labelFor(record)} change`}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={() => controller.toggleRecord(record.id)}
+                />
+              </div>
               <div className="pgve-change-diff">
                 {labelFor(record)}: <s>{shorten(record.oldValue)}</s> → <b>{shorten(record.newValue)}</b>
               </div>
@@ -70,7 +92,10 @@ export function ChangesTab({ controller, onToast }: ChangesTabProps) {
               <button
                 type="button"
                 aria-label={`Delete ${labelFor(record)} change`}
-                onClick={() => controller.deleteRecord(record.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  controller.deleteRecord(record.id);
+                }}
               >
                 Delete
               </button>
