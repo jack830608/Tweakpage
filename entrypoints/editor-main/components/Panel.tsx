@@ -1,6 +1,7 @@
 import { useState, useSyncExternalStore } from 'react';
 import type { EditsController } from '../controller';
 import { Breadcrumb } from './Breadcrumb';
+import { ChangesTab } from './ChangesTab';
 import { BackgroundSection } from './sections/BackgroundSection';
 import { ImageSection } from './sections/ImageSection';
 import { SpacingSection } from './sections/SpacingSection';
@@ -44,7 +45,7 @@ export function Panel({ controller, selected, onSelect, onClose }: PanelProps) {
       {tab === 'edit' ? (
         <EditTab controller={controller} selected={selected} onSelect={onSelect} />
       ) : (
-        <p className="pgve-empty">No changes yet.</p>
+        <ChangesTab controller={controller} />
       )}
     </aside>
   );
