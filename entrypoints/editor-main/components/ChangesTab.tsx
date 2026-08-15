@@ -6,6 +6,7 @@ import { resolveRecord } from '../../../lib/selector/resolve';
 import type { EditRecord } from '../../../lib/edits/types';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
+import { t } from '../../../lib/i18n';
 
 interface ChangesTabProps {
   controller: EditsController;
@@ -21,28 +22,26 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
   const onImportFile = async (file: File) => {
     const result = parseImport(await file.text());
     if (!result.ok) {
-      onToast({ message: `Import failed: ${result.error}` });
+      onToast({ message: t('toast_import_failed', [result.error]) });
       return;
     }
-    const suffix = result.skipped > 0 ? ` (${result.skipped} skipped)` : '';
+    const suffix = result.skipped > 0 ? t('toast_skipped', [result.skipped]) : '';
     if (result.page.url === normalizePageUrl(location.href)) {
       controller.importRecords(result.page.records);
-      onToast({ message: `Imported ${result.page.records.length} edits${suffix}` });
+      onToast({ message: t('toast_imported', [result.page.records.length, suffix]) });
     } else {
       await importPageEdits(result.page);
       const host = new URL(result.page.url).hostname;
-      onToast({
-        message: `Imported ${result.page.records.length} edits for ${host}${suffix} — open that page to see them`,
-      });
+      onToast({ message: t('toast_imported_for', [result.page.records.length, host, suffix]) });
     }
   };
 
   return (
     <div className="pgve-changes">
       <div className="pgve-changes-actions">
-        <button type="button" onClick={() => fileRef.current?.click()}>Import JSON</button>
+        <button type="button" onClick={() => fileRef.current?.click()}>{t('import_json')}</button>
         {page.records.length > 0 && (
-          <button type="button" onClick={() => controller.revertAllEdits()}>Revert all</button>
+          <button type="button" onClick={() => controller.revertAllEdits()}>{t('revert_all')}</button>
         )}
         <input
           ref={fileRef}
@@ -58,7 +57,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
         />
       </div>
       {page.records.length === 0 ? (
-        <p className="pgve-empty">No changes yet.</p>
+        <p className="pgve-empty">{t('no_changes')}</p>
       ) : (
         <ul>
           {page.records.map((record) => (
@@ -87,7 +86,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
                 {labelFor(record)}: <s>{shorten(record.oldValue)}</s> → <b>{shorten(record.newValue)}</b>
               </div>
               {controller.getStatus(record.id) === 'not-found' && (
-                <div className="pgve-change-warning">Couldn't apply on this page</div>
+                <div className="pgve-change-warning">{t('couldnt_apply')}</div>
               )}
               <button
                 type="button"
@@ -97,7 +96,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
                   controller.deleteRecord(record.id);
                 }}
               >
-                Delete
+                {t('delete')}
               </button>
             </li>
           ))}

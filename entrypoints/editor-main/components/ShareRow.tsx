@@ -4,6 +4,7 @@ import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
 import { CameraIcon, CopyIcon, DownloadIcon } from './icons';
+import { t } from '../../../lib/i18n';
 
 interface ShareRowProps {
   controller: EditsController;
@@ -16,13 +17,13 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
     const page = controller.getPage();
     const stamp = new Date().toISOString().slice(0, 10).replaceAll('-', '');
     downloadFile(exportFilename(page.url, stamp), toJson(page));
-    onToast({ message: 'JSON exported — check your downloads' });
+    onToast({ message: t('toast_exported') });
   };
   const onMarkdown = async () => {
     const markdown = toMarkdown(controller.getPage(), new Date().toISOString().slice(0, 10));
     try {
       await navigator.clipboard.writeText(markdown);
-      onToast({ message: 'Summary copied to clipboard' });
+      onToast({ message: t('toast_copied') });
     } catch {
       window.prompt('Copy the change list below:', markdown);
     }
@@ -30,7 +31,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
 
   return (
     <div className="pgve-share">
-      <span className="pgve-share-label">Share</span>
+      <span className="pgve-share-label">{t('share')}</span>
       <div className="pgve-share-buttons">
         <button
           type="button"
@@ -38,10 +39,10 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           title="Copy a Markdown summary for engineers"
           onClick={() => void onMarkdown()}
         >
-          <CopyIcon /> Copy
+          <CopyIcon /> {t('share_copy')}
         </button>
         <button type="button" aria-label="Export JSON" title="Download the edits as JSON" onClick={onJson}>
-          <DownloadIcon /> Export
+          <DownloadIcon /> {t('share_export')}
         </button>
         <button
           type="button"
@@ -49,7 +50,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           title="Save before & after screenshots"
           onClick={onSnapshot}
         >
-          <CameraIcon /> Snap
+          <CameraIcon /> {t('share_snap')}
         </button>
       </div>
     </div>

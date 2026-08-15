@@ -1,0 +1,240 @@
+{
+  "mode_edit": {
+    "message": "Edit"
+  },
+  "mode_browse": {
+    "message": "Browse"
+  },
+  "compare_edited": {
+    "message": "Edited"
+  },
+  "compare_original": {
+    "message": "Original"
+  },
+  "share": {
+    "message": "Share"
+  },
+  "share_copy": {
+    "message": "Copy"
+  },
+  "share_export": {
+    "message": "Export"
+  },
+  "share_snap": {
+    "message": "Snap"
+  },
+  "hide": {
+    "message": "Hide"
+  },
+  "unhide": {
+    "message": "Unhide"
+  },
+  "empty_select": {
+    "message": "Select an element on the page to edit it."
+  },
+  "empty_hint": {
+    "message": "Switch to Browse to use the page normally. Drag this panel by its title bar."
+  },
+  "iframe_note": {
+    "message": "Editing inside iframes isn't supported."
+  },
+  "preview_note": {
+    "message": "Viewing the original page — switch back to Edited to continue editing."
+  },
+  "hidden_note": {
+    "message": "Element is hidden — Unhide to edit it."
+  },
+  "mixed_warning": {
+    "message": "This element contains formatted parts — editing text here replaces them with plain text. Use the breadcrumb to edit an inner element instead."
+  },
+  "footer_changes": {
+    "message": "$param1$ changes · Review ›",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
+  },
+  "back_row": {
+    "message": "‹ Back to editing"
+  },
+  "onboarding_title": {
+    "message": "Welcome to Tweakpage"
+  },
+  "onboarding_step1": {
+    "message": "Move your mouse over the page and click to select an element."
+  },
+  "onboarding_step2": {
+    "message": "Switch to Browse to use the page normally (menus, tabs)."
+  },
+  "onboarding_step3": {
+    "message": "Drag this panel by its title bar if it's in the way."
+  },
+  "got_it": {
+    "message": "Got it"
+  },
+  "sec_text": {
+    "message": "Text"
+  },
+  "sec_typography": {
+    "message": "Typography"
+  },
+  "sec_background": {
+    "message": "Background"
+  },
+  "sec_image": {
+    "message": "Image"
+  },
+  "sec_appearance": {
+    "message": "Appearance"
+  },
+  "sec_size": {
+    "message": "Size"
+  },
+  "sec_spacing": {
+    "message": "Spacing"
+  },
+  "label_font_family": {
+    "message": "Font family"
+  },
+  "label_font_size": {
+    "message": "Font size"
+  },
+  "label_font_weight": {
+    "message": "Font weight"
+  },
+  "label_line_height": {
+    "message": "Line height"
+  },
+  "label_text_align": {
+    "message": "Text align"
+  },
+  "label_letter_spacing": {
+    "message": "Letter spacing"
+  },
+  "label_text_transform": {
+    "message": "Text transform"
+  },
+  "label_color": {
+    "message": "Color"
+  },
+  "label_bg_color": {
+    "message": "Background color"
+  },
+  "label_bg_image": {
+    "message": "Background image URL"
+  },
+  "label_image_url": {
+    "message": "Image URL"
+  },
+  "label_corner_radius": {
+    "message": "Corner radius"
+  },
+  "label_opacity": {
+    "message": "Opacity"
+  },
+  "label_border_width": {
+    "message": "Border width"
+  },
+  "label_border_color": {
+    "message": "Border color"
+  },
+  "label_width": {
+    "message": "Width"
+  },
+  "label_height": {
+    "message": "Height"
+  },
+  "apply": {
+    "message": "Apply"
+  },
+  "import_json": {
+    "message": "Import JSON"
+  },
+  "revert_all": {
+    "message": "Revert all"
+  },
+  "no_changes": {
+    "message": "No changes yet."
+  },
+  "couldnt_apply": {
+    "message": "Couldn't apply on this page"
+  },
+  "delete": {
+    "message": "Delete"
+  },
+  "toast_copied": {
+    "message": "Summary copied to clipboard"
+  },
+  "toast_exported": {
+    "message": "JSON exported — check your downloads"
+  },
+  "toast_snapshots": {
+    "message": "Saved before & after snapshots"
+  },
+  "toast_snapshot_failed": {
+    "message": "Snapshot failed"
+  },
+  "toast_import_failed": {
+    "message": "Import failed: $param1$",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toast_imported": {
+    "message": "Imported $param1$ edits$param2$",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      },
+      "param2": {
+        "content": "$2"
+      }
+    }
+  },
+  "toast_imported_for": {
+    "message": "Imported $param1$ edits for $param2$$param3$ — open that page to see them",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      },
+      "param2": {
+        "content": "$2"
+      },
+      "param3": {
+        "content": "$3"
+      }
+    }
+  },
+  "toast_skipped": {
+    "message": " ($param1$ skipped)",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
+  },
+  "badge_original": {
+    "message": "Viewing original — Back to edited"
+  },
+  "badge_browsing": {
+    "message": "Browsing — switch to Edit to select"
+  },
+  "pop_edit_this_page": {
+    "message": "Edit this page"
+  },
+  "pop_pages": {
+    "message": "Pages with edits"
+  },
+  "pop_empty": {
+    "message": "No saved edits yet. Open any page and start tweaking."
+  },
+  "pop_open": {
+    "message": "Open"
+  },
+  "pop_clear": {
+    "message": "Clear"
+  }
+}

@@ -9,6 +9,7 @@ export const test = base.extend<{ context: BrowserContext }>({
       args: [
         `--disable-extensions-except=${extensionPath}`,
         `--load-extension=${extensionPath}`,
+        '--lang=en-US',
       ],
     });
     await use(context);

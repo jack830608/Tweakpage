@@ -8,6 +8,7 @@ import { StatusBadge } from './components/StatusBadge';
 import { Toast, type ToastContent } from './components/Toast';
 import { useElementPicker } from './hooks/useElementPicker';
 import { captureBeforeAfter } from './snapshot';
+import { t } from '../../lib/i18n';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
 
 const ONBOARDED_KEY = 'tweakpage:onboarded';
@@ -44,8 +45,8 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
 
   const onSnapshot = useCallback(() => {
     captureBeforeAfter(controller, host, document).then(
-      () => setToast({ message: 'Saved before & after snapshots' }),
-      () => setToast({ message: 'Snapshot failed' }),
+      () => setToast({ message: t('toast_snapshots') }),
+      () => setToast({ message: t('toast_snapshot_failed') }),
     );
   }, [controller, host]);
 

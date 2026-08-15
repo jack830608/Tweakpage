@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 interface ModeSwitchOption<T extends string> {
   value: T;
   label: ReactNode;
+  ariaLabel: string;
 }
 
 interface ModeSwitchProps<T extends string> {
@@ -19,6 +20,7 @@ export function ModeSwitch<T extends string>({ ariaLabel, options, value, onChan
         <button
           key={option.value}
           type="button"
+          aria-label={option.ariaLabel}
           aria-pressed={value === option.value}
           className={value === option.value ? 'pgve-segment pgve-segment-active' : 'pgve-segment'}
           onClick={() => {

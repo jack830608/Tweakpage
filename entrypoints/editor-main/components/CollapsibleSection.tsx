@@ -3,15 +3,16 @@ import { ChevronIcon } from './icons';
 
 interface CollapsibleSectionProps {
   title: string;
+  sectionId?: string;
   open: boolean;
   onToggle: () => void;
   children: ReactNode;
 }
 
-export function CollapsibleSection({ title, open, onToggle, children }: CollapsibleSectionProps) {
+export function CollapsibleSection({ title, sectionId, open, onToggle, children }: CollapsibleSectionProps) {
   return (
     <section className="pgve-disclosure">
-      <button type="button" className="pgve-disclosure-header" aria-expanded={open} onClick={onToggle}>
+      <button type="button" className="pgve-disclosure-header" data-section={sectionId} aria-expanded={open} onClick={onToggle}>
         <ChevronIcon open={open} /> {title}
       </button>
       {open && <div className="pgve-disclosure-body">{children}</div>}

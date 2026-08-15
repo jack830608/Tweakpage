@@ -3,6 +3,7 @@ import { isTransparent, pxToNumber, rgbToHex } from '../../../../lib/css-values'
 import type { EditsController } from '../../controller';
 import { ColorField } from '../ColorField';
 import { ResetButton } from '../ResetButton';
+import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -47,7 +48,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
   return (
     <section className="pgve-section">
       <label>
-        Corner radius
+        {t('label_corner_radius')}
         <span className="pgve-slider-pair">
           <input
             type="range"
@@ -68,7 +69,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         <ResetButton controller={controller} element={element} property="borderRadius" />
       </label>
       <label>
-        Opacity
+        {t('label_opacity')}
         <span className="pgve-slider-pair">
           <input
             type="range"
@@ -90,7 +91,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         <ResetButton controller={controller} element={element} property="opacity" />
       </label>
       <label>
-        Border width
+        {t('label_border_width')}
         <input
           type="number"
           min={0}
@@ -101,7 +102,8 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         <ResetButton controller={controller} element={element} property="borderWidth" />
       </label>
       <ColorField
-        label="Border color"
+        label={t('label_border_color')}
+        ariaLabel="Border color"
         value={isTransparent(cs.getPropertyValue('border-top-color')) ? null : rgbToHex(cs.getPropertyValue('border-top-color'))}
         onChange={(hex) => controller.recordEdit(element, 'style', 'borderColor', original.borderColor, hex)}
         trailing={<ResetButton controller={controller} element={element} property="borderColor" />}

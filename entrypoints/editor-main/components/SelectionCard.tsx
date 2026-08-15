@@ -3,6 +3,7 @@ import { buildElementLabel } from '../../../lib/selector/generate';
 import type { EditsController } from '../controller';
 import { Breadcrumb } from './Breadcrumb';
 import { EyeIcon, EyeOffIcon } from './icons';
+import { t } from '../../../lib/i18n';
 
 interface SelectionCardProps {
   element: Element;
@@ -33,7 +34,7 @@ export function SelectionCard({ element, controller, onSelect }: SelectionCardPr
           title={hidden ? 'Show the element again' : 'Hide the selected element'}
           onClick={onToggleHide}
         >
-          {hidden ? <><EyeIcon /> Unhide</> : <><EyeOffIcon /> Hide</>}
+          {hidden ? <><EyeIcon /> {t('unhide')}</> : <><EyeOffIcon /> {t('hide')}</>}
         </button>
       </div>
       <Breadcrumb element={element} onSelect={onSelect} />

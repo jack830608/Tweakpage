@@ -53,7 +53,7 @@ test('spacing box-model editor fits inside the panel', async ({ context }) => {
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
-  await page.getByRole('button', { name: /Spacing/ }).click();
+  await page.locator('[data-section="spacing"]').click();
 
   const inputBox = (await page.getByLabel('padding top').boundingBox())!;
   expect(inputBox.width).toBeLessThan(60);

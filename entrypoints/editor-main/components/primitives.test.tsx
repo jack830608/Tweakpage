@@ -9,8 +9,8 @@ import { Toast } from './Toast';
 afterEach(cleanup);
 
 const OPTIONS = [
-  { value: 'edit', label: 'Edit' },
-  { value: 'browse', label: 'Browse' },
+  { value: 'edit', label: 'Edit', ariaLabel: 'Edit' },
+  { value: 'browse', label: 'Browse', ariaLabel: 'Browse' },
 ] as const;
 
 test('mode switch renders both options and marks the active one', () => {

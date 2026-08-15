@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
 import type { PageEdits } from '../../lib/edits/types';
+import { t } from '../../lib/i18n';
 
 interface PageEntry {
   key: string;
@@ -54,11 +55,11 @@ export function PopupApp() {
         <strong>Tweakpage</strong>
       </header>
       <button type="button" className="pop-primary" onClick={() => void onEditThisPage()}>
-        Edit this page
+        {t('pop_edit_this_page')}
       </button>
-      <div className="pop-section-title">Pages with edits</div>
+      <div className="pop-section-title">{t('pop_pages')}</div>
       {entries.length === 0 ? (
-        <p className="pop-empty">No saved edits yet. Open any page and start tweaking.</p>
+        <p className="pop-empty">{t('pop_empty')}</p>
       ) : (
         <ul className="pop-list">
           {entries.map(({ key, page }) => (
@@ -69,10 +70,10 @@ export function PopupApp() {
               </div>
               <span className="pop-count">{page.records.length}</span>
               <button type="button" aria-label={`Open ${page.url}`} onClick={() => onOpen(page.url)}>
-                Open
+                {t('pop_open')}
               </button>
               <button type="button" aria-label={`Clear edits for ${page.url}`} onClick={() => void onClear(key)}>
-                Clear
+                {t('pop_clear')}
               </button>
             </li>
           ))}

@@ -1,0 +1,240 @@
+{
+  "mode_edit": {
+    "message": "編輯"
+  },
+  "mode_browse": {
+    "message": "瀏覽"
+  },
+  "compare_edited": {
+    "message": "修改版"
+  },
+  "compare_original": {
+    "message": "原始版"
+  },
+  "share": {
+    "message": "分享"
+  },
+  "share_copy": {
+    "message": "複製"
+  },
+  "share_export": {
+    "message": "匯出"
+  },
+  "share_snap": {
+    "message": "截圖"
+  },
+  "hide": {
+    "message": "隱藏"
+  },
+  "unhide": {
+    "message": "取消隱藏"
+  },
+  "empty_select": {
+    "message": "將滑鼠移到頁面上,點選要編輯的元素。"
+  },
+  "empty_hint": {
+    "message": "切換到「瀏覽」可正常操作頁面。按住標題列可拖動面板。"
+  },
+  "iframe_note": {
+    "message": "不支援編輯 iframe 內的元素。"
+  },
+  "preview_note": {
+    "message": "目前顯示原始頁面 — 切回「修改版」以繼續編輯。"
+  },
+  "hidden_note": {
+    "message": "元素已隱藏 — 取消隱藏後才能編輯。"
+  },
+  "mixed_warning": {
+    "message": "這個元素包含格式化內容 — 在此編輯文字會將其變為純文字。建議用麵包屑選擇內層元素。"
+  },
+  "footer_changes": {
+    "message": "$param1$ 筆改動 · 檢視 ›",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
+  },
+  "back_row": {
+    "message": "‹ 回到編輯"
+  },
+  "onboarding_title": {
+    "message": "歡迎使用 Tweakpage"
+  },
+  "onboarding_step1": {
+    "message": "將滑鼠移到頁面上,點選要編輯的元素。"
+  },
+  "onboarding_step2": {
+    "message": "切換到「瀏覽」可正常操作頁面(選單、分頁)。"
+  },
+  "onboarding_step3": {
+    "message": "面板擋住畫面時,按住標題列即可拖動。"
+  },
+  "got_it": {
+    "message": "知道了"
+  },
+  "sec_text": {
+    "message": "文字"
+  },
+  "sec_typography": {
+    "message": "字型排印"
+  },
+  "sec_background": {
+    "message": "背景"
+  },
+  "sec_image": {
+    "message": "圖片"
+  },
+  "sec_appearance": {
+    "message": "外觀"
+  },
+  "sec_size": {
+    "message": "尺寸"
+  },
+  "sec_spacing": {
+    "message": "間距"
+  },
+  "label_font_family": {
+    "message": "字型"
+  },
+  "label_font_size": {
+    "message": "字級"
+  },
+  "label_font_weight": {
+    "message": "字重"
+  },
+  "label_line_height": {
+    "message": "行高"
+  },
+  "label_text_align": {
+    "message": "對齊"
+  },
+  "label_letter_spacing": {
+    "message": "字距"
+  },
+  "label_text_transform": {
+    "message": "大小寫"
+  },
+  "label_color": {
+    "message": "文字顏色"
+  },
+  "label_bg_color": {
+    "message": "背景顏色"
+  },
+  "label_bg_image": {
+    "message": "背景圖片網址"
+  },
+  "label_image_url": {
+    "message": "圖片網址"
+  },
+  "label_corner_radius": {
+    "message": "圓角"
+  },
+  "label_opacity": {
+    "message": "不透明度"
+  },
+  "label_border_width": {
+    "message": "框線寬度"
+  },
+  "label_border_color": {
+    "message": "框線顏色"
+  },
+  "label_width": {
+    "message": "寬度"
+  },
+  "label_height": {
+    "message": "高度"
+  },
+  "apply": {
+    "message": "套用"
+  },
+  "import_json": {
+    "message": "匯入 JSON"
+  },
+  "revert_all": {
+    "message": "全部還原"
+  },
+  "no_changes": {
+    "message": "尚無改動。"
+  },
+  "couldnt_apply": {
+    "message": "在此頁面找不到對應元素"
+  },
+  "delete": {
+    "message": "刪除"
+  },
+  "toast_copied": {
+    "message": "摘要已複製到剪貼簿"
+  },
+  "toast_exported": {
+    "message": "JSON 已匯出 — 請查看下載項目"
+  },
+  "toast_snapshots": {
+    "message": "已儲存前後對照截圖"
+  },
+  "toast_snapshot_failed": {
+    "message": "截圖失敗"
+  },
+  "toast_import_failed": {
+    "message": "匯入失敗:$param1$",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toast_imported": {
+    "message": "已匯入 $param1$ 筆改動$param2$",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      },
+      "param2": {
+        "content": "$2"
+      }
+    }
+  },
+  "toast_imported_for": {
+    "message": "已匯入 $param2$ 的 $param1$ 筆改動$param3$ — 開啟該頁面即可看到",
+    "placeholders": {
+      "param2": {
+        "content": "$2"
+      },
+      "param1": {
+        "content": "$1"
+      },
+      "param3": {
+        "content": "$3"
+      }
+    }
+  },
+  "toast_skipped": {
+    "message": "(略過 $param1$ 筆)",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
+  },
+  "badge_original": {
+    "message": "正在檢視原始版 — 點此回到修改版"
+  },
+  "badge_browsing": {
+    "message": "瀏覽模式 — 切回「編輯」以選取元素"
+  },
+  "pop_edit_this_page": {
+    "message": "編輯這個頁面"
+  },
+  "pop_pages": {
+    "message": "有改動的頁面"
+  },
+  "pop_empty": {
+    "message": "還沒有儲存任何改動。開啟任一頁面開始調整吧。"
+  },
+  "pop_open": {
+    "message": "開啟"
+  },
+  "pop_clear": {
+    "message": "清除"
+  }
+}

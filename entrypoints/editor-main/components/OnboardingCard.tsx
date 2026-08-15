@@ -1,13 +1,15 @@
+import { t } from '../../../lib/i18n';
+
 export function OnboardingCard({ onDismiss }: { onDismiss: () => void }) {
   return (
     <div className="pgve-onboarding">
-      <h3>Welcome to Tweakpage</h3>
+      <h3>{t('onboarding_title')}</h3>
       <ol>
-        <li>Move your mouse over the page and click to select an element.</li>
-        <li>Switch to Browse to use the page normally (menus, tabs).</li>
-        <li>Drag this panel by its title bar if it's in the way.</li>
+        <li>{t('onboarding_step1')}</li>
+        <li>{t('onboarding_step2')}</li>
+        <li>{t('onboarding_step3')}</li>
       </ol>
-      <button type="button" onClick={onDismiss}>Got it</button>
+      <button type="button" onClick={onDismiss}>{t('got_it')}</button>
     </div>
   );
 }

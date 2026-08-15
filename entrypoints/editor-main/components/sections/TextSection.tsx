@@ -1,5 +1,6 @@
 import type { EditsController } from '../../controller';
 import { ResetButton } from '../ResetButton';
+import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -27,10 +28,7 @@ export function TextSection({ element, controller }: SectionProps) {
       />
       <ResetButton controller={controller} element={element} property="textContent" />
       {element.firstElementChild !== null && (
-        <p className="pgve-hint">
-          This element contains formatted parts — editing text here replaces them with
-          plain text. Use the breadcrumb to edit an inner element instead.
-        </p>
+        <p className="pgve-hint">{t('mixed_warning')}</p>
       )}
     </section>
   );

@@ -4,6 +4,7 @@ import type { Position } from '../hooks/useDraggable';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
 import { useDraggable } from '../hooks/useDraggable';
+import { t } from '../../../lib/i18n';
 import { ShareRow } from './ShareRow';
 import { ChangesTab } from './ChangesTab';
 import { CollapsibleSection } from './CollapsibleSection';
@@ -38,39 +39,39 @@ export interface PanelProps {
 }
 
 const INTERACTION_OPTIONS = [
-  { value: 'edit', label: <><PencilIcon /> Edit</> },
-  { value: 'browse', label: <><HandIcon /> Browse</> },
+  { value: 'edit', label: <><PencilIcon /> {t('mode_edit')}</>, ariaLabel: 'Edit' },
+  { value: 'browse', label: <><HandIcon /> {t('mode_browse')}</>, ariaLabel: 'Browse' },
 ] as const;
 
 const COMPARE_OPTIONS = [
-  { value: 'edited', label: 'Edited' },
-  { value: 'original', label: 'Original' },
+  { value: 'edited', label: t('compare_edited'), ariaLabel: 'Edited' },
+  { value: 'original', label: t('compare_original'), ariaLabel: 'Original' },
 ] as const;
 
 const SECTION_DEFS: Array<{
-  title: string;
+  id: string;
   applies?: (element: Element) => boolean;
   render: (element: Element, controller: EditsController) => ReactNode;
 }> = [
-  { title: 'Text', applies: hasDirectText, render: (el, c) => <TextSection element={el} controller={c} /> },
-  { title: 'Typography', render: (el, c) => <TypographySection element={el} controller={c} /> },
-  { title: 'Background', render: (el, c) => <BackgroundSection element={el} controller={c} /> },
-  { title: 'Image', applies: (el) => el.tagName === 'IMG', render: (el, c) => <ImageSection element={el} controller={c} /> },
-  { title: 'Appearance', render: (el, c) => <AppearanceSection element={el} controller={c} /> },
-  { title: 'Size', render: (el, c) => <SizeSection element={el} controller={c} /> },
-  { title: 'Spacing', render: (el, c) => <SpacingSection element={el} controller={c} /> },
+  { id: 'text', applies: hasDirectText, render: (el, c) => <TextSection element={el} controller={c} /> },
+  { id: 'typography', render: (el, c) => <TypographySection element={el} controller={c} /> },
+  { id: 'background', render: (el, c) => <BackgroundSection element={el} controller={c} /> },
+  { id: 'image', applies: (el) => el.tagName === 'IMG', render: (el, c) => <ImageSection element={el} controller={c} /> },
+  { id: 'appearance', render: (el, c) => <AppearanceSection element={el} controller={c} /> },
+  { id: 'size', render: (el, c) => <SizeSection element={el} controller={c} /> },
+  { id: 'spacing', render: (el, c) => <SpacingSection element={el} controller={c} /> },
 ];
 
 export function Panel(props: PanelProps) {
   const { controller, mode, onModeChange, onClose } = props;
   const [view, setView] = useState<View>('edit');
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    Text: true,
-    Typography: true,
+    text: true,
+    typography: true,
   });
   useEffect(() => {
     if (props.selected?.tagName === 'IMG') {
-      setOpenSections((open) => (open.Image ? open : { ...open, Image: true }));
+      setOpenSections((open) => (open.image ? open : { ...open, image: true }));
     }
   }, [props.selected]);
   const count = useSyncExternalStore(controller.subscribe, controller.getPage).records.length;
@@ -111,8 +112,13 @@ export function Panel(props: PanelProps) {
       <ShareRow controller={controller} onToast={props.onToast} onSnapshot={props.onSnapshot} />
       {view === 'changes' ? (
         <div>
-          <button type="button" className="pgve-back-row" onClick={() => setView('edit')}>
-            ‹ Back to editing
+          <button
+            type="button"
+            className="pgve-back-row"
+            aria-label="Back to editing"
+            onClick={() => setView('edit')}
+          >
+            {t('back_row')}
           </button>
           <ChangesTab
             controller={controller}
@@ -142,9 +148,10 @@ export function Panel(props: PanelProps) {
           <button
             type="button"
             className={count > 0 ? 'pgve-footer pgve-footer-active' : 'pgve-footer'}
+            aria-label="Review changes"
             onClick={() => setView('changes')}
           >
-            {`${count} changes · Review ›`}
+            {t('footer_changes', [count])}
           </button>
         </>
       )}
@@ -178,37 +185,34 @@ function EditView({
   }
   if (previewing) {
     return (
-      <p className="pgve-preview-note">
-        Viewing the original page — switch back to Edited to continue editing.
-      </p>
+      <p className="pgve-preview-note">{t('preview_note')}</p>
     );
   }
   if (!selected) {
     return (
       <div>
-        <p className="pgve-empty">Select an element on the page to edit it.</p>
-        <p className="pgve-empty">
-          Switch to Browse to use the page normally. Drag this panel by its title bar.
-        </p>
+        <p className="pgve-empty">{t('empty_select')}</p>
+        <p className="pgve-empty">{t('empty_hint')}</p>
       </div>
     );
   }
   if (selected.tagName === 'IFRAME') {
-    return <p className="pgve-empty">Editing inside iframes isn't supported.</p>;
+    return <p className="pgve-empty">{t('iframe_note')}</p>;
   }
   const hidden = controller.recordFor(selected, 'display')?.newValue === 'none';
   return (
     <div className="pgve-sections">
       <SelectionCard element={selected} controller={controller} onSelect={onSelect} />
       {hidden ? (
-        <p className="pgve-preview-note">Element is hidden — Unhide to edit it.</p>
+        <p className="pgve-preview-note">{t('hidden_note')}</p>
       ) : (
-        SECTION_DEFS.filter(({ applies }) => !applies || applies(selected)).map(({ title, render }) => (
+        SECTION_DEFS.filter(({ applies }) => !applies || applies(selected)).map(({ id, render }) => (
           <CollapsibleSection
-            key={title}
-            title={title}
-            open={!!openSections[title]}
-            onToggle={() => onToggleSection(title)}
+            key={id}
+            sectionId={id}
+            title={t(`sec_${id}`)}
+            open={!!openSections[id]}
+            onToggle={() => onToggleSection(id)}
           >
             {render(selected, controller)}
           </CollapsibleSection>

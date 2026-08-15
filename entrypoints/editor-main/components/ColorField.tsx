@@ -4,6 +4,7 @@ import { EyedropperIcon } from './icons';
 
 interface ColorFieldProps {
   label: string;
+  ariaLabel?: string;
   value: string | null;
   onChange: (hex: string) => void;
   trailing?: ReactNode;
@@ -13,7 +14,8 @@ interface EyeDropperResult {
   sRGBHex: string;
 }
 
-export function ColorField({ label, value, onChange, trailing }: ColorFieldProps) {
+export function ColorField({ label, ariaLabel, value, onChange, trailing }: ColorFieldProps) {
+  const aria = ariaLabel ?? label;
   const [draft, setDraft] = useState(value ?? '');
   const [recent, setRecent] = useState<string[]>([]);
   useEffect(() => setDraft(value ?? ''), [value]);
@@ -47,13 +49,13 @@ export function ColorField({ label, value, onChange, trailing }: ColorFieldProps
         <span className="pgve-color-field">
           <input
             type="color"
-            aria-label={label}
+            aria-label={aria}
             value={value ?? '#ffffff'}
             onChange={(e) => commit(e.target.value)}
           />
           <input
             type="text"
-            aria-label={`${label} hex`}
+            aria-label={`${aria} hex`}
             placeholder={value === null ? 'none' : undefined}
             value={draft}
             onChange={(e) => {
@@ -64,7 +66,7 @@ export function ColorField({ label, value, onChange, trailing }: ColorFieldProps
           {eyeDropperCtor && (
             <button
               type="button"
-              aria-label={`${label} eyedropper`}
+              aria-label={`${aria} eyedropper`}
               title="Pick a color from the page"
               onClick={() => void onPick()}
             >

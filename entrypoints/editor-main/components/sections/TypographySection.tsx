@@ -3,6 +3,7 @@ import { pxToNumber, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { ColorField } from '../ColorField';
 import { ResetButton } from '../ResetButton';
+import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -40,7 +41,7 @@ export function TypographySection({ element, controller }: SectionProps) {
   return (
     <section className="pgve-section">
       <label>
-        Font family
+        {t('label_font_family')}
         <input
           type="text"
           aria-label="Font family"
@@ -69,7 +70,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         <option value="monospace" />
       </datalist>
       <label>
-        Font size
+        {t('label_font_size')}
         <input
           type="number"
           aria-label="Font size"
@@ -82,7 +83,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         <ResetButton controller={controller} element={element} property="fontSize" />
       </label>
       <label>
-        Font weight
+        {t('label_font_weight')}
         <select
           aria-label="Font weight"
           value={normalizeWeight(cs.fontWeight)}
@@ -95,7 +96,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         <ResetButton controller={controller} element={element} property="fontWeight" />
       </label>
       <label>
-        Line height
+        {t('label_line_height')}
         <input
           type="text"
           aria-label="Line height"
@@ -112,7 +113,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         <ResetButton controller={controller} element={element} property="lineHeight" />
       </label>
       <label>
-        Text align
+        {t('label_text_align')}
         <select
           aria-label="Text align"
           value={normalizeAlign(cs.textAlign)}
@@ -125,7 +126,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         <ResetButton controller={controller} element={element} property="textAlign" />
       </label>
       <label>
-        Letter spacing
+        {t('label_letter_spacing')}
         <input
           type="number"
           step={0.1}
@@ -139,7 +140,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         <ResetButton controller={controller} element={element} property="letterSpacing" />
       </label>
       <label>
-        Text transform
+        {t('label_text_transform')}
         <select
           aria-label="Text transform"
           value={cs.textTransform || 'none'}
@@ -153,7 +154,8 @@ export function TypographySection({ element, controller }: SectionProps) {
         <ResetButton controller={controller} element={element} property="textTransform" />
       </label>
       <ColorField
-        label="Color"
+        label={t('label_color')}
+        ariaLabel="Color"
         value={rgbToHex(cs.color)}
         onChange={(hex) => controller.recordEdit(element, 'style', 'color', original.color, hex)}
         trailing={<ResetButton controller={controller} element={element} property="color" />}

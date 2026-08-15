@@ -3,6 +3,7 @@ import { isTransparent, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { ColorField } from '../ColorField';
 import { ResetButton } from '../ResetButton';
+import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -33,13 +34,14 @@ export function BackgroundSection({ element, controller }: SectionProps) {
   return (
     <section className="pgve-section">
       <ColorField
-        label="Background color"
+        label={t('label_bg_color')}
+        ariaLabel="Background color"
         value={isTransparent(cs.backgroundColor) ? null : rgbToHex(cs.backgroundColor)}
         onChange={(hex) => controller.recordEdit(element, 'style', 'backgroundColor', original.backgroundColor, hex)}
         trailing={<ResetButton controller={controller} element={element} property="backgroundColor" />}
       />
       <label>
-        Background image URL
+        {t('label_bg_image')}
         <input
           type="text"
           aria-label="Background image URL"
@@ -49,7 +51,7 @@ export function BackgroundSection({ element, controller }: SectionProps) {
         <ResetButton controller={controller} element={element} property="backgroundImage" />
       </label>
       <button type="button" aria-label="Apply background image" onClick={onApplyImage}>
-        Apply
+        {t('apply')}
       </button>
     </section>
   );

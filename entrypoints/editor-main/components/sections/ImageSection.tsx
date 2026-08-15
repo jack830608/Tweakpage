@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { EditsController } from '../../controller';
+import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -14,7 +15,7 @@ export function ImageSection({ element, controller }: SectionProps) {
   return (
     <section className="pgve-section">
       <label>
-        Image URL
+        {t('label_image_url')}
         <input type="text" aria-label="Image URL" value={url} onChange={(e) => setUrl(e.target.value)} />
         <span className="pgve-reset-slot" aria-hidden="true" />
       </label>
@@ -22,7 +23,7 @@ export function ImageSection({ element, controller }: SectionProps) {
         type="button"
         onClick={() => controller.recordEdit(element, 'attr', 'src', original, url)}
       >
-        Apply
+        {t('apply')}
       </button>
     </section>
   );

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { pxToNumber } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { ResetButton } from '../ResetButton';
+import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -9,8 +10,8 @@ interface SectionProps {
 }
 
 const FIELDS = [
-  { label: 'Width', property: 'width' },
-  { label: 'Height', property: 'height' },
+  { label: 'Width', key: 'label_width', property: 'width' },
+  { label: 'Height', key: 'label_height', property: 'height' },
 ] as const;
 
 export function SizeSection({ element, controller }: SectionProps) {
@@ -21,9 +22,9 @@ export function SizeSection({ element, controller }: SectionProps) {
   }, [element]);
   return (
     <section className="pgve-section">
-      {FIELDS.map(({ label, property }) => (
+      {FIELDS.map(({ label, key, property }) => (
         <label key={property}>
-          {label}
+          {t(key)}
           <input
             type="number"
             aria-label={label}
