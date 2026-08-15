@@ -77,7 +77,7 @@
     "message": "文字"
   },
   "sec_typography": {
-    "message": "字型排印"
+    "message": "字型"
   },
   "sec_background": {
     "message": "背景"
@@ -93,57 +93,6 @@
   },
   "sec_spacing": {
     "message": "間距"
-  },
-  "label_font_family": {
-    "message": "字型"
-  },
-  "label_font_size": {
-    "message": "字級"
-  },
-  "label_font_weight": {
-    "message": "字重"
-  },
-  "label_line_height": {
-    "message": "行高"
-  },
-  "label_text_align": {
-    "message": "對齊"
-  },
-  "label_letter_spacing": {
-    "message": "字距"
-  },
-  "label_text_transform": {
-    "message": "大小寫"
-  },
-  "label_color": {
-    "message": "文字顏色"
-  },
-  "label_bg_color": {
-    "message": "背景顏色"
-  },
-  "label_bg_image": {
-    "message": "背景圖片網址"
-  },
-  "label_image_url": {
-    "message": "圖片網址"
-  },
-  "label_corner_radius": {
-    "message": "圓角"
-  },
-  "label_opacity": {
-    "message": "不透明度"
-  },
-  "label_border_width": {
-    "message": "框線寬度"
-  },
-  "label_border_color": {
-    "message": "框線顏色"
-  },
-  "label_width": {
-    "message": "寬度"
-  },
-  "label_height": {
-    "message": "高度"
   },
   "apply": {
     "message": "套用"

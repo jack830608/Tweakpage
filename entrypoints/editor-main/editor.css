@@ -31,8 +31,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- overlays on the page ---------- */
 .pgve-outline { position: fixed; pointer-events: none; z-index: 2147483646; }
-.pgve-outline--hover { outline: 1.5px dashed #6366f1; outline-offset: 1px; }
-.pgve-outline--selected { outline: 2px solid #4f46e5; outline-offset: 1px; }
+/* Outlines have to read against whatever the page puts behind them, so each one is
+   drawn twice: a white halo under a colored stroke stays visible on light and dark
+   backgrounds alike. box-shadow does the halo because outline can't stack. */
+.pgve-outline--hover { outline: 2px dashed #4f46e5; outline-offset: 1px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: rgba(79, 70, 229, 0.08); }
+.pgve-outline--selected { outline: 3px solid #4f46e5; outline-offset: 1px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95), 0 0 0 6px rgba(79, 70, 229, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: rgba(79, 70, 229, 0.12); }
 .pgve-outline-label { position: absolute; top: -26px; left: 0; display: inline-flex; align-items: center; background: var(--dark); color: #fff; font: 500 11px/1.5 var(--sans); padding: 3px 8px; border-radius: 5px; white-space: nowrap; box-shadow: var(--shadow-lift); }
 
 /* ---------- panel shell ---------- */
@@ -40,7 +43,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-panel :is(button, input, select, textarea):focus-visible { outline: none; box-shadow: var(--ring); }
 .pgve-panel button { transition: background var(--ease), border-color var(--ease), color var(--ease); }
 
-.pgve-header { display: flex; align-items: center; justify-content: space-between; padding: 11px 12px 9px; cursor: grab; user-select: none; touch-action: none; }
+/* The panel scrolls internally once sections are open; the drag handle, close button
+   and the change count have to stay reachable from anywhere in that scroll. */
+.pgve-header { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 11px 12px 9px; background: var(--surface); border-radius: var(--r-panel) var(--r-panel) 0 0; cursor: grab; user-select: none; touch-action: none; }
 .pgve-header:active { cursor: grabbing; }
 .pgve-header strong { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 650; letter-spacing: -0.01em; color: var(--ink); }
 .pgve-header strong svg { color: var(--ink-3); }
@@ -96,6 +101,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-section textarea:hover { border-color: var(--border-strong); }
 .pgve-section button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; font-size: 12px; color: var(--ink-2); }
 .pgve-section button:hover { border-color: var(--border-strong); color: var(--ink); }
+/* Fields are named by the CSS property they write, set in mono so they read as code
+   and match what lands in the exported change list. */
+.pgve-prop { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: -0.01em; }
 .pgve-section button.pgve-reset { padding: 0 4px; border: none; background: none; color: var(--accent); font-size: 13px; width: 22px; flex: none; justify-content: center; }
 .pgve-section button.pgve-reset:hover { color: var(--accent-ink); }
 .pgve-reset-slot { width: 22px; flex: none; display: inline-block; }
@@ -123,6 +131,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-box-input--right { grid-column: 3; grid-row: 2; }
 .pgve-box-input--bottom { grid-column: 2; grid-row: 3; }
 .pgve-box-input--left { grid-column: 1; grid-row: 2; }
+.pgve-section .pgve-box-input--edited { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); color: var(--accent-ink); font-weight: 600; }
+.pgve-section button.pgve-spacing-reset { align-self: flex-start; margin-top: 8px; padding: 3px 10px; border: none; background: none; color: var(--accent); font-size: 11px; }
+.pgve-section button.pgve-spacing-reset:hover { color: var(--accent-ink); background: var(--sunken); }
 .pgve-box-center { grid-column: 2; grid-row: 2; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-family: var(--mono); color: var(--ink-3); padding: 8px 0; }
 
 /* ---------- notes & onboarding ---------- */
@@ -161,7 +172,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-change button:hover { border-color: var(--border-strong); color: var(--ink); }
 
 /* ---------- footer ---------- */
-.pgve-footer { display: block; width: 100%; padding: 10px 12px; border: none; border-top: 1px solid var(--border); background: var(--surface); cursor: pointer; text-align: left; color: var(--ink-3); font-size: 12px; margin-top: auto; border-radius: 0 0 var(--r-panel) var(--r-panel); }
+.pgve-footer { position: sticky; bottom: 0; z-index: 2; display: block; width: 100%; padding: 10px 12px; border: none; border-top: 1px solid var(--border); background: var(--surface); cursor: pointer; text-align: left; color: var(--ink-3); font-size: 12px; margin-top: auto; border-radius: 0 0 var(--r-panel) var(--r-panel); }
 .pgve-footer:hover { color: var(--ink); background: var(--sunken); }
 .pgve-footer-active { color: var(--accent-ink); font-weight: 600; }
 

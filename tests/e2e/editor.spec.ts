@@ -48,6 +48,121 @@ test('edit → persist → replay → export', async ({ context }) => {
   expect(exported.records).toHaveLength(2);
 });
 
+test('fields show the edited value and snap back on reset', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+
+  // Attribute selectors, not getByLabel: the reset button sits inside the same
+  // <label>, so a label lookup matches two elements once an edit exists.
+  const lineHeight = page.locator('input[aria-label="Line height"]');
+  const originalCss = await page.locator('h1').evaluate((el) => getComputedStyle(el).lineHeight);
+  const originalInput = await lineHeight.inputValue();
+  await lineHeight.fill('1.5');
+  await expect(page.locator('h1')).toHaveCSS('line-height', '48px');
+  await expect(lineHeight).toHaveValue('1.5');
+  await page.getByRole('button', { name: 'Reset lineHeight' }).click();
+  await expect(page.locator('h1')).toHaveCSS('line-height', originalCss);
+  await expect(lineHeight).toHaveValue(originalInput);
+
+  // Sub-pixel values used to round to 0 on the way back into the input.
+  const letterSpacing = page.locator('input[aria-label="Letter spacing"]');
+  await letterSpacing.fill('0.4');
+  await expect(page.locator('h1')).toHaveCSS('letter-spacing', '0.4px');
+  await expect(letterSpacing).toHaveValue('0.4');
+});
+
+// The unit sweep runs against happy-dom, which has no real cascade — this is the same
+// pass in a browser that actually applies our injected stylesheet.
+const FIELDS = [
+  { section: 'text', aria: 'Text', kind: 'fill', value: 'Swept headline', property: 'textContent' },
+  { section: 'typography', aria: 'Font family', kind: 'fill', value: 'Verdana', property: 'fontFamily' },
+  { section: 'typography', aria: 'Font size', kind: 'fill', value: '41', property: 'fontSize' },
+  { section: 'typography', aria: 'Font weight', kind: 'select', value: '300', property: 'fontWeight' },
+  { section: 'typography', aria: 'Line height', kind: 'fill', value: '1.75', property: 'lineHeight' },
+  { section: 'typography', aria: 'Text align', kind: 'select', value: 'center', property: 'textAlign' },
+  { section: 'typography', aria: 'Letter spacing', kind: 'fill', value: '0.3', property: 'letterSpacing' },
+  { section: 'typography', aria: 'Text transform', kind: 'select', value: 'uppercase', property: 'textTransform' },
+  { section: 'typography', aria: 'Color hex', kind: 'fill', value: '#ff0000', property: 'color' },
+  { section: 'background', aria: 'Background color hex', kind: 'fill', value: '#00ff00', property: 'backgroundColor' },
+  { section: 'appearance', aria: 'Corner radius value', kind: 'fill', value: '9', property: 'borderRadius' },
+  { section: 'appearance', aria: 'Opacity value', kind: 'fill', value: '60', property: 'opacity' },
+  { section: 'appearance', aria: 'Border width', kind: 'fill', value: '2', property: 'borderWidth' },
+  { section: 'appearance', aria: 'Border color hex', kind: 'fill', value: '#0000ff', property: 'borderColor' },
+  { section: 'size', aria: 'Width', kind: 'fill', value: '260', property: 'width' },
+  { section: 'size', aria: 'Height', kind: 'fill', value: '70', property: 'height' },
+  { section: 'spacing', aria: 'padding top', kind: 'fill', value: '21', property: 'paddingTop' },
+  { section: 'spacing', aria: 'padding right', kind: 'fill', value: '22', property: 'paddingRight' },
+  { section: 'spacing', aria: 'padding bottom', kind: 'fill', value: '23', property: 'paddingBottom' },
+  { section: 'spacing', aria: 'padding left', kind: 'fill', value: '24', property: 'paddingLeft' },
+  { section: 'spacing', aria: 'margin top', kind: 'fill', value: '11', property: 'marginTop' },
+  { section: 'spacing', aria: 'margin right', kind: 'fill', value: '12', property: 'marginRight' },
+  { section: 'spacing', aria: 'margin bottom', kind: 'fill', value: '13', property: 'marginBottom' },
+  { section: 'spacing', aria: 'margin left', kind: 'fill', value: '14', property: 'marginLeft' },
+] as const;
+
+test('every field records what was typed and resets back to the original', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  for (const section of ['background', 'appearance', 'size', 'spacing']) {
+    await page.locator(`[data-section="${section}"]`).click();
+  }
+
+  for (const { aria, kind, value, property, section } of FIELDS) {
+    const field = page.locator(`[aria-label="${aria}"]`);
+    const before = await field.inputValue();
+
+    if (kind === 'select') await field.selectOption(value);
+    else await field.fill(value);
+
+    await expect(field, `${aria} should show what was typed`).toHaveValue(value);
+
+    const resetName = section === 'spacing' ? 'Reset spacing' : `Reset ${property}`;
+    await page.getByRole('button', { name: resetName }).click();
+    await expect(field, `${aria} should return to its original value`).toHaveValue(before);
+  }
+
+  await expect(page.getByRole('button', { name: 'Review changes' })).toContainText('0');
+});
+
+test('header and change count stay reachable when the panel scrolls', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  for (const section of ['background', 'appearance', 'size', 'spacing']) {
+    await page.locator(`[data-section="${section}"]`).click();
+  }
+
+  const panel = page.locator('#tweakpage-host aside');
+  await panel.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+  const panelBox = (await panel.boundingBox())!;
+  const headerBox = (await page.locator('.pgve-header').boundingBox())!;
+  const footerBox = (await page.locator('.pgve-footer').boundingBox())!;
+
+  expect(headerBox.y).toBeGreaterThanOrEqual(panelBox.y - 1);
+  expect(headerBox.y).toBeLessThan(panelBox.y + headerBox.height + 1);
+  expect(footerBox.y + footerBox.height).toBeLessThanOrEqual(panelBox.y + panelBox.height + 1);
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
+});
+
+test('selection outline stays legible against the page', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+
+  const outline = page.locator('.pgve-outline--selected');
+  await expect(outline).toHaveCSS('outline-width', '3px');
+  // The white halo is what keeps the stroke readable on dark and busy backgrounds.
+  const shadow = await outline.evaluate((el) => getComputedStyle(el).boxShadow);
+  expect(shadow).not.toBe('none');
+  expect(shadow).toContain('rgba(255, 255, 255');
+});
+
 test('spacing box-model editor fits inside the panel', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');

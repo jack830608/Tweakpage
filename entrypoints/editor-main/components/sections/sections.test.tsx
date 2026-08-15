@@ -30,7 +30,7 @@ test('image url + apply records an attr src edit', () => {
   const controller = new EditsController(null, document, NOW);
   render(<ImageSection element={document.getElementById('pic')!} controller={controller} />);
   fireEvent.change(screen.getByLabelText('Image URL'), { target: { value: '/b.png' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Apply image' }));
   const record = controller.getPage().records.find((r) => r.property === 'src')!;
   expect(record.type).toBe('attr');
   expect(record.oldValue).toBe('/a.png');

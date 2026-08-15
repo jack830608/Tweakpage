@@ -1,0 +1,260 @@
+import { fakeBrowser } from 'wxt/testing';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { Panel } from '../Panel';
+import { EditsController } from '../../controller';
+
+// Every editable field, swept the same way: read what the panel shows, change it,
+// then check three things users notice — the page changed, the record is right, and
+// the input still shows what they typed. Then reset, and check the input goes back
+// to the original. Bugs found by hand (line-height keeping a stale value after reset,
+// letter-spacing always showing 0) were all violations of one of those four checks.
+
+const NOW = () => '2026-08-15T10:00:00.000Z';
+
+const STYLE = [
+  'font-size: 32px',
+  'font-family: Georgia, serif',
+  'font-weight: 700',
+  'line-height: 40px',
+  'color: rgb(51, 51, 51)',
+  'text-align: left',
+  'text-transform: none',
+  'background-color: rgb(255, 255, 255)',
+  'border-radius: 4px',
+  'opacity: 1',
+  'border: 0px solid rgb(0, 0, 0)',
+  'width: 300px',
+  'height: 100px',
+  'padding: 10px',
+  'margin: 5px',
+].join('; ');
+
+afterEach(cleanup);
+
+beforeEach(() => {
+  fakeBrowser.reset();
+  document.head.innerHTML = '';
+  document.body.innerHTML = `<div id="target" style="${STYLE}">Hello</div>`;
+  history.replaceState({}, '', '/page');
+});
+
+function setup(selected: Element | null = document.getElementById('target')) {
+  const controller = new EditsController(null, document, NOW);
+  render(
+    <Panel
+      controller={controller}
+      selected={selected}
+      mode="edit"
+      onModeChange={vi.fn()}
+      showOnboarding={false}
+      onDismissOnboarding={vi.fn()}
+      onSelect={vi.fn()}
+      onHighlight={vi.fn()}
+      onToast={vi.fn()}
+      onSnapshot={vi.fn()}
+      onMinimize={vi.fn()}
+      onClose={vi.fn()}
+    />,
+  );
+  return controller;
+}
+
+function openSection(id: string) {
+  const header = document.querySelector<HTMLButtonElement>(`[data-section="${id}"]`);
+  if (!header) throw new Error(`no section header for "${id}"`);
+  if (header.getAttribute('aria-expanded') !== 'true') fireEvent.click(header);
+}
+
+function control(label: string): HTMLInputElement {
+  // A wrapping <label> also labels the reset button and the slider next to the input,
+  // so prefer the control whose own aria-label is the one we asked for.
+  const matches = screen.getAllByLabelText(label, { exact: true });
+  const own = matches.find((el) => el.getAttribute('aria-label') === label);
+  return (own ?? matches[0]) as HTMLInputElement;
+}
+
+interface FieldCase {
+  section: string;
+  label: string;
+  property: string;
+  type: (typeof CASES)[number]['recordType'];
+  input: string;
+  expectedValue: string;
+  expectedDisplay: string;
+}
+
+const CASES = [
+  { section: 'text', label: 'Text', property: 'textContent', recordType: 'text', input: 'Changed', value: 'Changed', display: 'Changed' },
+  { section: 'typography', label: 'Font family', property: 'fontFamily', recordType: 'style', input: 'Verdana', value: 'Verdana', display: 'Verdana' },
+  { section: 'typography', label: 'Font size', property: 'fontSize', recordType: 'style', input: '48', value: '48px', display: '48' },
+  { section: 'typography', label: 'Font weight', property: 'fontWeight', recordType: 'style', input: '300', value: '300', display: '300' },
+  { section: 'typography', label: 'Line height', property: 'lineHeight', recordType: 'style', input: '1.5', value: '1.5', display: '1.5' },
+  { section: 'typography', label: 'Text align', property: 'textAlign', recordType: 'style', input: 'center', value: 'center', display: 'center' },
+  { section: 'typography', label: 'Letter spacing', property: 'letterSpacing', recordType: 'style', input: '0.5', value: '0.5px', display: '0.5' },
+  { section: 'typography', label: 'Text transform', property: 'textTransform', recordType: 'style', input: 'uppercase', value: 'uppercase', display: 'uppercase' },
+  { section: 'typography', label: 'Color hex', property: 'color', recordType: 'style', input: '#ff0000', value: '#ff0000', display: '#ff0000' },
+  { section: 'background', label: 'Background color hex', property: 'backgroundColor', recordType: 'style', input: '#00ff00', value: '#00ff00', display: '#00ff00' },
+  { section: 'appearance', label: 'Corner radius value', property: 'borderRadius', recordType: 'style', input: '12', value: '12px', display: '12' },
+  { section: 'appearance', label: 'Opacity value', property: 'opacity', recordType: 'style', input: '50', value: '0.5', display: '50' },
+  { section: 'appearance', label: 'Border width', property: 'borderWidth', recordType: 'style', input: '3', value: '3px', display: '3' },
+  { section: 'appearance', label: 'Border color hex', property: 'borderColor', recordType: 'style', input: '#0000ff', value: '#0000ff', display: '#0000ff' },
+  { section: 'size', label: 'Width', property: 'width', recordType: 'style', input: '250', value: '250px', display: '250' },
+  { section: 'size', label: 'Height', property: 'height', recordType: 'style', input: '80', value: '80px', display: '80' },
+  { section: 'spacing', label: 'padding top', property: 'paddingTop', recordType: 'style', input: '24', value: '24px', display: '24' },
+  { section: 'spacing', label: 'padding right', property: 'paddingRight', recordType: 'style', input: '24', value: '24px', display: '24' },
+  { section: 'spacing', label: 'padding bottom', property: 'paddingBottom', recordType: 'style', input: '24', value: '24px', display: '24' },
+  { section: 'spacing', label: 'padding left', property: 'paddingLeft', recordType: 'style', input: '24', value: '24px', display: '24' },
+  { section: 'spacing', label: 'margin top', property: 'marginTop', recordType: 'style', input: '16', value: '16px', display: '16' },
+  { section: 'spacing', label: 'margin right', property: 'marginRight', recordType: 'style', input: '16', value: '16px', display: '16' },
+  { section: 'spacing', label: 'margin bottom', property: 'marginBottom', recordType: 'style', input: '16', value: '16px', display: '16' },
+  { section: 'spacing', label: 'margin left', property: 'marginLeft', recordType: 'style', input: '16', value: '16px', display: '16' },
+] as const;
+
+describe.each(CASES)('$label', ({ section, label, property, recordType, input, value, display }) => {
+  test('records the edit with the value the user asked for', () => {
+    const controller = setup();
+    openSection(section);
+    fireEvent.change(control(label), { target: { value: input } });
+
+    const record = controller.getPage().records.find((r) => r.property === property);
+    expect(record, `no record written for ${property}`).toBeTruthy();
+    expect(record!.type).toBe(recordType);
+    expect(record!.newValue).toBe(value);
+  });
+
+  test('keeps showing the value the user typed', () => {
+    setup();
+    openSection(section);
+    fireEvent.change(control(label), { target: { value: input } });
+    expect(control(label).value).toBe(display);
+  });
+
+  test('reset clears the record and puts the original back in the field', () => {
+    const controller = setup();
+    openSection(section);
+    const before = control(label).value;
+    fireEvent.change(control(label), { target: { value: input } });
+    expect(controller.getPage().records).toHaveLength(1);
+
+    // The box model has one reset for all eight sides; every other field has its own.
+    const resetName = section === 'spacing' ? 'Reset spacing' : `Reset ${property}`;
+    fireEvent.click(screen.getByRole('button', { name: resetName }));
+    expect(controller.getPage().records).toHaveLength(0);
+    expect(control(label).value, `field kept a stale value after reset`).toBe(before);
+  });
+});
+
+describe('apply-style fields', () => {
+  test('background image applies, records and resets', () => {
+    const controller = setup();
+    openSection('background');
+    const before = (control('Background image URL') as HTMLInputElement).value;
+    fireEvent.change(control('Background image URL'), {
+      target: { value: 'https://example.com/bg.png' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply background image' }));
+
+    const record = controller.getPage().records.find((r) => r.property === 'backgroundImage')!;
+    expect(record.newValue).toBe('url("https://example.com/bg.png")');
+    expect(control('Background image URL').value).toBe('https://example.com/bg.png');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset backgroundImage' }));
+    expect(controller.getPage().records).toHaveLength(0);
+    expect(control('Background image URL').value).toBe(before);
+  });
+
+  test('image src applies, records and resets', () => {
+    document.body.innerHTML = '<img id="target" src="/original.png" alt="hero">';
+    const controller = setup(document.getElementById('target'));
+    openSection('image');
+    fireEvent.change(control('Image URL'), { target: { value: 'https://example.com/new.png' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply image' }));
+
+    const record = controller.getPage().records.find((r) => r.property === 'src')!;
+    expect(record.type).toBe('attr');
+    expect(record.newValue).toBe('https://example.com/new.png');
+    expect(document.getElementById('target')!.getAttribute('src')).toBe(
+      'https://example.com/new.png',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset src' }));
+    expect(controller.getPage().records).toHaveLength(0);
+    expect(control('Image URL').value).toBe('/original.png');
+  });
+});
+
+describe('slider and number pairs stay in step', () => {
+  test('typing a number moves the slider', () => {
+    setup();
+    openSection('appearance');
+    fireEvent.change(control('Opacity value'), { target: { value: '40' } });
+    expect((control('Opacity') as HTMLInputElement).value).toBe('40');
+  });
+
+  test('moving the slider updates the number', () => {
+    setup();
+    openSection('appearance');
+    fireEvent.change(control('Corner radius'), { target: { value: '20' } });
+    expect((control('Corner radius value') as HTMLInputElement).value).toBe('20');
+  });
+});
+
+describe('spacing box model', () => {
+  test('edited sides are marked and reset together in one step', () => {
+    const controller = setup();
+    openSection('spacing');
+    expect(screen.queryByRole('button', { name: 'Reset spacing' })).toBeNull();
+
+    fireEvent.change(control('padding top'), { target: { value: '24' } });
+    fireEvent.change(control('margin left'), { target: { value: '8' } });
+    expect(control('padding top').className).toContain('pgve-box-input--edited');
+    expect(control('margin left').className).toContain('pgve-box-input--edited');
+    expect(control('padding bottom').className).not.toContain('pgve-box-input--edited');
+    expect(controller.getPage().records).toHaveLength(2);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset spacing' }));
+    expect(controller.getPage().records).toHaveLength(0);
+    expect(controller.canUndo()).toBe(true);
+    controller.undo();
+    expect(controller.getPage().records, 'reset should be a single undo step').toHaveLength(2);
+  });
+});
+
+describe('border width', () => {
+  test('adds a border style so the width shows, and takes it back on reset', () => {
+    // An element with no border at all: border-style is 'none', so a width alone
+    // would paint nothing until we add a style with it.
+    document.body.innerHTML = '<div id="target">Hello</div>';
+    const controller = setup(document.getElementById('target'));
+    openSection('appearance');
+    fireEvent.change(control('Border width'), { target: { value: '2' } });
+
+    const properties = controller.getPage().records.map((r) => r.property);
+    expect(properties).toContain('borderWidth');
+    // Without a style, a width alone paints nothing; with a style left behind, a
+    // reset leaves the element with the browser's default 3px border.
+    expect(properties).toContain('borderStyle');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset borderWidth' }));
+    expect(controller.getPage().records).toHaveLength(0);
+  });
+});
+
+describe('decimal values survive the round trip', () => {
+  test('fractional padding is kept, not rounded away', () => {
+    const controller = setup();
+    openSection('spacing');
+    fireEvent.change(control('padding top'), { target: { value: '12.5' } });
+    expect(controller.getPage().records[0].newValue).toBe('12.5px');
+    expect(control('padding top').value).toBe('12.5');
+  });
+
+  test('fractional letter spacing is kept, not rounded away', () => {
+    const controller = setup();
+    openSection('typography');
+    fireEvent.change(control('Letter spacing'), { target: { value: '1.2' } });
+    expect(controller.getPage().records[0].newValue).toBe('1.2px');
+    expect(control('Letter spacing').value).toBe('1.2');
+  });
+});
