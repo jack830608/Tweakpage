@@ -60,9 +60,11 @@ export function TypographySection({ element, controller }: SectionProps) {
           value={lineHeightDraft}
           placeholder="normal"
           onChange={(e) => {
-            setLineHeightDraft(e.target.value);
-            if (e.target.value === '') return;
-            controller.recordEdit(element, 'style', 'lineHeight', original.lineHeight, e.target.value);
+            const value = e.target.value;
+            setLineHeightDraft(value);
+            if (value === '') return;
+            if (!/^(normal|\d*\.?\d+(px|em|rem|%)?)$/.test(value.trim())) return;
+            controller.recordEdit(element, 'style', 'lineHeight', original.lineHeight, value.trim());
           }}
         />
         <ResetButton controller={controller} element={element} property="lineHeight" />

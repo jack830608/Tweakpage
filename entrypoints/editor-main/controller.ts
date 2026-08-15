@@ -1,5 +1,6 @@
 import { applyAll, revertAll, type ApplyStatus } from '../../lib/edits/apply';
 import { findRecord, upsertRecord } from '../../lib/edits/coalesce';
+import { mergeRecords } from '../../lib/edits/import';
 import { revertDomEdit } from '../../lib/edits/dom';
 import { normalizePageUrl, savePageEdits } from '../../lib/edits/storage';
 import { emptyPageEdits, type EditRecord, type EditType, type PageEdits } from '../../lib/edits/types';
@@ -99,6 +100,12 @@ export class EditsController {
     const record = this.page.records.find((r) => r.id === id);
     if (!record) return;
     this.setRecords(this.page.records.filter((r) => r.id !== id));
+  }
+
+  importRecords(records: EditRecord[]): void {
+    if (this.previewing) this.setPreviewOriginal(false);
+    this.lastEditTarget = null;
+    this.setRecords(mergeRecords(this.page.records, records));
   }
 
   revertAllEdits(): void {

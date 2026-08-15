@@ -191,3 +191,11 @@ test('selecting an image auto-expands the Image section', () => {
   setup(document.getElementById('pic'));
   expect(screen.getByLabelText('Image URL')).toBeTruthy();
 });
+
+test('invalid line height values are not recorded', () => {
+  const { controller } = setup();
+  fireEvent.change(screen.getByLabelText('Line height'), { target: { value: '1.5; } body { display: none' } });
+  expect(controller.getPage().records).toHaveLength(0);
+  fireEvent.change(screen.getByLabelText('Line height'), { target: { value: '1.5' } });
+  expect(controller.getPage().records.find((r) => r.property === 'lineHeight')!.newValue).toBe('1.5');
+});

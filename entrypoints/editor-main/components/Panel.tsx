@@ -101,7 +101,7 @@ export function Panel(props: PanelProps) {
           <button type="button" className="pgve-back-row" onClick={() => setView('edit')}>
             ‹ Back to editing
           </button>
-          <ChangesTab controller={controller} />
+          <ChangesTab controller={controller} onToast={props.onToast} />
         </div>
       ) : (
         <>
