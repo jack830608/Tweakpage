@@ -1,6 +1,9 @@
 import { useState, useSyncExternalStore } from 'react';
 import type { EditsController } from '../controller';
 import { Breadcrumb } from './Breadcrumb';
+import { BackgroundSection } from './sections/BackgroundSection';
+import { ImageSection } from './sections/ImageSection';
+import { SpacingSection } from './sections/SpacingSection';
 import { TextSection } from './sections/TextSection';
 import { TypographySection } from './sections/TypographySection';
 
@@ -59,6 +62,9 @@ function EditTab({ controller, selected, onSelect }: Omit<PanelProps, 'onClose'>
       <Breadcrumb element={selected} onSelect={onSelect} />
       <TextSection element={selected} controller={controller} />
       <TypographySection element={selected} controller={controller} />
+      <BackgroundSection element={selected} controller={controller} />
+      <ImageSection element={selected} controller={controller} />
+      <SpacingSection element={selected} controller={controller} />
     </div>
   );
 }
