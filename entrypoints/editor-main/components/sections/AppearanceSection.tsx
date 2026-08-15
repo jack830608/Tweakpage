@@ -2,7 +2,7 @@ import { isTransparent, pxToDisplay, rgbToHex } from '../../../../lib/css-values
 import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
-import { ResetButton } from '../ResetButton';
+import { Field } from '../Field';
 
 interface SectionProps {
   element: Element;
@@ -69,8 +69,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
 
   return (
     <section className="pgve-section">
-      <label>
-        <span className="pgve-prop">border-radius</span>
+      <Field name="border-radius" property="borderRadius" controller={controller} element={element}>
         <span className="pgve-slider-pair">
           <input
             type="range"
@@ -88,10 +87,8 @@ export function AppearanceSection({ element, controller }: SectionProps) {
             onChange={(e) => setRadius(e.target.value)}
           />
         </span>
-        <ResetButton controller={controller} element={element} property="borderRadius" />
-      </label>
-      <label>
-        <span className="pgve-prop">opacity</span>
+      </Field>
+      <Field name="opacity" property="opacity" controller={controller} element={element}>
         <span className="pgve-slider-pair">
           <input
             type="range"
@@ -110,10 +107,14 @@ export function AppearanceSection({ element, controller }: SectionProps) {
             onChange={(e) => setOpacity(e.target.value)}
           />
         </span>
-        <ResetButton controller={controller} element={element} property="opacity" />
-      </label>
-      <label>
-        <span className="pgve-prop">border-width</span>
+      </Field>
+      <Field
+        name="border-width"
+        property="borderWidth"
+        controller={controller}
+        element={element}
+        companions={['borderStyle']}
+      >
         <input
           type="number"
           min={0}
@@ -121,21 +122,17 @@ export function AppearanceSection({ element, controller }: SectionProps) {
           value={borderWidth.value}
           onChange={(e) => setBorderWidth(e.target.value)}
         />
-        <ResetButton
-          controller={controller}
-          element={element}
-          property="borderWidth"
-          companions={['borderStyle']}
-        />
-      </label>
+      </Field>
       <ColorField
-        label={<span className="pgve-prop">border-color</span>}
+        name="border-color"
+        property="borderColor"
+        controller={controller}
+        element={element}
         ariaLabel="Border color"
         value={borderColor.value === '' ? null : borderColor.value}
         onChange={(hex) =>
           controller.recordEdit(element, 'style', 'borderColor', borderColor.original, hex)
         }
-        trailing={<ResetButton controller={controller} element={element} property="borderColor" />}
       />
     </section>
   );

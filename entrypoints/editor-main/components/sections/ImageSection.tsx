@@ -1,6 +1,6 @@
 import type { EditsController } from '../../controller';
 import { useFieldDraft } from '../../hooks/useFieldDraft';
-import { ResetButton } from '../ResetButton';
+import { Field } from '../Field';
 import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
@@ -13,16 +13,14 @@ export function ImageSection({ element, controller }: SectionProps) {
   if (element.tagName !== 'IMG') return null;
   return (
     <section className="pgve-section">
-      <label>
-        <span className="pgve-prop">src</span>
+      <Field name="src" property="src" controller={controller} element={element}>
         <input
           type="text"
           aria-label="Image URL"
           value={src.value}
           onChange={(e) => src.setDraft(e.target.value)}
         />
-        <ResetButton controller={controller} element={element} property="src" />
-      </label>
+      </Field>
       <button
         type="button"
         aria-label="Apply image"

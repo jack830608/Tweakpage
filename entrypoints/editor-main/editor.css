@@ -93,33 +93,39 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-disclosure-header svg { color: var(--ink-3); }
 .pgve-disclosure-body { padding: 2px 0 12px; }
 
-.pgve-section label { display: grid; grid-template-columns: minmax(0, 1fr) auto 22px; align-items: center; gap: 8px; margin-bottom: 7px; color: var(--ink-2); }
-.pgve-section input[type='number'], .pgve-section input[type='text'], .pgve-section select { width: 130px; padding: 4px 7px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink); font-family: var(--mono); font-size: 12px; transition: border-color var(--ease); }
+.pgve-field { display: grid; grid-template-columns: minmax(0, 1fr) 158px; align-items: center; gap: 8px; margin-bottom: 7px; color: var(--ink-2); }
+.pgve-field--stacked { grid-template-columns: minmax(0, 1fr); gap: 5px; }
+/* Reset sits in a gutter beside the property name, like a diff marker — a column of
+   its own on the right stole width from every control to hold a usually-absent button. */
+.pgve-field-name { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; gap: 3px; min-width: 0; }
+.pgve-section input[type='number'], .pgve-section input[type='text'], .pgve-section select { width: 100%; padding: 4px 7px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink); font-family: var(--mono); font-size: 12px; transition: border-color var(--ease); }
 .pgve-section select { font-family: var(--sans); }
 .pgve-section input:hover, .pgve-section select:hover { border-color: var(--border-strong); }
-.pgve-section textarea { width: 100%; padding: 7px 8px; border: 1px solid var(--border); border-radius: var(--r-control); resize: vertical; background: var(--surface); color: var(--ink); transition: border-color var(--ease); }
+.pgve-section textarea { width: 100%; grid-column: 1; padding: 7px 8px; border: 1px solid var(--border); border-radius: var(--r-control); resize: vertical; background: var(--surface); color: var(--ink); transition: border-color var(--ease); }
 .pgve-section textarea:hover { border-color: var(--border-strong); }
 .pgve-section button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; font-size: 12px; color: var(--ink-2); }
 .pgve-section button:hover { border-color: var(--border-strong); color: var(--ink); }
 /* Fields are named by the CSS property they write, set in mono so they read as code
    and match what lands in the exported change list. */
-.pgve-prop { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: -0.01em; }
-.pgve-section button.pgve-reset { padding: 0 4px; border: none; background: none; color: var(--accent); font-size: 13px; width: 22px; flex: none; justify-content: center; }
+.pgve-prop { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pgve-prop--modified { color: var(--accent-ink); }
+.pgve-section button.pgve-reset { padding: 0; border: none; background: none; color: var(--accent); font-size: 12px; width: 16px; height: 16px; flex: none; justify-content: center; border-radius: 4px; }
 .pgve-section button.pgve-reset:hover { color: var(--accent-ink); }
-.pgve-reset-slot { width: 22px; flex: none; display: inline-block; }
+.pgve-reset-slot { width: 16px; height: 16px; display: inline-block; }
 
-.pgve-color-field { display: flex; gap: 5px; align-items: center; }
-.pgve-color-field input[type='color'] { width: 30px; height: 26px; padding: 1px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; }
-.pgve-color-field input[type='text'] { width: 68px; }
-.pgve-color-field button { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; padding: 0; color: var(--ink-2); }
+.pgve-color-field { display: flex; gap: 5px; align-items: center; width: 100%; }
+.pgve-color-field input[type='color'] { flex: none; width: 30px; height: 26px; padding: 1px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; }
+.pgve-color-field input[type='text'] { flex: 1; min-width: 0; width: auto; }
+.pgve-color-field button { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; padding: 0; color: var(--ink-2); }
 .pgve-color-field button:hover { border-color: var(--border-strong); color: var(--ink); }
-.pgve-swatches { display: flex; gap: 4px; margin: -3px 0 7px; justify-content: flex-end; padding-right: 30px; }
+.pgve-swatches-row { margin-top: -3px; }
+.pgve-swatches { display: flex; gap: 4px; }
 .pgve-swatches button { width: 16px; height: 16px; border: 1px solid rgba(24, 24, 27, 0.12); border-radius: 4px; cursor: pointer; padding: 0; }
 .pgve-swatches button:hover { transform: scale(1.15); }
 
-.pgve-slider-pair { display: flex; gap: 6px; align-items: center; }
-.pgve-slider-pair input[type='range'] { width: 74px; accent-color: var(--accent); cursor: pointer; }
-.pgve-section .pgve-slider-pair input[type='number'] { width: 48px; }
+.pgve-slider-pair { display: flex; gap: 6px; align-items: center; width: 100%; }
+.pgve-slider-pair input[type='range'] { flex: 1; min-width: 0; accent-color: var(--accent); cursor: pointer; }
+.pgve-section .pgve-slider-pair input[type='number'] { flex: none; width: 64px; }
 
 /* ---------- box model ---------- */
 .pgve-box { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; grid-template-rows: 28px auto 28px; gap: 2px; align-items: center; justify-items: center; padding: 4px; border: 1px dashed var(--border-strong); border-radius: var(--r-control); position: relative; }
