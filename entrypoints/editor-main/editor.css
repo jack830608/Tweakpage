@@ -1,0 +1,52 @@
+:host { all: initial; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+
+.pgve-outline { position: fixed; pointer-events: none; z-index: 2147483646; }
+.pgve-outline--hover { outline: 2px dashed #3b82f6; outline-offset: 1px; }
+.pgve-outline--selected { outline: 2px solid #2563eb; outline-offset: 1px; }
+.pgve-outline-label { position: absolute; top: -26px; left: 0; background: #2563eb; color: #fff; font: 11px/1.5 ui-sans-serif, system-ui, sans-serif; padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+
+.pgve-panel { position: fixed; top: 0; right: 0; width: 320px; height: 100vh; z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; background: #ffffff; color: #111827; font: 13px/1.5 ui-sans-serif, system-ui, sans-serif; box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15); }
+.pgve-header { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #e5e7eb; }
+.pgve-header button { border: none; background: none; cursor: pointer; font-size: 14px; }
+.pgve-tabs { display: flex; border-bottom: 1px solid #e5e7eb; }
+.pgve-tabs button { flex: 1; padding: 8px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; }
+.pgve-tabs .pgve-tab-active { border-bottom-color: #2563eb; font-weight: 600; }
+.pgve-empty { padding: 16px; color: #6b7280; }
+.pgve-sections { padding: 12px; display: flex; flex-direction: column; gap: 16px; }
+.pgve-section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 8px; }
+.pgve-section label { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.pgve-section input[type='number'], .pgve-section input[type='text'], .pgve-section select { width: 130px; padding: 4px 6px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; }
+.pgve-section textarea { width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; resize: vertical; }
+.pgve-section button { padding: 4px 10px; border: 1px solid #d1d5db; border-radius: 4px; background: #f9fafb; cursor: pointer; }
+.pgve-section button.pgve-reset { padding: 0 4px; border: none; background: none; color: #2563eb; font-size: 14px; }
+
+.pgve-breadcrumb { display: flex; flex-wrap: wrap; gap: 4px; }
+.pgve-breadcrumb button { padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; background: #f9fafb; cursor: pointer; font-size: 12px; }
+.pgve-breadcrumb .pgve-crumb-active { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+.pgve-color-field { display: flex; gap: 6px; }
+.pgve-color-field input[type='color'] { width: 32px; height: 26px; padding: 0; border: 1px solid #d1d5db; border-radius: 4px; }
+.pgve-color-field input[type='text'] { width: 92px; }
+
+.pgve-box { display: grid; grid-template-columns: 56px 1fr 56px; grid-template-rows: 28px auto 28px; gap: 2px; align-items: center; justify-items: center; padding: 4px; border: 1px dashed #d1d5db; border-radius: 4px; position: relative; }
+.pgve-box--margin { background: #fef3c7; }
+.pgve-box--padding { background: #dcfce7; width: 100%; grid-column: 2; grid-row: 2; }
+.pgve-box-label { position: absolute; top: 2px; left: 6px; font-size: 10px; color: #6b7280; }
+.pgve-box input { width: 48px; padding: 2px 4px; border: 1px solid #d1d5db; border-radius: 3px; text-align: center; background: #fff; }
+.pgve-box-input--top { grid-column: 2; grid-row: 1; }
+.pgve-box-input--right { grid-column: 3; grid-row: 2; }
+.pgve-box-input--bottom { grid-column: 2; grid-row: 3; }
+.pgve-box-input--left { grid-column: 1; grid-row: 2; }
+.pgve-box-center { grid-column: 2; grid-row: 2; font-size: 11px; color: #6b7280; padding: 8px 0; }
+
+.pgve-changes { display: flex; flex-direction: column; gap: 8px; padding: 12px; }
+.pgve-changes-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.pgve-changes-actions button { padding: 4px 10px; border: 1px solid #d1d5db; border-radius: 4px; background: #f9fafb; cursor: pointer; }
+.pgve-changes ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.pgve-change { border: 1px solid #e5e7eb; border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+.pgve-change-target { font-weight: 600; word-break: break-all; }
+.pgve-change-diff { word-break: break-all; }
+.pgve-change-warning { color: #b45309; font-size: 12px; }
+.pgve-change button { align-self: flex-start; padding: 2px 8px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; cursor: pointer; }
