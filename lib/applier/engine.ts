@@ -10,6 +10,7 @@ export class ApplierEngine {
   private observer: MutationObserver | null = null;
   private pending = false;
   private url = '';
+  private loadSeq = 0;
 
   constructor(private doc: Document) {}
 
@@ -18,14 +19,24 @@ export class ApplierEngine {
     browser.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local') return;
       const change = changes[pageKey(this.url)];
-      if (change) this.setEdits((change.newValue as PageEdits | undefined) ?? null);
+      if (change) {
+        this.loadSeq++;
+        this.setEdits((change.newValue as PageEdits | undefined) ?? null);
+      }
     });
-    this.setEdits(await loadPageEdits(url));
+    await this.loadFor(url);
   }
 
   async navigate(url: string): Promise<void> {
     this.url = url;
-    this.setEdits(await loadPageEdits(url));
+    await this.loadFor(url);
+  }
+
+  private async loadFor(url: string): Promise<void> {
+    const seq = ++this.loadSeq;
+    const edits = await loadPageEdits(url);
+    if (this.url !== url || seq !== this.loadSeq) return;
+    this.setEdits(edits);
   }
 
   private setEdits(edits: PageEdits | null): void {

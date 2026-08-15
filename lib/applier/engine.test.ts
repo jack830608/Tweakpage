@@ -66,6 +66,17 @@ test('navigate loads edits for the new url', async () => {
   expect(document.querySelector('.title')!.textContent).toBe('Changed');
 });
 
+test('overlapping navigations settle on the newest url', async () => {
+  await seed('https://a.com/first', [record({ newValue: 'First' })]);
+  await seed('https://a.com/second', [record({ newValue: 'Second' })]);
+  const engine = new ApplierEngine(document);
+  await engine.start('https://a.com/none');
+  const first = engine.navigate('https://a.com/first');
+  const second = engine.navigate('https://a.com/second');
+  await Promise.all([first, second]);
+  expect(document.querySelector('.title')!.textContent).toBe('Second');
+});
+
 test('watchUrlChanges fires on popstate when the href changed', () => {
   const seen: string[] = [];
   watchUrlChanges(window, (url) => seen.push(url));
