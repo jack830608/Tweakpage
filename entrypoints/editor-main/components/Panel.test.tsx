@@ -34,6 +34,7 @@ function setup(selected: Element | null = document.getElementById('title')) {
       onHighlight={vi.fn()}
       onToast={vi.fn()}
       onSnapshot={vi.fn()}
+      onMinimize={vi.fn()}
       onClose={vi.fn()}
     />,
   );
@@ -163,6 +164,7 @@ test('onboarding card renders when showOnboarding and dismisses', () => {
       onHighlight={vi.fn()}
       onToast={vi.fn()}
       onSnapshot={vi.fn()}
+      onMinimize={vi.fn()}
       onClose={vi.fn()}
     />,
   );

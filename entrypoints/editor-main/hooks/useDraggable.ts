@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -24,9 +25,32 @@ export function clampPosition(pos: Position, size: Size, viewport: Size): Positi
   };
 }
 
-export function useDraggable(targetRef: RefObject<HTMLElement | null>) {
+interface UseDraggableOptions {
+  restoredPosition?: Position | null;
+  onDragEnd?: (position: Position) => void;
+}
+
+export function useDraggable(
+  targetRef: RefObject<HTMLElement | null>,
+  { restoredPosition = null, onDragEnd }: UseDraggableOptions = {},
+) {
   const [position, setPosition] = useState<Position | null>(null);
+  const positionRef = useRef<Position | null>(null);
   const grabOffset = useRef<Position | null>(null);
+  const restored = useRef(false);
+
+  useEffect(() => {
+    if (restored.current || !restoredPosition) return;
+    restored.current = true;
+    const rect = targetRef.current?.getBoundingClientRect();
+    const size = rect ? { width: rect.width, height: rect.height } : { width: 320, height: 400 };
+    const clamped = clampPosition(restoredPosition, size, {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+    positionRef.current = clamped;
+    setPosition(clamped);
+  }, [restoredPosition, targetRef]);
 
   const onPointerDown = useCallback(
     (e: ReactPointerEvent<HTMLElement>) => {
@@ -44,21 +68,26 @@ export function useDraggable(targetRef: RefObject<HTMLElement | null>) {
       const offset = grabOffset.current;
       const rect = targetRef.current?.getBoundingClientRect();
       if (!offset || !rect) return;
-      setPosition(
-        clampPosition(
-          { x: e.clientX - offset.x, y: e.clientY - offset.y },
-          { width: rect.width, height: rect.height },
-          { width: window.innerWidth, height: window.innerHeight },
-        ),
+      const next = clampPosition(
+        { x: e.clientX - offset.x, y: e.clientY - offset.y },
+        { width: rect.width, height: rect.height },
+        { width: window.innerWidth, height: window.innerHeight },
       );
+      positionRef.current = next;
+      setPosition(next);
     },
     [targetRef],
   );
 
-  const endDrag = useCallback((e: ReactPointerEvent<HTMLElement>) => {
-    grabOffset.current = null;
-    e.currentTarget.releasePointerCapture?.(e.pointerId);
-  }, []);
+  const endDrag = useCallback(
+    (e: ReactPointerEvent<HTMLElement>) => {
+      const wasDragging = grabOffset.current !== null;
+      grabOffset.current = null;
+      e.currentTarget.releasePointerCapture?.(e.pointerId);
+      if (wasDragging && positionRef.current && onDragEnd) onDragEnd(positionRef.current);
+    },
+    [onDragEnd],
+  );
 
   const style: CSSProperties | undefined = position
     ? { left: position.x, top: position.y, right: 'auto' }

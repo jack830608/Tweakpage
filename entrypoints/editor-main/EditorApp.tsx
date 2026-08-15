@@ -3,6 +3,7 @@ import { browser } from 'wxt/browser';
 import type { EditsController } from './controller';
 import { Overlay } from './components/Overlay';
 import { Panel, type InteractionMode } from './components/Panel';
+import { GripIcon } from './components/icons';
 import { StatusBadge } from './components/StatusBadge';
 import { Toast, type ToastContent } from './components/Toast';
 import { useElementPicker } from './hooks/useElementPicker';
@@ -24,6 +25,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   const [selected, setSelected] = useState<Element | null>(null);
   const [mode, setMode] = useState<InteractionMode>('edit');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const [toast, setToast] = useState<ToastContent | null>(null);
 
   useEffect(() => {
@@ -56,6 +58,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   const onSelect = useCallback((el: Element) => {
     setSelected(el);
     setHovered(null);
+    setMinimized(false);
   }, []);
   const onEscape = useCallback(() => {
     if (mode === 'browse') {
@@ -86,6 +89,19 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         onExitBrowse={() => setMode('edit')}
       />
       {toast && <Toast {...toast} onDismiss={() => setToast(null)} />}
+      {minimized ? (
+        <button
+          type="button"
+          className="pgve-pill"
+          aria-label="Expand Tweakpage"
+          onClick={() => setMinimized(false)}
+        >
+          <GripIcon /> Tweakpage
+          {controller.getPage().records.length > 0 && (
+            <span className="pgve-pill-count">{controller.getPage().records.length}</span>
+          )}
+        </button>
+      ) : (
       <Panel
         controller={controller}
         selected={activeSelected}
@@ -97,8 +113,10 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         onHighlight={setHovered}
         onToast={setToast}
         onSnapshot={onSnapshot}
+        onMinimize={() => setMinimized(true)}
         onClose={onRequestClose}
       />
+      )}
     </>
   );
 }

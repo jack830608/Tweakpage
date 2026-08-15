@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { getSavedPanelPosition, savePanelPosition } from '../panel-position';
+import type { Position } from '../hooks/useDraggable';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
 import { useDraggable } from '../hooks/useDraggable';
@@ -6,7 +8,7 @@ import { ShareRow } from './ShareRow';
 import { ChangesTab } from './ChangesTab';
 import { CollapsibleSection } from './CollapsibleSection';
 import { ModeSwitch } from './ModeSwitch';
-import { GripIcon, HandIcon, PencilIcon } from './icons';
+import { GripIcon, HandIcon, MinusIcon, PencilIcon } from './icons';
 import { OnboardingCard } from './OnboardingCard';
 import { SelectionCard } from './SelectionCard';
 import { AppearanceSection } from './sections/AppearanceSection';
@@ -31,6 +33,7 @@ export interface PanelProps {
   onHighlight: (el: Element | null) => void;
   onToast: (toast: ToastContent) => void;
   onSnapshot: () => void;
+  onMinimize: () => void;
   onClose: () => void;
 }
 
@@ -73,13 +76,25 @@ export function Panel(props: PanelProps) {
   const count = useSyncExternalStore(controller.subscribe, controller.getPage).records.length;
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
   const panelRef = useRef<HTMLElement>(null);
-  const { style, handleProps } = useDraggable(panelRef);
+  const [restoredPosition, setRestoredPosition] = useState<Position | null>(null);
+  useEffect(() => {
+    void getSavedPanelPosition().then((pos) => {
+      if (pos) setRestoredPosition(pos);
+    });
+  }, []);
+  const { style, handleProps } = useDraggable(panelRef, {
+    restoredPosition,
+    onDragEnd: savePanelPosition,
+  });
 
   return (
     <aside className="pgve-panel" ref={panelRef} style={style}>
       <header className="pgve-header" {...handleProps}>
         <strong><GripIcon /> Tweakpage</strong>
-        <button type="button" onClick={onClose} aria-label="Close">✕</button>
+        <span className="pgve-header-buttons">
+          <button type="button" onClick={props.onMinimize} aria-label="Minimize"><MinusIcon /></button>
+          <button type="button" onClick={onClose} aria-label="Close">✕</button>
+        </span>
       </header>
       <ModeSwitch
         ariaLabel="Interaction mode"
