@@ -79,3 +79,12 @@ test('ensureStyleTag reuses an existing tag', () => {
   const b = ensureStyleTag(document);
   expect(a).toBe(b);
 });
+
+test('applyAll removes the style tag when no enabled style records remain', () => {
+  applyAll([record({})], document);
+  expect(document.querySelector('style[data-pg-editor]')).not.toBeNull();
+  applyAll([record({ enabled: false })], document);
+  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  applyAll([], document);
+  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+});
