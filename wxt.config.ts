@@ -8,5 +8,8 @@ export default defineConfig({
     permissions: ['storage'],
     host_permissions: ['http://*/*', 'https://*/*'],
     action: { default_title: 'PG Visual Editor' },
+    web_accessible_resources: [
+      { resources: ['editor-main.js'], matches: ['http://*/*', 'https://*/*'] },
+    ],
   },
 });
