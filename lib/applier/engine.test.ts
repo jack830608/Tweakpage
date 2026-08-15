@@ -103,3 +103,17 @@ test('pauses reapply while the editor previews the original', async () => {
   await wait(120);
   expect(document.querySelector('.title')!.textContent).toBe('Changed');
 });
+
+test('reports the edit count for the badge whenever edits change', async () => {
+  const counts: number[] = [];
+  fakeBrowser.runtime.onMessage.addListener((message: unknown) => {
+    const m = message as { type?: string; count?: number };
+    if (m.type === 'pg:count') counts.push(m.count ?? -1);
+  });
+  await seed('https://a.com/page', [record({})]);
+  const engine = new ApplierEngine(document);
+  await engine.start('https://a.com/page');
+  expect(counts.at(-1)).toBe(1);
+  await engine.navigate('https://a.com/nothing');
+  expect(counts.at(-1)).toBe(0);
+});

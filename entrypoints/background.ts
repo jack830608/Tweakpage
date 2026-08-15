@@ -9,9 +9,19 @@ export default defineBackground(() => {
   });
 
   browser.runtime.onMessage.addListener(
-    (message: { type?: string; active?: boolean; filename?: string; url?: string }, sender) => {
+    (message: { type?: string; active?: boolean; count?: number; filename?: string; url?: string }, sender) => {
       if (message?.type === 'pg:state' && sender.tab?.id != null) {
-        void browser.action.setBadgeText({ tabId: sender.tab.id, text: message.active ? 'ON' : '' });
+        void browser.action.setBadgeBackgroundColor({
+          tabId: sender.tab.id,
+          color: message.active ? '#4f46e5' : '#71717a',
+        });
+      }
+      if (message?.type === 'pg:count' && typeof message.count === 'number' && sender.tab?.id != null) {
+        void browser.action.setBadgeText({
+          tabId: sender.tab.id,
+          text: message.count > 0 ? String(message.count) : '',
+        });
+        void browser.action.setBadgeBackgroundColor({ tabId: sender.tab.id, color: '#71717a' });
       }
       if (message?.type === 'pg:capture' && typeof message.filename === 'string' && sender.tab?.windowId != null) {
         if (!/^tweakpage-[\w.-]+\.png$/.test(message.filename)) return;
