@@ -1,4 +1,4 @@
-import { useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
 import { useDraggable } from '../hooks/useDraggable';
@@ -61,6 +61,11 @@ export function Panel(props: PanelProps) {
     Text: true,
     Typography: true,
   });
+  useEffect(() => {
+    if (props.selected?.tagName === 'IMG') {
+      setOpenSections((open) => (open.Image ? open : { ...open, Image: true }));
+    }
+  }, [props.selected]);
   const count = useSyncExternalStore(controller.subscribe, controller.getPage).records.length;
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
   const panelRef = useRef<HTMLElement>(null);

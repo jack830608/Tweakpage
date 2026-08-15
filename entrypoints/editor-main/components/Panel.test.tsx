@@ -185,3 +185,9 @@ test('image section is listed for images, text section is not', () => {
   expect(screen.getByRole('button', { name: /Image/ })).toBeTruthy();
   expect(screen.queryByRole('button', { name: /Text/ })).toBeNull();
 });
+
+test('selecting an image auto-expands the Image section', () => {
+  document.body.innerHTML = '<img id="pic" src="/a.png">';
+  setup(document.getElementById('pic'));
+  expect(screen.getByLabelText('Image URL')).toBeTruthy();
+});
