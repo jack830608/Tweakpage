@@ -27,7 +27,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     });
   }, [onRequestClose]);
 
-  useElementPicker(host, { onHover, onSelect, onEscape });
+  useElementPicker(host, true, { onHover, onSelect, onEscape });
 
   const activeSelected = selected?.isConnected ? selected : null;
 

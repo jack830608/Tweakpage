@@ -1,6 +1,8 @@
-import { renderHook } from '@testing-library/react';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { cleanup, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { eventTargetElement, useElementPicker } from './useElementPicker';
+
+afterEach(cleanup);
 
 beforeEach(() => {
   document.body.innerHTML = '<p id="p">x</p><div id="host"><button id="inside">b</button></div>';
@@ -29,7 +31,7 @@ test('Escape inside the host does not fire onEscape; Escape outside does', () =>
   const host = document.getElementById('host')!;
   const onEscape = vi.fn();
   renderHook(() =>
-    useElementPicker(host, { onHover: () => {}, onSelect: () => {}, onEscape }),
+    useElementPicker(host, true, { onHover: () => {}, onSelect: () => {}, onEscape }),
   );
 
   document.getElementById('inside')!.dispatchEvent(
@@ -47,7 +49,7 @@ test('Alt-held clicks and hovers pass through to the page', () => {
   const host = document.getElementById('host')!;
   const onSelect = vi.fn();
   const onHover = vi.fn();
-  renderHook(() => useElementPicker(host, { onHover, onSelect, onEscape: () => {} }));
+  renderHook(() => useElementPicker(host, true, { onHover, onSelect, onEscape: () => {} }));
 
   const altClick = new MouseEvent('click', { bubbles: true, composed: true, altKey: true, cancelable: true });
   document.getElementById('p')!.dispatchEvent(altClick);
@@ -62,4 +64,27 @@ test('Alt-held clicks and hovers pass through to the page', () => {
   const plainClick = new MouseEvent('click', { bubbles: true, composed: true, cancelable: true });
   document.getElementById('p')!.dispatchEvent(plainClick);
   expect(onSelect).toHaveBeenCalledWith(document.getElementById('p'));
+});
+
+test('disabled picker passes clicks and hovers through but still handles Escape', () => {
+  const host = document.getElementById('host')!;
+  const onSelect = vi.fn();
+  const onHover = vi.fn();
+  const onEscape = vi.fn();
+  renderHook(() => useElementPicker(host, false, { onHover, onSelect, onEscape }));
+
+  const click = new MouseEvent('click', { bubbles: true, composed: true, cancelable: true });
+  document.getElementById('p')!.dispatchEvent(click);
+  expect(onSelect).not.toHaveBeenCalled();
+  expect(click.defaultPrevented).toBe(false);
+
+  document.getElementById('p')!.dispatchEvent(
+    new MouseEvent('mousemove', { bubbles: true, composed: true }),
+  );
+  expect(onHover).not.toHaveBeenCalled();
+
+  document.body.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }),
+  );
+  expect(onEscape).toHaveBeenCalledTimes(1);
 });

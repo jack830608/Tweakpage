@@ -15,10 +15,12 @@ export function eventTargetElement(e: Event, host: HTMLElement): Element | null 
 
 export function useElementPicker(
   host: HTMLElement,
+  enabled: boolean,
   { onHover, onSelect, onEscape }: PickerCallbacks,
 ): void {
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
+      if (!enabled) return;
       if (e.altKey) {
         onHover(null);
         return;
@@ -26,7 +28,7 @@ export function useElementPicker(
       onHover(eventTargetElement(e, host));
     };
     const onClick = (e: MouseEvent) => {
-      if (e.altKey) return;
+      if (!enabled || e.altKey) return;
       const el = eventTargetElement(e, host);
       if (!el) return;
       e.preventDefault();
@@ -47,5 +49,5 @@ export function useElementPicker(
       document.removeEventListener('click', onClick, true);
       document.removeEventListener('keydown', onKeyDown, true);
     };
-  }, [host, onHover, onSelect, onEscape]);
+  }, [host, enabled, onHover, onSelect, onEscape]);
 }
