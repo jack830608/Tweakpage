@@ -1,3 +1,4 @@
+import { browser } from 'wxt/browser';
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
@@ -24,13 +25,17 @@ export function ExportButtons({ controller }: { controller: EditsController }) {
   );
 }
 
-function downloadFile(name: string, content: string): void {
-  const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = name;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
+// A blob: URL created here would be scoped to this content script's isolated world and
+// can't be resolved by Chrome's download machinery, so hand the content to the background
+// service worker (which has chrome.downloads access) as a data: URL instead.
+function downloadFile(filename: string, content: string): void {
+  const url = `data:application/json;base64,${toBase64(content)}`;
+  browser.runtime.sendMessage({ type: 'pg:download', filename, url }).catch(() => {});
+}
+
+function toBase64(content: string): string {
+  const bytes = new TextEncoder().encode(content);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
 }

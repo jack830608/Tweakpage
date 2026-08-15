@@ -8,9 +8,14 @@ export default defineBackground(() => {
     });
   });
 
-  browser.runtime.onMessage.addListener((message: { type?: string; active?: boolean }, sender) => {
-    if (message?.type === 'pg:state' && sender.tab?.id != null) {
-      void browser.action.setBadgeText({ tabId: sender.tab.id, text: message.active ? 'ON' : '' });
-    }
-  });
+  browser.runtime.onMessage.addListener(
+    (message: { type?: string; active?: boolean; filename?: string; url?: string }, sender) => {
+      if (message?.type === 'pg:state' && sender.tab?.id != null) {
+        void browser.action.setBadgeText({ tabId: sender.tab.id, text: message.active ? 'ON' : '' });
+      }
+      if (message?.type === 'pg:download' && message.filename && message.url) {
+        void browser.downloads.download({ url: message.url, filename: message.filename });
+      }
+    },
+  );
 });

@@ -5,7 +5,7 @@ export default defineConfig({
   manifest: {
     name: 'PG Visual Editor',
     description: 'Visually edit any page and export the changes.',
-    permissions: ['storage'],
+    permissions: ['storage', 'downloads'],
     host_permissions: ['http://*/*', 'https://*/*'],
     action: { default_title: 'PG Visual Editor' },
     web_accessible_resources: [
