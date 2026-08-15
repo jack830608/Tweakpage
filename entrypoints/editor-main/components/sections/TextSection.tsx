@@ -28,6 +28,12 @@ export function TextSection({ element, controller }: SectionProps) {
         value={value}
         onChange={(e) => controller.recordEdit(element, 'text', 'textContent', original, e.target.value)}
       />
+      {element.firstElementChild !== null && (
+        <p className="pgve-hint">
+          This element contains formatted parts — editing text here replaces them with
+          plain text. Use the breadcrumb to edit an inner element instead.
+        </p>
+      )}
     </section>
   );
 }

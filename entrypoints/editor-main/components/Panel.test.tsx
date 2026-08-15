@@ -81,3 +81,15 @@ test('an edited property shows a reset control that reverts it', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Reset fontSize' }));
   expect(controller.getPage().records).toHaveLength(0);
 });
+
+test('warns when text editing would flatten nested markup', () => {
+  document.body.innerHTML =
+    '<h1 id="title" style="font-size: 32px; color: rgb(51, 51, 51)">Save <strong>20%</strong> today</h1>';
+  setup(document.getElementById('title'));
+  expect(screen.getByText(/replaces them with\s+plain text/)).toBeTruthy();
+});
+
+test('no flattening warning for plain text elements', () => {
+  setup();
+  expect(screen.queryByText(/replaces them with\s+plain text/)).toBeNull();
+});
