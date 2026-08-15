@@ -1,3 +1,5 @@
+import { EyeIcon, HandIcon } from './icons';
+
 interface StatusBadgeProps {
   previewing: boolean;
   browsing: boolean;
@@ -9,14 +11,14 @@ export function StatusBadge({ previewing, browsing, onExitPreview, onExitBrowse 
   if (previewing) {
     return (
       <button type="button" className="pgve-badge" onClick={onExitPreview}>
-        👁 Viewing original — Back to edited
+        <EyeIcon /> Viewing original — Back to edited
       </button>
     );
   }
   if (browsing) {
     return (
       <button type="button" className="pgve-badge" onClick={onExitBrowse}>
-        🖐 Browsing — switch to Edit to select
+        <HandIcon /> Browsing — switch to Edit to select
       </button>
     );
   }

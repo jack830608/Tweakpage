@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { buildElementLabel } from '../../../lib/selector/generate';
 import type { EditsController } from '../controller';
 import { Breadcrumb } from './Breadcrumb';
+import { EyeIcon, EyeOffIcon } from './icons';
 
 interface SelectionCardProps {
   element: Element;
@@ -32,7 +33,7 @@ export function SelectionCard({ element, controller, onSelect }: SelectionCardPr
           title={hidden ? 'Show the element again' : 'Hide the selected element'}
           onClick={onToggleHide}
         >
-          {hidden ? '👁 Unhide' : '🙈 Hide'}
+          {hidden ? <><EyeIcon /> Unhide</> : <><EyeOffIcon /> Hide</>}
         </button>
       </div>
       <Breadcrumb element={element} onSelect={onSelect} />

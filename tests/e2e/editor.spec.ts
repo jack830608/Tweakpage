@@ -113,13 +113,13 @@ test('browse mode passes clicks through; edit mode selects', async ({ context })
   await page.locator('h1').click();
   await expect(page.locator('.pgve-outline--selected')).toBeVisible();
 
-  await page.getByRole('button', { name: '🖐 Browse' }).click();
+  await page.getByRole('button', { name: 'Browse', exact: true }).click();
   await expect(page.locator('.pgve-outline--selected')).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Browsing/ })).toBeVisible();
   await page.locator('#anchor-link').click();
   expect(page.url()).toContain('#test-anchor');
 
-  await page.getByRole('button', { name: '✏ Edit' }).click();
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
   await expect(page.locator('.pgve-outline--selected')).toBeVisible();
   await expect(page.locator('.pgve-selection-label')).toBeVisible();
   expect(page.url()).toContain('#test-anchor');

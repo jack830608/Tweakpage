@@ -6,6 +6,7 @@ import { ShareRow } from './ShareRow';
 import { ChangesTab } from './ChangesTab';
 import { CollapsibleSection } from './CollapsibleSection';
 import { ModeSwitch } from './ModeSwitch';
+import { GripIcon, HandIcon, PencilIcon } from './icons';
 import { OnboardingCard } from './OnboardingCard';
 import { SelectionCard } from './SelectionCard';
 import { AppearanceSection } from './sections/AppearanceSection';
@@ -33,8 +34,8 @@ export interface PanelProps {
 }
 
 const INTERACTION_OPTIONS = [
-  { value: 'edit', label: '✏ Edit' },
-  { value: 'browse', label: '🖐 Browse' },
+  { value: 'edit', label: <><PencilIcon /> Edit</> },
+  { value: 'browse', label: <><HandIcon /> Browse</> },
 ] as const;
 
 const COMPARE_OPTIONS = [
@@ -76,7 +77,7 @@ export function Panel(props: PanelProps) {
   return (
     <aside className="pgve-panel" ref={panelRef} style={style}>
       <header className="pgve-header" {...handleProps}>
-        <strong><span aria-hidden="true">⠿ </span>Tweakpage</strong>
+        <strong><GripIcon /> Tweakpage</strong>
         <button type="button" onClick={onClose} aria-label="Close">✕</button>
       </header>
       <ModeSwitch

@@ -3,6 +3,7 @@ import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
+import { CameraIcon, CopyIcon, DownloadIcon } from './icons';
 
 interface ShareRowProps {
   controller: EditsController;
@@ -37,10 +38,10 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           title="Copy a Markdown summary for engineers"
           onClick={() => void onMarkdown()}
         >
-          📋 Copy
+          <CopyIcon /> Copy
         </button>
         <button type="button" aria-label="Export JSON" title="Download the edits as JSON" onClick={onJson}>
-          ⤓ Export
+          <DownloadIcon /> Export
         </button>
         <button
           type="button"
@@ -48,7 +49,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           title="Save before & after screenshots"
           onClick={onSnapshot}
         >
-          📸 Snap
+          <CameraIcon /> Snap
         </button>
       </div>
     </div>

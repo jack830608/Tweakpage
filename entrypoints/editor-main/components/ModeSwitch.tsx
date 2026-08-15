@@ -1,6 +1,8 @@
+import type { ReactNode } from 'react';
+
 interface ModeSwitchOption<T extends string> {
   value: T;
-  label: string;
+  label: ReactNode;
 }
 
 interface ModeSwitchProps<T extends string> {
