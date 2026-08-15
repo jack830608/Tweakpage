@@ -20,8 +20,13 @@ export function ensureStyleTag(doc: Document): HTMLStyleElement {
 export function applyAll(records: EditRecord[], doc: Document): Map<string, ApplyStatus> {
   const statuses = new Map<string, ApplyStatus>();
   const css = buildCssText(records);
-  const tag = ensureStyleTag(doc);
-  if (tag.textContent !== css) tag.textContent = css;
+  const hasStyleRecords = records.some((r) => r.type === 'style' && r.enabled);
+  if (hasStyleRecords || css) {
+    const tag = ensureStyleTag(doc);
+    if (tag.textContent !== css) tag.textContent = css;
+  } else {
+    doc.querySelector('style[data-pg-editor]')?.remove();
+  }
   for (const record of records) {
     if (!record.enabled) {
       statuses.set(record.id, 'disabled');
