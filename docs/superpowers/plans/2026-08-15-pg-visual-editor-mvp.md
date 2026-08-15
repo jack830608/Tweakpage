@@ -1119,8 +1119,8 @@ beforeEach(() => {
 });
 
 test('normalizePageUrl keeps origin + pathname, drops query and hash', () => {
-  expect(normalizePageUrl('https://positivegrid.com/products/spark?utm_source=x#hero')).toBe(
-    'https://positivegrid.com/products/spark',
+  expect(normalizePageUrl('https://example.com/products/spark?utm_source=x#hero')).toBe(
+    'https://example.com/products/spark',
   );
 });
 
@@ -1240,7 +1240,7 @@ function record(overrides: Partial<EditRecord>): EditRecord {
 
 const page: PageEdits = {
   version: 1,
-  url: 'https://positivegrid.com/products/spark',
+  url: 'https://example.com/products/spark',
   title: 'Spark',
   updatedAt: '2026-08-15T10:00:00.000Z',
   records: [
@@ -1264,8 +1264,8 @@ test('toJson round-trips and keeps the schema version', () => {
 });
 
 test('exportFilename uses hostname and date', () => {
-  expect(exportFilename('https://positivegrid.com/products/spark', '20260815')).toBe(
-    'pg-edits-positivegrid.com-20260815.json',
+  expect(exportFilename('https://example.com/products/spark', '20260815')).toBe(
+    'pg-edits-example.com-20260815.json',
   );
 });
 
@@ -1273,7 +1273,7 @@ test('toMarkdown groups records by element and formats each kind', () => {
   const md = toMarkdown(page, '2026-08-15');
   expect(md).toBe(
     [
-      '# Page edits — https://positivegrid.com/products/spark',
+      '# Page edits — https://example.com/products/spark',
       'Exported 2026-08-15 by PG Visual Editor',
       '',
       '## h2.hero-title "Unleash Your Sound"',
@@ -3379,7 +3379,7 @@ Not supported yet: elements inside iframes, importing JSON, uploading local imag
 
 ## Manual QA checklist (per release)
 
-- [ ] positivegrid.com — edit hero copy + color, reload, verify replay, export Markdown
+- [ ] a real marketing/landing page — edit hero copy + color, reload, verify replay, export Markdown
 - [ ] A React SPA — edit text, trigger a client-side navigation and back, verify replay
 - [ ] A static site — full flow including Export JSON
 ```

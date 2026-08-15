@@ -53,7 +53,7 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 
 ## Manual QA checklist (per release)
 
-- [ ] positivegrid.com — edit hero copy + color, reload, verify replay, export Markdown
+- [ ] A real marketing/landing page — edit hero copy + color, reload, verify replay, export Markdown
 - [ ] A React SPA — edit text, trigger a client-side navigation and back, verify replay
 - [ ] A static site — full flow including Export JSON
 

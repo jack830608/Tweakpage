@@ -6,7 +6,7 @@
 
 ## 1. Overview
 
-A Chrome extension (Manifest V3) that lets non-technical marketing colleagues at Positive Grid visually edit elements on any web page: hover shows a dashed outline, click selects the element, and a side panel edits text content, colors, font size/weight, line-height, images, background, and padding/margin.
+A Chrome extension (Manifest V3) that lets non-technical marketing teammates visually edit elements on any web page: hover shows a dashed outline, click selects the element, and a side panel edits text content, colors, font size/weight, line-height, images, background, and padding/margin.
 
 Edits are recorded as **structured diffs** (selector + property + old value → new value), not throwaway DOM mutations. This is the core mental model — the same one used by A/B-testing visual editors (VWO, Optimizely). It enables the two primary use cases:
 
@@ -194,7 +194,7 @@ The `PageEdits` object (with `version`) serialized to a file: `pg-edits-<hostnam
 Grouped by element:
 
 ```markdown
-# Page edits — https://positivegrid.com/products/spark
+# Page edits — https://example.com/products/spark
 Exported 2026-08-15 by PG Visual Editor
 
 ## h2.hero-title "Unleash Your…"
@@ -221,7 +221,7 @@ Pick a JSON file → validate schema version → merge into that URL's stored ed
 
 - **Unit (vitest + happy-dom):** selector generation/filtering/fallback resolution; edit model (apply, revert, coalesce, merge); export formatters.
 - **Smoke E2E (Playwright + chromium with extension loaded):** activate → hover → select → edit text + color → reload → assert replay → export JSON and verify contents.
-- **Manual checklist:** positivegrid.com, one React SPA, one static site.
+- **Manual checklist:** a real marketing site, one React SPA, one static site.
 
 ## 12. Phasing
 
@@ -234,7 +234,7 @@ Pick a JSON file → validate schema version → merge into that URL's stored ed
 - Export: JSON + Markdown
 - Changes tab with delete + revert all
 
-**Exit criteria:** a marketing colleague can restyle a positivegrid.com page, reload without losing work, and hand an engineer a Markdown change list.
+**Exit criteria:** a marketing teammate can restyle a real page, reload without losing work, and hand an engineer a Markdown change list.
 
 ### Phase 2
 

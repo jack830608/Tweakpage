@@ -8,8 +8,8 @@ beforeEach(() => {
 });
 
 test('normalizePageUrl keeps origin + pathname, drops query and hash', () => {
-  expect(normalizePageUrl('https://positivegrid.com/products/spark?utm_source=x#hero')).toBe(
-    'https://positivegrid.com/products/spark',
+  expect(normalizePageUrl('https://example.com/products/spark?utm_source=x#hero')).toBe(
+    'https://example.com/products/spark',
   );
 });
 
