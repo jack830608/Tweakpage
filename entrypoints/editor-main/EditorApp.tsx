@@ -1,6 +1,7 @@
 import { useCallback, useState, useSyncExternalStore } from 'react';
 import type { EditsController } from './controller';
 import { Overlay } from './components/Overlay';
+import { Panel } from './components/Panel';
 import { useElementPicker } from './hooks/useElementPicker';
 
 export interface EditorAppProps {
@@ -33,17 +34,12 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   return (
     <>
       <Overlay hovered={hovered?.isConnected ? hovered : null} selected={activeSelected} />
-      <aside className="pgve-panel">
-        <header className="pgve-header">
-          <strong>PG Visual Editor</strong>
-          <button type="button" onClick={onRequestClose} aria-label="Close">✕</button>
-        </header>
-        <p className="pgve-empty">
-          {activeSelected
-            ? `Selected: ${activeSelected.tagName.toLowerCase()}`
-            : 'Select an element on the page to edit it.'}
-        </p>
-      </aside>
+      <Panel
+        controller={controller}
+        selected={activeSelected}
+        onSelect={setSelected}
+        onClose={onRequestClose}
+      />
     </>
   );
 }
