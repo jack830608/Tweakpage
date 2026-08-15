@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
 import type { EditsController } from '../../controller';
+import { useFieldDraft } from '../../hooks/useFieldDraft';
+import { ResetButton } from '../ResetButton';
 import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
@@ -8,20 +9,24 @@ interface SectionProps {
 }
 
 export function ImageSection({ element, controller }: SectionProps) {
-  const original = useMemo(() => element.getAttribute('src') ?? '', [element]);
-  const [url, setUrl] = useState(original);
-  useEffect(() => setUrl(element.getAttribute('src') ?? ''), [element]);
+  const src = useFieldDraft(controller, element, 'src', element.getAttribute('src') ?? '');
   if (element.tagName !== 'IMG') return null;
   return (
     <section className="pgve-section">
       <label>
-        {t('label_image_url')}
-        <input type="text" aria-label="Image URL" value={url} onChange={(e) => setUrl(e.target.value)} />
-        <span className="pgve-reset-slot" aria-hidden="true" />
+        <span className="pgve-prop">src</span>
+        <input
+          type="text"
+          aria-label="Image URL"
+          value={src.value}
+          onChange={(e) => src.setDraft(e.target.value)}
+        />
+        <ResetButton controller={controller} element={element} property="src" />
       </label>
       <button
         type="button"
-        onClick={() => controller.recordEdit(element, 'attr', 'src', original, url)}
+        aria-label="Apply image"
+        onClick={() => controller.recordEdit(element, 'attr', 'src', src.original, src.value)}
       >
         {t('apply')}
       </button>

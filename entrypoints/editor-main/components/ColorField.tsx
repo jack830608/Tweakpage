@@ -3,8 +3,8 @@ import { addRecentColor, getRecentColors } from '../../../lib/recent-colors';
 import { EyedropperIcon } from './icons';
 
 interface ColorFieldProps {
-  label: string;
-  ariaLabel?: string;
+  label: ReactNode;
+  ariaLabel: string;
   value: string | null;
   onChange: (hex: string) => void;
   trailing?: ReactNode;
@@ -14,8 +14,7 @@ interface EyeDropperResult {
   sRGBHex: string;
 }
 
-export function ColorField({ label, ariaLabel, value, onChange, trailing }: ColorFieldProps) {
-  const aria = ariaLabel ?? label;
+export function ColorField({ label, ariaLabel: aria, value, onChange, trailing }: ColorFieldProps) {
   const [draft, setDraft] = useState(value ?? '');
   const [recent, setRecent] = useState<string[]>([]);
   useEffect(() => setDraft(value ?? ''), [value]);

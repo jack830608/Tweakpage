@@ -1,9 +1,8 @@
-import { useMemo } from 'react';
-import { isTransparent, pxToNumber, rgbToHex } from '../../../../lib/css-values';
+import { isTransparent, pxToDisplay, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
+import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
 import { ResetButton } from '../ResetButton';
-import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -12,71 +11,94 @@ interface SectionProps {
 
 export function AppearanceSection({ element, controller }: SectionProps) {
   const cs = getComputedStyle(element);
-  const original = useMemo(() => {
-    const s = getComputedStyle(element);
-    return {
-      borderRadius: s.getPropertyValue('border-top-left-radius'),
-      opacity: s.opacity,
-      borderWidth: s.getPropertyValue('border-top-width'),
-      borderStyle: s.getPropertyValue('border-top-style'),
-      borderColor: s.getPropertyValue('border-top-color'),
-    };
-  }, [element]);
-
-  const radius = pxToNumber(cs.getPropertyValue('border-top-left-radius'));
-  const opacity = Math.round(Number.parseFloat(cs.opacity || '1') * 100);
+  const radius = useFieldDraft(
+    controller,
+    element,
+    'borderRadius',
+    cs.getPropertyValue('border-top-left-radius'),
+    pxToDisplay,
+    sameNumber,
+  );
+  const opacity = useFieldDraft(controller, element, 'opacity', cs.opacity, toPercent, sameNumber);
+  const borderWidth = useFieldDraft(
+    controller,
+    element,
+    'borderWidth',
+    cs.getPropertyValue('border-top-width'),
+    pxToDisplay,
+    sameNumber,
+  );
+  const borderColor = useFieldDraft(
+    controller,
+    element,
+    'borderColor',
+    cs.getPropertyValue('border-top-color'),
+    (v) => (isTransparent(v) ? '' : rgbToHex(v)),
+  );
 
   const setRadius = (raw: string) => {
-    if (raw === '') return;
+    radius.setDraft(raw);
+    if (raw.trim() === '' || !Number.isFinite(Number(raw))) return;
     const value = Math.max(0, Number(raw));
-    controller.recordEdit(element, 'style', 'borderRadius', original.borderRadius, `${value}px`);
+    controller.recordEdit(element, 'style', 'borderRadius', radius.original, `${value}px`);
   };
   const setBorderWidth = (raw: string) => {
-    if (raw === '') return;
+    borderWidth.setDraft(raw);
+    if (raw.trim() === '' || !Number.isFinite(Number(raw))) return;
     const value = Math.max(0, Number(raw));
-    controller.recordEdit(element, 'style', 'borderWidth', original.borderWidth, `${value}px`);
-    if (value > 0 && getComputedStyle(element).getPropertyValue('border-top-style') === 'none') {
-      controller.recordEdit(element, 'style', 'borderStyle', original.borderStyle, 'solid');
+    controller.recordEdit(element, 'style', 'borderWidth', borderWidth.original, `${value}px`);
+    // A width with no style paints nothing. Hosts report an unset style as either
+    // "none" or an empty string.
+    const style = getComputedStyle(element).getPropertyValue('border-top-style');
+    if (value > 0 && (style === 'none' || style === '')) {
+      controller.recordEdit(
+        element,
+        'style',
+        'borderStyle',
+        cs.getPropertyValue('border-top-style'),
+        'solid',
+      );
     }
   };
   const setOpacity = (raw: string) => {
-    if (raw === '') return;
+    opacity.setDraft(raw);
+    if (raw.trim() === '' || !Number.isFinite(Number(raw))) return;
     const percent = Math.min(100, Math.max(0, Number(raw)));
-    controller.recordEdit(element, 'style', 'opacity', original.opacity, `${percent / 100}`);
+    controller.recordEdit(element, 'style', 'opacity', opacity.original, `${percent / 100}`);
   };
 
   return (
     <section className="pgve-section">
       <label>
-        {t('label_corner_radius')}
+        <span className="pgve-prop">border-radius</span>
         <span className="pgve-slider-pair">
           <input
             type="range"
             min={0}
             max={64}
             aria-label="Corner radius"
-            value={Math.min(64, radius)}
+            value={clamp(radius.value, 0, 64)}
             onChange={(e) => setRadius(e.target.value)}
           />
           <input
             type="number"
             min={0}
             aria-label="Corner radius value"
-            value={radius}
+            value={radius.value}
             onChange={(e) => setRadius(e.target.value)}
           />
         </span>
         <ResetButton controller={controller} element={element} property="borderRadius" />
       </label>
       <label>
-        {t('label_opacity')}
+        <span className="pgve-prop">opacity</span>
         <span className="pgve-slider-pair">
           <input
             type="range"
             min={0}
             max={100}
             aria-label="Opacity"
-            value={opacity}
+            value={clamp(opacity.value, 0, 100)}
             onChange={(e) => setOpacity(e.target.value)}
           />
           <input
@@ -84,30 +106,48 @@ export function AppearanceSection({ element, controller }: SectionProps) {
             min={0}
             max={100}
             aria-label="Opacity value"
-            value={opacity}
+            value={opacity.value}
             onChange={(e) => setOpacity(e.target.value)}
           />
         </span>
         <ResetButton controller={controller} element={element} property="opacity" />
       </label>
       <label>
-        {t('label_border_width')}
+        <span className="pgve-prop">border-width</span>
         <input
           type="number"
           min={0}
           aria-label="Border width"
-          value={pxToNumber(cs.getPropertyValue('border-top-width'))}
+          value={borderWidth.value}
           onChange={(e) => setBorderWidth(e.target.value)}
         />
-        <ResetButton controller={controller} element={element} property="borderWidth" />
+        <ResetButton
+          controller={controller}
+          element={element}
+          property="borderWidth"
+          companions={['borderStyle']}
+        />
       </label>
       <ColorField
-        label={t('label_border_color')}
+        label={<span className="pgve-prop">border-color</span>}
         ariaLabel="Border color"
-        value={isTransparent(cs.getPropertyValue('border-top-color')) ? null : rgbToHex(cs.getPropertyValue('border-top-color'))}
-        onChange={(hex) => controller.recordEdit(element, 'style', 'borderColor', original.borderColor, hex)}
+        value={borderColor.value === '' ? null : borderColor.value}
+        onChange={(hex) =>
+          controller.recordEdit(element, 'style', 'borderColor', borderColor.original, hex)
+        }
         trailing={<ResetButton controller={controller} element={element} property="borderColor" />}
       />
     </section>
   );
+}
+
+function toPercent(raw: string): string {
+  const n = Number.parseFloat(raw);
+  return String(Math.round((Number.isFinite(n) ? n : 1) * 100));
+}
+
+function clamp(value: string, min: number, max: number): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return min;
+  return Math.min(max, Math.max(min, n));
 }

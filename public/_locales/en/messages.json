@@ -94,57 +94,6 @@
   "sec_spacing": {
     "message": "Spacing"
   },
-  "label_font_family": {
-    "message": "Font family"
-  },
-  "label_font_size": {
-    "message": "Font size"
-  },
-  "label_font_weight": {
-    "message": "Font weight"
-  },
-  "label_line_height": {
-    "message": "Line height"
-  },
-  "label_text_align": {
-    "message": "Text align"
-  },
-  "label_letter_spacing": {
-    "message": "Letter spacing"
-  },
-  "label_text_transform": {
-    "message": "Text transform"
-  },
-  "label_color": {
-    "message": "Color"
-  },
-  "label_bg_color": {
-    "message": "Background color"
-  },
-  "label_bg_image": {
-    "message": "Background image URL"
-  },
-  "label_image_url": {
-    "message": "Image URL"
-  },
-  "label_corner_radius": {
-    "message": "Corner radius"
-  },
-  "label_opacity": {
-    "message": "Opacity"
-  },
-  "label_border_width": {
-    "message": "Border width"
-  },
-  "label_border_color": {
-    "message": "Border color"
-  },
-  "label_width": {
-    "message": "Width"
-  },
-  "label_height": {
-    "message": "Height"
-  },
   "apply": {
     "message": "Apply"
   },

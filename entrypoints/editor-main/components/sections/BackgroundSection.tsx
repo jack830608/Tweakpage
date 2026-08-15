@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
 import { isTransparent, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
+import { useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
 import { ResetButton } from '../ResetButton';
 import { t } from '../../../../lib/i18n';
@@ -17,36 +17,41 @@ function urlFromBackgroundImage(value: string): string {
 
 export function BackgroundSection({ element, controller }: SectionProps) {
   const cs = getComputedStyle(element);
-  const original = useMemo(() => {
-    const s = getComputedStyle(element);
-    return { backgroundColor: s.backgroundColor, backgroundImage: s.backgroundImage || 'none' };
-  }, [element]);
-  const [imageUrl, setImageUrl] = useState(() => urlFromBackgroundImage(original.backgroundImage));
-  useEffect(() => {
-    setImageUrl(urlFromBackgroundImage(getComputedStyle(element).backgroundImage || 'none'));
-  }, [element]);
+  const color = useFieldDraft(controller, element, 'backgroundColor', cs.backgroundColor, (v) =>
+    isTransparent(v) ? '' : rgbToHex(v),
+  );
+  const image = useFieldDraft(
+    controller,
+    element,
+    'backgroundImage',
+    cs.backgroundImage || 'none',
+    urlFromBackgroundImage,
+  );
 
   const onApplyImage = () => {
-    const url = imageUrl.trim().replace(/["\\]/g, '');
+    const url = image.value.trim().replace(/["\\]/g, '');
     if (!/^(https?:\/\/|data:image\/)/.test(url)) return;
-    controller.recordEdit(element, 'style', 'backgroundImage', original.backgroundImage, `url("${url}")`);
+    controller.recordEdit(element, 'style', 'backgroundImage', image.original, `url("${url}")`);
   };
+
   return (
     <section className="pgve-section">
       <ColorField
-        label={t('label_bg_color')}
+        label={<span className="pgve-prop">background-color</span>}
         ariaLabel="Background color"
-        value={isTransparent(cs.backgroundColor) ? null : rgbToHex(cs.backgroundColor)}
-        onChange={(hex) => controller.recordEdit(element, 'style', 'backgroundColor', original.backgroundColor, hex)}
+        value={color.value === '' ? null : color.value}
+        onChange={(hex) =>
+          controller.recordEdit(element, 'style', 'backgroundColor', color.original, hex)
+        }
         trailing={<ResetButton controller={controller} element={element} property="backgroundColor" />}
       />
       <label>
-        {t('label_bg_image')}
+        <span className="pgve-prop">background-image</span>
         <input
           type="text"
           aria-label="Background image URL"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
+          value={image.value}
+          onChange={(e) => image.setDraft(e.target.value)}
         />
         <ResetButton controller={controller} element={element} property="backgroundImage" />
       </label>

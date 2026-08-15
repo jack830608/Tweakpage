@@ -16,6 +16,12 @@ export function pxToNumber(value: string): number {
   return Number.isFinite(n) ? Math.round(n) : 0;
 }
 
+/** Unit-stripped value for a number input — keeps decimals that px rounding would eat. */
+export function pxToDisplay(value: string): string {
+  const n = Number.parseFloat(value);
+  return Number.isFinite(n) ? String(n) : '0';
+}
+
 export function isTransparent(value: string): boolean {
   const trimmed = value.trim().toLowerCase();
   if (trimmed === '' || trimmed === 'transparent') return true;

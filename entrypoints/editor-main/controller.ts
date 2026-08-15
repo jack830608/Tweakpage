@@ -116,6 +116,19 @@ export class EditsController {
     this.setRecords(mergeRecords(this.page.records, records));
   }
 
+  /** Clears several properties of one element as a single undo step. */
+  resetProperties(el: Element, properties: string[]): void {
+    if (this.previewing) this.setPreviewOriginal(false);
+    this.lastEditTarget = null;
+    const { selector } = this.genFor(el);
+    const doomed = new Set(properties);
+    const next = this.page.records.filter(
+      (r) => !(r.selector === selector && doomed.has(r.property)),
+    );
+    if (next.length === this.page.records.length) return;
+    this.setRecords(next);
+  }
+
   revertAllEdits(): void {
     if (this.previewing) this.setPreviewOriginal(false);
     this.lastEditTarget = null;

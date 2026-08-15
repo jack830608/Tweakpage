@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
-import { pxToNumber } from '../../../../lib/css-values';
+import { pxToDisplay } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
+import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ResetButton } from '../ResetButton';
-import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -10,33 +9,52 @@ interface SectionProps {
 }
 
 const FIELDS = [
-  { label: 'Width', key: 'label_width', property: 'width' },
-  { label: 'Height', key: 'label_height', property: 'height' },
+  { ariaLabel: 'Width', property: 'width' },
+  { ariaLabel: 'Height', property: 'height' },
 ] as const;
 
 export function SizeSection({ element, controller }: SectionProps) {
-  const cs = getComputedStyle(element);
-  const original = useMemo(() => {
-    const s = getComputedStyle(element);
-    return { width: s.width, height: s.height };
-  }, [element]);
   return (
     <section className="pgve-section">
-      {FIELDS.map(({ label, key, property }) => (
-        <label key={property}>
-          {t(key)}
-          <input
-            type="number"
-            aria-label={label}
-            value={pxToNumber(cs.getPropertyValue(property))}
-            onChange={(e) => {
-              if (e.target.value === '') return;
-              controller.recordEdit(element, 'style', property, original[property], `${e.target.value}px`);
-            }}
-          />
-          <ResetButton controller={controller} element={element} property={property} />
-        </label>
+      {FIELDS.map(({ ariaLabel, property }) => (
+        <SizeField
+          key={property}
+          ariaLabel={ariaLabel}
+          property={property}
+          element={element}
+          controller={controller}
+        />
       ))}
     </section>
+  );
+}
+
+interface SizeFieldProps {
+  ariaLabel: string;
+  property: string;
+  element: Element;
+  controller: EditsController;
+}
+
+function SizeField({ ariaLabel, property, element, controller }: SizeFieldProps) {
+  const computed = getComputedStyle(element).getPropertyValue(property);
+  const field = useFieldDraft(controller, element, property, computed, pxToDisplay, sameNumber);
+  return (
+    <label>
+      <span className="pgve-prop">{property}</span>
+      <input
+        type="number"
+        min={0}
+        aria-label={ariaLabel}
+        value={field.value}
+        onChange={(e) => {
+          const raw = e.target.value;
+          field.setDraft(raw);
+          if (raw.trim() === '' || !Number.isFinite(Number(raw))) return;
+          controller.recordEdit(element, 'style', property, field.original, `${Number(raw)}px`);
+        }}
+      />
+      <ResetButton controller={controller} element={element} property={property} />
+    </label>
   );
 }

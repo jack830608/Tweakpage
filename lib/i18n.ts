@@ -34,23 +34,6 @@ export const MESSAGES: Record<string, string> = {
   sec_appearance: 'Appearance',
   sec_size: 'Size',
   sec_spacing: 'Spacing',
-  label_font_family: 'Font family',
-  label_font_size: 'Font size',
-  label_font_weight: 'Font weight',
-  label_line_height: 'Line height',
-  label_text_align: 'Text align',
-  label_letter_spacing: 'Letter spacing',
-  label_text_transform: 'Text transform',
-  label_color: 'Color',
-  label_bg_color: 'Background color',
-  label_bg_image: 'Background image URL',
-  label_image_url: 'Image URL',
-  label_corner_radius: 'Corner radius',
-  label_opacity: 'Opacity',
-  label_border_width: 'Border width',
-  label_border_color: 'Border color',
-  label_width: 'Width',
-  label_height: 'Height',
   apply: 'Apply',
   import_json: 'Import JSON',
   revert_all: 'Revert all',
@@ -72,13 +55,18 @@ export const MESSAGES: Record<string, string> = {
   pop_empty: 'No saved edits yet. Open any page and start tweaking.',
   pop_open: 'Open',
   pop_clear: 'Clear',
+  reset_spacing: 'Reset spacing',
   stale_note: 'Tweakpage was updated. Reload the page to keep editing — your saved edits are safe.',
   stale_reload: 'Reload page',
 };
 
 export function t(key: string, subs?: Array<string | number>): string {
   try {
-    const message = browser.i18n?.getMessage?.(key, subs?.map(String));
+    // Our keys live in _locales, which the generated union type doesn't know about.
+    const getMessage = browser.i18n?.getMessage as
+      | ((key: string, subs?: string[]) => string)
+      | undefined;
+    const message = getMessage?.(key, subs?.map(String));
     if (message) return message;
   } catch {
     // no i18n in this context — fall through to the built-in English table
