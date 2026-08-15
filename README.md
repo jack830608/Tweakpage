@@ -19,11 +19,13 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 
 1. Click the **Tweakpage** toolbar icon on any page (badge shows `ON`).
 2. Hover — dashed outline shows what you're pointing at. Click to select.
-3. Edit in the panel: Text, Typography, Background, Image, Size, Spacing.
+3. Edit in the panel: Text, Typography, Background, Image, Size, Spacing — or **Hide element**.
    Drag the panel by its title bar if it covers what you are editing (it snaps back to the top-right when reopened).
    Use the breadcrumb to move to a parent/child element.
 4. **Changes** tab: review every edit, delete one, revert all, **Export JSON**, **Copy Markdown**.
-5. `Esc` deselects; `Esc` again (or the icon) closes the editor. Edits stay applied and survive reloads.
+5. **Show original** (panel header) toggles all edits off/on for before-after comparison.
+6. Hold `⌥ Alt` to click through the page (open menus, switch tabs) without selecting.
+7. `Esc` deselects; `Esc` again (or the icon) closes the editor. Edits stay applied and survive reloads.
 
 Not supported yet: elements inside iframes, importing JSON, uploading local images.
 - Text editing on elements with nested formatting flattens it to plain text (a warning is shown in the panel).

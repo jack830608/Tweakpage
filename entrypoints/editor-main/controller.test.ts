@@ -102,3 +102,29 @@ test('setRecords guards against recording edits after an SPA navigation changed 
   expect(c.getPage().records).toHaveLength(0);
   expect(await loadPageEdits(originalUrl)).toBeNull();
 });
+
+test('preview original reverts edits without touching storage, restores on exit', async () => {
+  const c = controller();
+  const el = document.getElementById('title')!;
+  c.recordEdit(el, 'text', 'textContent', 'Original', 'Changed');
+  c.setPreviewOriginal(true);
+  expect(c.isPreviewingOriginal()).toBe(true);
+  expect(el.textContent).toBe('Original');
+  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(c.getPage().records).toHaveLength(1);
+  expect((await loadPageEdits(location.href))?.records).toHaveLength(1);
+  c.setPreviewOriginal(false);
+  expect(c.isPreviewingOriginal()).toBe(false);
+  expect(el.textContent).toBe('Changed');
+});
+
+test('editing while previewing exits preview first', () => {
+  const c = controller();
+  const el = document.getElementById('title')!;
+  c.recordEdit(el, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
+  c.setPreviewOriginal(true);
+  c.recordEdit(el, 'text', 'textContent', 'Original', 'Changed');
+  expect(c.isPreviewingOriginal()).toBe(false);
+  expect(el.textContent).toBe('Changed');
+  expect(document.querySelector('style[data-pg-editor]')!.textContent).toContain('#ff0000');
+});

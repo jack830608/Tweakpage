@@ -18,8 +18,15 @@ export function useElementPicker(
   { onHover, onSelect, onEscape }: PickerCallbacks,
 ): void {
   useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => onHover(eventTargetElement(e, host));
+    const onMouseMove = (e: MouseEvent) => {
+      if (e.altKey) {
+        onHover(null);
+        return;
+      }
+      onHover(eventTargetElement(e, host));
+    };
     const onClick = (e: MouseEvent) => {
+      if (e.altKey) return;
       const el = eventTargetElement(e, host);
       if (!el) return;
       e.preventDefault();

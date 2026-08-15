@@ -11,11 +11,16 @@ export class ApplierEngine {
   private pending = false;
   private url = '';
   private loadSeq = 0;
+  private paused = false;
 
   constructor(private doc: Document) {}
 
   async start(url: string): Promise<void> {
     this.url = url;
+    this.doc.addEventListener('pg-editor:preview', (e) => {
+      this.paused = (e as CustomEvent<{ on?: boolean }>).detail?.on === true;
+      if (!this.paused) this.applyNow();
+    });
     browser.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local') return;
       const change = changes[pageKey(this.url)];
@@ -51,7 +56,7 @@ export class ApplierEngine {
   }
 
   private applyNow(): void {
-    if (this.edits) applyAll(this.edits.records, this.doc);
+    if (!this.paused && this.edits) applyAll(this.edits.records, this.doc);
   }
 
   private observe(): void {

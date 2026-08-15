@@ -42,3 +42,24 @@ test('Escape inside the host does not fire onEscape; Escape outside does', () =>
   );
   expect(onEscape).toHaveBeenCalledTimes(1);
 });
+
+test('Alt-held clicks and hovers pass through to the page', () => {
+  const host = document.getElementById('host')!;
+  const onSelect = vi.fn();
+  const onHover = vi.fn();
+  renderHook(() => useElementPicker(host, { onHover, onSelect, onEscape: () => {} }));
+
+  const altClick = new MouseEvent('click', { bubbles: true, composed: true, altKey: true, cancelable: true });
+  document.getElementById('p')!.dispatchEvent(altClick);
+  expect(onSelect).not.toHaveBeenCalled();
+  expect(altClick.defaultPrevented).toBe(false);
+
+  document.getElementById('p')!.dispatchEvent(
+    new MouseEvent('mousemove', { bubbles: true, composed: true, altKey: true }),
+  );
+  expect(onHover).toHaveBeenLastCalledWith(null);
+
+  const plainClick = new MouseEvent('click', { bubbles: true, composed: true, cancelable: true });
+  document.getElementById('p')!.dispatchEvent(plainClick);
+  expect(onSelect).toHaveBeenCalledWith(document.getElementById('p'));
+});

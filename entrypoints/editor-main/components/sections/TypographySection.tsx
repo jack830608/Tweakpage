@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { pxToNumber, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { ColorField } from '../ColorField';
@@ -16,6 +16,13 @@ export function TypographySection({ element, controller }: SectionProps) {
   const original = useMemo(() => {
     const s = getComputedStyle(element);
     return { fontSize: s.fontSize, fontWeight: s.fontWeight, lineHeight: s.lineHeight, color: s.color };
+  }, [element]);
+  const [lineHeightDraft, setLineHeightDraft] = useState(() =>
+    original.lineHeight === 'normal' ? '' : original.lineHeight,
+  );
+  useEffect(() => {
+    const v = getComputedStyle(element).lineHeight;
+    setLineHeightDraft(v === 'normal' ? '' : v);
   }, [element]);
   return (
     <section className="pgve-section">
@@ -51,9 +58,10 @@ export function TypographySection({ element, controller }: SectionProps) {
         <input
           type="text"
           aria-label="Line height"
-          value={cs.lineHeight === 'normal' ? '' : cs.lineHeight}
+          value={lineHeightDraft}
           placeholder="normal"
           onChange={(e) => {
+            setLineHeightDraft(e.target.value);
             if (e.target.value === '') return;
             controller.recordEdit(element, 'style', 'lineHeight', original.lineHeight, e.target.value);
           }}

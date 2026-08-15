@@ -84,3 +84,20 @@ test('panel can be dragged to a new position and stays in the viewport', async (
   expect(after.x).toBeGreaterThanOrEqual(0);
   expect(after.y).toBeGreaterThanOrEqual(0);
 });
+
+test('show original toggles all edits off and back on', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.getByLabel('Text', { exact: true }).fill('New headline');
+  await expect(page.locator('h1')).toHaveText('New headline');
+
+  await page.getByRole('button', { name: 'Show original' }).click();
+  await expect(page.locator('h1')).toHaveText('Original Headline');
+  await page.waitForTimeout(200);
+  await expect(page.locator('h1')).toHaveText('Original Headline');
+
+  await page.getByRole('button', { name: 'Show original' }).click();
+  await expect(page.locator('h1')).toHaveText('New headline');
+});

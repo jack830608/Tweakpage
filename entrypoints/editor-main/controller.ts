@@ -11,6 +11,7 @@ export class EditsController {
   private statuses = new Map<string, ApplyStatus>();
   private listeners = new Set<() => void>();
   private selectorCache = new WeakMap<Element, GeneratedSelector>();
+  private previewing = false;
 
   constructor(
     initial: PageEdits | null,
@@ -36,7 +37,22 @@ export class EditsController {
   recordFor = (el: Element, property: string): EditRecord | undefined =>
     findRecord(this.page.records, this.genFor(el).selector, property);
 
+  isPreviewingOriginal = (): boolean => this.previewing;
+
+  setPreviewOriginal(on: boolean): void {
+    if (this.previewing === on) return;
+    this.previewing = on;
+    this.doc.dispatchEvent(new CustomEvent('pg-editor:preview', { detail: { on } }));
+    if (on) {
+      revertAll(this.page.records, this.doc);
+    } else {
+      this.statuses = applyAll(this.page.records, this.doc);
+    }
+    this.listeners.forEach((fn) => fn());
+  }
+
   recordEdit(el: Element, type: EditType, property: string, oldValue: string, newValue: string): void {
+    if (this.previewing) this.setPreviewOriginal(false);
     const gen = this.genFor(el);
     const existing = findRecord(this.page.records, gen.selector, property);
     if (existing && newValue === existing.oldValue) {
@@ -50,6 +66,7 @@ export class EditsController {
   }
 
   deleteRecord(id: string): void {
+    if (this.previewing) this.setPreviewOriginal(false);
     const record = this.page.records.find((r) => r.id === id);
     if (!record) return;
     if (record.type !== 'style') {
@@ -60,6 +77,7 @@ export class EditsController {
   }
 
   revertAllEdits(): void {
+    if (this.previewing) this.setPreviewOriginal(false);
     revertAll(this.page.records, this.doc);
     this.setRecords([]);
   }

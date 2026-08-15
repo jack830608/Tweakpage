@@ -17,10 +17,17 @@ beforeEach(() => {
 function setup(selected: Element | null = document.getElementById('title')) {
   const controller = new EditsController(null, document, NOW);
   const onSelect = vi.fn();
+  const onDeselect = vi.fn();
   render(
-    <Panel controller={controller} selected={selected} onSelect={onSelect} onClose={vi.fn()} />,
+    <Panel
+      controller={controller}
+      selected={selected}
+      onSelect={onSelect}
+      onDeselect={onDeselect}
+      onClose={vi.fn()}
+    />,
   );
-  return { controller, onSelect };
+  return { controller, onSelect, onDeselect };
 }
 
 test('shows the empty state without a selection', () => {
@@ -92,4 +99,29 @@ test('warns when text editing would flatten nested markup', () => {
 test('no flattening warning for plain text elements', () => {
   setup();
   expect(screen.queryByText(/replaces them with\s+plain text/)).toBeNull();
+});
+
+test('hide element records a display none edit and deselects', () => {
+  const { controller, onDeselect } = setup();
+  fireEvent.click(screen.getByRole('button', { name: 'Hide element' }));
+  const record = controller.getPage().records.find((r) => r.property === 'display')!;
+  expect(record.type).toBe('style');
+  expect(record.newValue).toBe('none');
+  expect(onDeselect).toHaveBeenCalled();
+});
+
+test('show original toggle reverts and restores edits', () => {
+  setup();
+  fireEvent.change(screen.getByLabelText('Text'), { target: { value: 'Changed' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Show original' }));
+  expect(document.getElementById('title')!.textContent).toBe('Original');
+  fireEvent.click(screen.getByRole('button', { name: 'Show original' }));
+  expect(document.getElementById('title')!.textContent).toBe('Changed');
+});
+
+test('line height input keeps the typed value instead of snapping to computed px', () => {
+  setup();
+  const input = screen.getByLabelText('Line height') as HTMLInputElement;
+  fireEvent.change(input, { target: { value: '1.5' } });
+  expect(input.value).toBe('1.5');
 });

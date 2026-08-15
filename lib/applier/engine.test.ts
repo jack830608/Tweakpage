@@ -87,3 +87,19 @@ test('watchUrlChanges fires on popstate when the href changed', () => {
   expect(seen).toHaveLength(1);
   expect(seen[0]).toContain('/new-path');
 });
+
+test('pauses reapply while the editor previews the original', async () => {
+  await seed('https://a.com/page', [record({})]);
+  const engine = new ApplierEngine(document);
+  await engine.start('https://a.com/page');
+  expect(document.querySelector('.title')!.textContent).toBe('Changed');
+
+  document.dispatchEvent(new CustomEvent('pg-editor:preview', { detail: { on: true } }));
+  document.querySelector('.title')!.textContent = 'Original';
+  await wait(120);
+  expect(document.querySelector('.title')!.textContent).toBe('Original');
+
+  document.dispatchEvent(new CustomEvent('pg-editor:preview', { detail: { on: false } }));
+  await wait(120);
+  expect(document.querySelector('.title')!.textContent).toBe('Changed');
+});

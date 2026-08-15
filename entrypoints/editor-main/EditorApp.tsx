@@ -38,6 +38,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         controller={controller}
         selected={activeSelected}
         onSelect={setSelected}
+        onDeselect={() => setSelected(null)}
         onClose={onRequestClose}
       />
     </>
