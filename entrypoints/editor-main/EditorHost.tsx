@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { browser } from 'wxt/browser';
+import { safeSendMessage } from '../../lib/extension-context';
 import type { EditsController } from './controller';
 import { EditorApp } from './EditorApp';
 
@@ -23,7 +23,7 @@ export function EditorHost({ controller, host }: EditorHostProps) {
   }, []);
 
   useEffect(() => {
-    browser.runtime.sendMessage({ type: 'pg:state', active }).catch(() => {});
+    safeSendMessage({ type: 'pg:state', active });
   }, [active]);
 
   if (!active) return null;

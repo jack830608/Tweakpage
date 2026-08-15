@@ -236,5 +236,11 @@
   },
   "pop_clear": {
     "message": "Clear"
+  },
+  "stale_note": {
+    "message": "Tweakpage was updated. Reload the page to keep editing — your saved edits are safe."
+  },
+  "stale_reload": {
+    "message": "Reload page"
   }
 }

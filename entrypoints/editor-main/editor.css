@@ -128,6 +128,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- notes & onboarding ---------- */
 .pgve-hint { font-size: 11px; color: var(--warn-ink); margin: 4px 0 0; }
 .pgve-preview-note { padding: 10px 12px; color: var(--warn-ink); background: var(--warn-bg); margin: 10px 12px; border-radius: var(--r-card); font-size: 12px; }
+.pgve-stale { padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.pgve-stale p { padding: 10px 12px; color: var(--warn-ink); background: var(--warn-bg); border-radius: var(--r-card); font-size: 12px; line-height: 1.5; }
+.pgve-stale button { align-self: flex-start; padding: 6px 14px; border: none; border-radius: var(--r-control); background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+.pgve-stale button:hover { background: var(--accent-ink); }
+
 .pgve-onboarding { padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
 .pgve-onboarding h3 { font-size: 13px; font-weight: 650; color: var(--ink); }
 .pgve-onboarding ol { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; color: var(--ink-2); }

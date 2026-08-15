@@ -1,4 +1,4 @@
-import { browser } from 'wxt/browser';
+import { safeSendMessage } from '../../../lib/extension-context';
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
@@ -62,7 +62,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
 // service worker (which has chrome.downloads access) as a data: URL instead.
 function downloadFile(filename: string, content: string): void {
   const url = `data:application/json;base64,${toBase64(content)}`;
-  browser.runtime.sendMessage({ type: 'pg:download', filename, url }).catch(() => {});
+  safeSendMessage({ type: 'pg:download', filename, url });
 }
 
 function toBase64(content: string): string {
