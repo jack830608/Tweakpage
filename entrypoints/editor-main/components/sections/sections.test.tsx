@@ -3,6 +3,7 @@ import { beforeEach, expect, test } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { BackgroundSection } from './BackgroundSection';
 import { ImageSection } from './ImageSection';
+import { SizeSection } from './SizeSection';
 import { SpacingSection } from './SpacingSection';
 import { EditsController } from '../../controller';
 
@@ -56,4 +57,18 @@ test('spacing inputs record padding and margin edits in px', () => {
   expect(padding.newValue).toBe('24px');
   const margin = controller.getPage().records.find((r) => r.property === 'marginLeft')!;
   expect(margin.newValue).toBe('0px');
+});
+
+test('size inputs record width and height edits in px', () => {
+  document.body.innerHTML = '<div id="box" style="width: 320px; height: 100px">x</div>';
+  const controller = new EditsController(null, document, NOW);
+  render(<SizeSection element={document.getElementById('box')!} controller={controller} />);
+  fireEvent.change(screen.getByLabelText('Width'), { target: { value: '480' } });
+  fireEvent.change(screen.getByLabelText('Height'), { target: { value: '64' } });
+  const width = controller.getPage().records.find((r) => r.property === 'width')!;
+  expect(width.oldValue).toBe('320px');
+  expect(width.newValue).toBe('480px');
+  const height = controller.getPage().records.find((r) => r.property === 'height')!;
+  expect(height.oldValue).toBe('100px');
+  expect(height.newValue).toBe('64px');
 });

@@ -1,9 +1,11 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useRef, useState, useSyncExternalStore } from 'react';
 import type { EditsController } from '../controller';
+import { useDraggable } from '../hooks/useDraggable';
 import { Breadcrumb } from './Breadcrumb';
 import { ChangesTab } from './ChangesTab';
 import { BackgroundSection } from './sections/BackgroundSection';
 import { ImageSection } from './sections/ImageSection';
+import { SizeSection } from './sections/SizeSection';
 import { SpacingSection } from './sections/SpacingSection';
 import { TextSection } from './sections/TextSection';
 import { TypographySection } from './sections/TypographySection';
@@ -20,9 +22,11 @@ export interface PanelProps {
 export function Panel({ controller, selected, onSelect, onClose }: PanelProps) {
   const [tab, setTab] = useState<Tab>('edit');
   const count = useSyncExternalStore(controller.subscribe, controller.getPage).records.length;
+  const panelRef = useRef<HTMLElement>(null);
+  const { style, handleProps } = useDraggable(panelRef);
   return (
-    <aside className="pgve-panel">
-      <header className="pgve-header">
+    <aside className="pgve-panel" ref={panelRef} style={style}>
+      <header className="pgve-header" {...handleProps}>
         <strong>PG Visual Editor</strong>
         <button type="button" onClick={onClose} aria-label="Close">✕</button>
       </header>
@@ -65,6 +69,7 @@ function EditTab({ controller, selected, onSelect }: Omit<PanelProps, 'onClose'>
       <TypographySection element={selected} controller={controller} />
       <BackgroundSection element={selected} controller={controller} />
       <ImageSection element={selected} controller={controller} />
+      <SizeSection element={selected} controller={controller} />
       <SpacingSection element={selected} controller={controller} />
     </div>
   );

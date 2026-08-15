@@ -63,3 +63,24 @@ test('spacing box-model editor fits inside the panel', async ({ context }) => {
   expect(paddingBox.x + paddingBox.width).toBeLessThanOrEqual(marginBox.x + marginBox.width + 1);
   expect(marginBox.x + marginBox.width).toBeLessThanOrEqual(panelBox.x + panelBox.width + 1);
 });
+
+test('panel can be dragged to a new position and stays in the viewport', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  const panel = page.locator('#pg-visual-editor-host aside');
+  const before = (await panel.boundingBox())!;
+  const header = (await page.locator('.pgve-header').boundingBox())!;
+
+  await page.mouse.move(header.x + header.width / 2, header.y + header.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(header.x + header.width / 2 - 400, header.y + header.height / 2 + 150, { steps: 5 });
+  await page.mouse.up();
+
+  const after = (await panel.boundingBox())!;
+  expect(after.x).toBeLessThan(before.x - 300);
+  expect(after.y).toBeGreaterThan(before.y + 100);
+  expect(after.x).toBeGreaterThanOrEqual(0);
+  expect(after.y).toBeGreaterThanOrEqual(0);
+});

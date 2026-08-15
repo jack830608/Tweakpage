@@ -19,7 +19,8 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 
 1. Click the **PG Visual Editor** toolbar icon on any page (badge shows `ON`).
 2. Hover — dashed outline shows what you're pointing at. Click to select.
-3. Edit in the right-hand panel: Text, Typography, Background, Image, Spacing.
+3. Edit in the panel: Text, Typography, Background, Image, Size, Spacing.
+   Drag the panel by its title bar if it covers what you are editing (it snaps back to the top-right when reopened).
    Use the breadcrumb to move to a parent/child element.
 4. **Changes** tab: review every edit, delete one, revert all, **Export JSON**, **Copy Markdown**.
 5. `Esc` deselects; `Esc` again (or the icon) closes the editor. Edits stay applied and survive reloads.
