@@ -67,7 +67,9 @@ export function ColorField({ label, value, onChange, trailing }: ColorFieldProps
               title="Pick a color from the page"
               onClick={() => void onPick()}
             >
-              🎯
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+                <path d="M20.71 5.63l-2.34-2.34a1 1 0 0 0-1.41 0l-3.12 3.12-1.93-1.91-1.41 1.41 1.42 1.42L3 16.25V21h4.75l9.92-9.92 1.42 1.42 1.41-1.41-1.92-1.92 3.12-3.12a1 1 0 0 0 .01-1.42zM6.92 19L5 17.08l8.06-8.06 1.92 1.92L6.92 19z" />
+              </svg>
             </button>
           )}
         </span>
