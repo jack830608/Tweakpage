@@ -102,8 +102,8 @@ test('appearance records border radius and opacity', () => {
   document.body.innerHTML = '<div id="box" style="border-radius: 0px; opacity: 1">x</div>';
   const controller = new EditsController(null, document, NOW);
   render(<AppearanceSection element={document.getElementById('box')!} controller={controller} />);
-  fireEvent.change(screen.getByLabelText('Corner radius'), { target: { value: '12' } });
-  fireEvent.change(screen.getByLabelText('Opacity'), { target: { value: '50' } });
+  fireEvent.change(screen.getByRole('slider', { name: 'Corner radius' }), { target: { value: '12' } });
+  fireEvent.change(screen.getByRole('slider', { name: 'Opacity' }), { target: { value: '50' } });
   const records = controller.getPage().records;
   expect(records.find((r) => r.property === 'borderRadius')!.newValue).toBe('12px');
   expect(records.find((r) => r.property === 'opacity')!.newValue).toBe('0.5');

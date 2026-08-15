@@ -17,36 +17,64 @@ export function AppearanceSection({ element, controller }: SectionProps) {
       opacity: s.opacity,
     };
   }, [element]);
+
+  const radius = pxToNumber(cs.getPropertyValue('border-top-left-radius'));
+  const opacity = Math.round(Number.parseFloat(cs.opacity || '1') * 100);
+
+  const setRadius = (raw: string) => {
+    if (raw === '') return;
+    const value = Math.max(0, Number(raw));
+    controller.recordEdit(element, 'style', 'borderRadius', original.borderRadius, `${value}px`);
+  };
+  const setOpacity = (raw: string) => {
+    if (raw === '') return;
+    const percent = Math.min(100, Math.max(0, Number(raw)));
+    controller.recordEdit(element, 'style', 'opacity', original.opacity, `${percent / 100}`);
+  };
+
   return (
     <section className="pgve-section">
       <label>
         Corner radius
-        <input
-          type="number"
-          min={0}
-          aria-label="Corner radius"
-          value={pxToNumber(cs.getPropertyValue('border-top-left-radius'))}
-          onChange={(e) => {
-            if (e.target.value === '') return;
-            controller.recordEdit(element, 'style', 'borderRadius', original.borderRadius, `${e.target.value}px`);
-          }}
-        />
+        <span className="pgve-slider-pair">
+          <input
+            type="range"
+            min={0}
+            max={64}
+            aria-label="Corner radius"
+            value={Math.min(64, radius)}
+            onChange={(e) => setRadius(e.target.value)}
+          />
+          <input
+            type="number"
+            min={0}
+            aria-label="Corner radius value"
+            value={radius}
+            onChange={(e) => setRadius(e.target.value)}
+          />
+        </span>
         <ResetButton controller={controller} element={element} property="borderRadius" />
       </label>
       <label>
         Opacity
-        <input
-          type="number"
-          min={0}
-          max={100}
-          aria-label="Opacity"
-          value={Math.round(Number.parseFloat(cs.opacity || '1') * 100)}
-          onChange={(e) => {
-            if (e.target.value === '') return;
-            const percent = Math.min(100, Math.max(0, Number(e.target.value)));
-            controller.recordEdit(element, 'style', 'opacity', original.opacity, `${percent / 100}`);
-          }}
-        />
+        <span className="pgve-slider-pair">
+          <input
+            type="range"
+            min={0}
+            max={100}
+            aria-label="Opacity"
+            value={opacity}
+            onChange={(e) => setOpacity(e.target.value)}
+          />
+          <input
+            type="number"
+            min={0}
+            max={100}
+            aria-label="Opacity value"
+            value={opacity}
+            onChange={(e) => setOpacity(e.target.value)}
+          />
+        </span>
         <ResetButton controller={controller} element={element} property="opacity" />
       </label>
     </section>
