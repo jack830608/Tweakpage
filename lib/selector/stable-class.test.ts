@@ -37,9 +37,15 @@ test('accepts semantic names that merely start with framework letters', () => {
 test('accepts simple digit-suffixed semantic names', () => {
   expect(isStableClass('card2')).toBe(true);
   expect(isStableClass('step3')).toBe(true);
+  expect(isStableClass('row2')).toBe(true);
 });
 
 test('rejects css-modules and bare-underscore hash patterns', () => {
   expect(isStableClass('Button_root__x7K2q')).toBe(false);
   expect(isStableClass('_1a2b3c')).toBe(false);
+});
+
+test('accepts semantic names prefixed with underscore', () => {
+  expect(isStableClass('_button')).toBe(true);
+  expect(isStableClass('_wrapper')).toBe(true);
 });

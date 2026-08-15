@@ -6,7 +6,8 @@ export function isStableClass(cls: string): boolean {
   if (cls.includes('__') && modulesTail && /^[a-z0-9]{4,}$/i.test(modulesTail) && /\d/.test(modulesTail)) {
     return false;
   }
-  if (/^_+[a-z0-9]{4,}$/i.test(cls)) return false;
+  const bareTail = cls.match(/^_+([a-z0-9]{4,})$/i);
+  if (bareTail && /\d/.test(bareTail[1])) return false;
   if (!/[-_]/.test(cls) && /\d/.test(cls)) {
     const digitCount = (cls.match(/\d/g) ?? []).length;
     const mixedCase = /[a-z]/.test(cls) && /[A-Z]/.test(cls);
