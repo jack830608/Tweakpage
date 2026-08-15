@@ -6,7 +6,7 @@ export default defineBackground(() => {
       if (message?.type === 'pg:state' && sender.tab?.id != null) {
         void browser.action.setBadgeBackgroundColor({
           tabId: sender.tab.id,
-          color: message.active ? '#4f46e5' : '#71717a',
+          color: message.active ? '#059669' : '#71717a',
         });
       }
       if (message?.type === 'pg:count' && typeof message.count === 'number' && sender.tab?.id != null) {

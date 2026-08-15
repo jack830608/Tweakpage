@@ -5,8 +5,8 @@
   --ink: #18181b;
   --ink-2: #52525b;
   --ink-3: #9d9da6;
-  --accent: #4f46e5;
-  --accent-ink: #4338ca;
+  --accent: #059669;
+  --accent-ink: #047857;
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
@@ -17,8 +17,8 @@
     --ink: #f4f4f5;
     --ink-2: #b0b0b8;
     --ink-3: #7c7c85;
-    --accent: #818cf8;
-    --accent-ink: #a5b0fc;
+    --accent: #34d399;
+    --accent-ink: #6ee7b7;
   }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }

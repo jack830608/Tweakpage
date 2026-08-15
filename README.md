@@ -11,14 +11,15 @@
 
 ![Tweakpage editing a demo page](docs/assets/screenshot.png)
 
-Built for marketing folks (and anyone else) who want to try out page changes
-without touching code.
+For anyone who wants to try a page change before asking someone to build it —
+designers, marketers, PMs, and engineers who'd rather not open DevTools for a copy tweak.
 
 Every edit is recorded as a structured diff (selector + property + old → new), so you can:
 
 - **Hand engineers a change list** — Copy Markdown from the Changes tab, paste into Slack/Jira.
 - **Keep your edits** — they're saved locally per URL and re-applied automatically on reload.
-- **Share with a colleague** — Export JSON (import arrives in Phase 2).
+- **Share with a colleague** — Export JSON, and import theirs; edits for other pages
+  wait until you open those pages.
 
 ## Install (pilot)
 
@@ -36,10 +37,12 @@ Every edit is recorded as a structured diff (selector + property + old → new),
    `⌥ Alt` in Edit mode is a temporary Browse.
 3. **Edited / Original** (second switch): flips the whole page between your edited version
    and the untouched original — the page badge takes you back.
-4. Select an element and edit it in the collapsible sections: Text, Typography (incl. align,
-   letter spacing, transform), Background (color + image), Image, Appearance (corner radius,
-   opacity), Size, Spacing. Color fields have an eyedropper (pick from the page) and recent
-   swatches. Use the breadcrumb to reach parents/children.
+4. Select an element and edit it in the collapsible sections: Text, Typography (family, size,
+   weight, line height, align, letter spacing, transform, color), Background (color + image),
+   Image, Appearance (corner radius, opacity, border), Size, Spacing. Fields are named after
+   the CSS property they write, and an edited one shows a ↺ beside its name. Color fields have
+   an eyedropper (pick from the page) and recent swatches. Use the breadcrumb to reach
+   parents/children.
 5. Selection card: **Hide / Unhide** the selected element (editing locks while hidden).
    Share row: **Copy** (Markdown summary for engineers), **Export JSON**, **Snap**
    (before & after screenshots of the visible page).
