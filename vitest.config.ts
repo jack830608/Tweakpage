@@ -5,6 +5,6 @@ export default defineConfig({
   plugins: [WxtVitest()],
   test: {
     environment: 'happy-dom',
-    exclude: [...configDefaults.exclude, 'tests/e2e/**'],
+    exclude: [...configDefaults.exclude, 'tests/e2e/**', '**/.worktrees/**'],
   },
 });
