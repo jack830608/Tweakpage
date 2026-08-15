@@ -5,5 +5,5 @@ export function toJson(page: PageEdits): string {
 }
 
 export function exportFilename(url: string, yyyymmdd: string): string {
-  return `pg-edits-${new URL(url).hostname}-${yyyymmdd}.json`;
+  return `tweakpage-${new URL(url).hostname}-${yyyymmdd}.json`;
 }

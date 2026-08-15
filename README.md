@@ -1,4 +1,4 @@
-# PG Visual Editor
+# Tweakpage
 
 Chrome extension for visually editing any web page — for marketing folks who want
 to try out copy, colors, sizes, spacing, and images without touching code.
@@ -17,7 +17,7 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 
 ## Usage
 
-1. Click the **PG Visual Editor** toolbar icon on any page (badge shows `ON`).
+1. Click the **Tweakpage** toolbar icon on any page (badge shows `ON`).
 2. Hover — dashed outline shows what you're pointing at. Click to select.
 3. Edit in the panel: Text, Typography, Background, Image, Size, Spacing.
    Drag the panel by its title bar if it covers what you are editing (it snaps back to the top-right when reopened).

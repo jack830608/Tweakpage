@@ -40,7 +40,7 @@ test('toJson round-trips and keeps the schema version', () => {
 
 test('exportFilename uses hostname and date', () => {
   expect(exportFilename('https://positivegrid.com/products/spark', '20260815')).toBe(
-    'pg-edits-positivegrid.com-20260815.json',
+    'tweakpage-positivegrid.com-20260815.json',
   );
 });
 
@@ -49,7 +49,7 @@ test('toMarkdown groups records by element and formats each kind', () => {
   expect(md).toBe(
     [
       '# Page edits — https://positivegrid.com/products/spark',
-      'Exported 2026-08-15 by PG Visual Editor',
+      'Exported 2026-08-15 by Tweakpage',
       '',
       '## h2.hero-title "Unleash Your Sound"',
       '- color: `#333333` → `#ff0000`',

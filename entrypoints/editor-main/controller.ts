@@ -75,13 +75,13 @@ export class EditsController {
 
   private setRecords(records: EditRecord[]): void {
     if (normalizePageUrl(this.doc.location.href) !== this.page.url) {
-      console.warn('[pg-visual-editor] ignoring edit for stale URL', this.page.url);
+      console.warn('[tweakpage] ignoring edit for stale URL', this.page.url);
       return;
     }
     this.page = { ...this.page, records, title: this.doc.title, updatedAt: this.now() };
     this.statuses = applyAll(records, this.doc);
     savePageEdits(this.page).catch((error: unknown) => {
-      console.warn('[pg-visual-editor] failed to save edits', error);
+      console.warn('[tweakpage] failed to save edits', error);
     });
     this.listeners.forEach((fn) => fn());
   }

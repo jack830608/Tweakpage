@@ -27,7 +27,7 @@ export function Panel({ controller, selected, onSelect, onClose }: PanelProps) {
   return (
     <aside className="pgve-panel" ref={panelRef} style={style}>
       <header className="pgve-header" {...handleProps}>
-        <strong>PG Visual Editor</strong>
+        <strong>Tweakpage</strong>
         <button type="button" onClick={onClose} aria-label="Close">✕</button>
       </header>
       <nav className="pgve-tabs">

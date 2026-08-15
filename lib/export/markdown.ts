@@ -4,7 +4,7 @@ import type { EditRecord, PageEdits } from '../edits/types';
 export function toMarkdown(page: PageEdits, exportedAt: string): string {
   const lines = [
     `# Page edits — ${page.url}`,
-    `Exported ${exportedAt} by PG Visual Editor`,
+    `Exported ${exportedAt} by Tweakpage`,
     '',
   ];
   const groups = new Map<string, EditRecord[]>();
