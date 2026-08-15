@@ -47,3 +47,19 @@ test('edit → persist → replay → export', async ({ context }) => {
   expect(exported.version).toBe(1);
   expect(exported.records).toHaveLength(2);
 });
+
+test('spacing box-model editor fits inside the panel', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+
+  const inputBox = (await page.getByLabel('padding top').boundingBox())!;
+  expect(inputBox.width).toBeLessThan(60);
+
+  const panelBox = (await page.locator('#pg-visual-editor-host aside').boundingBox())!;
+  const marginBox = (await page.locator('.pgve-box--margin').boundingBox())!;
+  const paddingBox = (await page.locator('.pgve-box--padding').boundingBox())!;
+  expect(paddingBox.x + paddingBox.width).toBeLessThanOrEqual(marginBox.x + marginBox.width + 1);
+  expect(marginBox.x + marginBox.width).toBeLessThanOrEqual(panelBox.x + panelBox.width + 1);
+});
