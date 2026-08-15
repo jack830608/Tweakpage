@@ -16,9 +16,11 @@ export function boot(): void {
   const container = document.createElement('div');
   shadow.append(style, container);
   document.documentElement.appendChild(host);
-  void loadPageEdits(location.href).then((initial) => {
-    createRoot(container).render(
-      <EditorHost controller={new EditsController(initial, document)} host={host} />,
-    );
-  });
+  void loadPageEdits(location.href)
+    .catch(() => null)
+    .then((initial) => {
+      createRoot(container).render(
+        <EditorHost controller={new EditsController(initial, document)} host={host} />,
+      );
+    });
 }
