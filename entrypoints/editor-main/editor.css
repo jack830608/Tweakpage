@@ -153,3 +153,30 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-toast { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 2147483647; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 10px; background: var(--dark); color: #fff; font: 400 12px/1.4 var(--sans); box-shadow: var(--shadow-pop); }
 .pgve-toast button { border: none; background: none; color: #a5b4fc; font-weight: 700; cursor: pointer; }
 .pgve-toast button:hover { color: #c7d2fe; }
+
+/* ---------- dark mode ---------- */
+@media (prefers-color-scheme: dark) {
+  .pgve-panel, .pgve-badge, .pgve-toast, .pgve-outline-label {
+    --surface: #212126;
+    --sunken: #2b2b31;
+    --border: #3a3a41;
+    --border-strong: #4a4a52;
+    --ink: #f4f4f5;
+    --ink-2: #b0b0b8;
+    --ink-3: #7c7c85;
+    --accent: #818cf8;
+    --accent-ink: #a5b0fc;
+    --accent-soft: rgba(99, 102, 241, 0.2);
+    --warn-ink: #fbbf24;
+    --warn-bg: rgba(180, 83, 9, 0.2);
+    --dark: #0b0b0d;
+    --shadow-panel: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 16px 40px rgba(0, 0, 0, 0.55);
+    --shadow-pop: 0 6px 20px rgba(0, 0, 0, 0.6);
+    --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --ring: 0 0 0 2px rgba(129, 140, 248, 0.45);
+  }
+  .pgve-box--margin { background: rgba(180, 83, 9, 0.15); }
+  .pgve-box--padding { background: rgba(22, 101, 52, 0.18); }
+  .pgve-swatches button { border-color: rgba(255, 255, 255, 0.18); }
+  .pgve-color-field input[type='color'] { background: var(--sunken); }
+}
