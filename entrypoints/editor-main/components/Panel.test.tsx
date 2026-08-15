@@ -172,6 +172,32 @@ test('onboarding card renders when showOnboarding and dismisses', () => {
   expect(onDismissOnboarding).toHaveBeenCalled();
 });
 
+test('stale context replaces the panel with a reload notice', () => {
+  const controller = new EditsController(null, document, NOW);
+  render(
+    <Panel
+      controller={controller}
+      selected={document.getElementById('title')}
+      stale
+      mode="edit"
+      onModeChange={vi.fn()}
+      showOnboarding={false}
+      onDismissOnboarding={vi.fn()}
+      onSelect={vi.fn()}
+      onHighlight={vi.fn()}
+      onToast={vi.fn()}
+      onSnapshot={vi.fn()}
+      onMinimize={vi.fn()}
+      onClose={vi.fn()}
+    />,
+  );
+  expect(screen.getByRole('alert').textContent).toContain('Tweakpage was updated');
+  expect(screen.getByRole('button', { name: 'Reload page' })).toBeTruthy();
+  expect(screen.queryByLabelText('Text')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Review changes' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Export JSON' })).toBeNull();
+});
+
 test('interaction mode switch reports mode changes', () => {
   const { onModeChange } = setup();
   fireEvent.click(screen.getByRole('button', { name: /Browse/ }));

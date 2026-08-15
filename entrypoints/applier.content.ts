@@ -8,19 +8,21 @@ export default defineContentScript({
   main() {
     const engine = new ApplierEngine(document);
     engine.start(location.href).catch(() => {});
-    watchUrlChanges(window, (url) => void engine.navigate(url));
+    watchUrlChanges(window, (url) => {
+      engine.navigate(url).catch(() => {});
+    });
 
     let editorLoaded = false;
     browser.runtime.onMessage.addListener((message: { type?: string }) => {
       if (message?.type !== 'pg:toggle') return;
-      void (async () => {
+      (async () => {
         if (!editorLoaded) {
           await import(/* @vite-ignore */ browser.runtime.getURL('/editor-main.js'));
           editorLoaded = true;
         } else {
           document.dispatchEvent(new CustomEvent('pg-editor:toggle'));
         }
-      })();
+      })().catch(() => {});
     });
   },
 });

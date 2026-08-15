@@ -1,5 +1,5 @@
 import { fakeBrowser } from 'wxt/testing';
-import { beforeEach, expect, test } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { ApplierEngine } from './engine';
 import { watchUrlChanges } from './navigation';
 import { savePageEdits } from '../edits/storage';
@@ -24,6 +24,10 @@ beforeEach(() => {
   fakeBrowser.reset();
   document.head.innerHTML = '';
   document.body.innerHTML = '<h1 class="title">Original</h1>';
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 test('start applies stored edits for the url', async () => {
@@ -102,6 +106,27 @@ test('pauses reapply while the editor previews the original', async () => {
   document.dispatchEvent(new CustomEvent('pg-editor:preview', { detail: { on: false } }));
   await wait(120);
   expect(document.querySelector('.title')!.textContent).toBe('Changed');
+});
+
+test('survives the badge count message throwing synchronously (invalidated context)', async () => {
+  await seed('https://a.com/page', [record({})]);
+  vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockImplementation(() => {
+    throw new Error('Extension context invalidated.');
+  });
+  const engine = new ApplierEngine(document);
+  await expect(engine.start('https://a.com/page')).resolves.toBeUndefined();
+  expect(document.querySelector('.title')!.textContent).toBe('Changed');
+});
+
+test('navigate becomes a no-op once the extension context is invalidated', async () => {
+  await seed('https://a.com/second', [record({})]);
+  const engine = new ApplierEngine(document);
+  await engine.start('https://a.com/first');
+  const original = fakeBrowser.runtime.id;
+  (fakeBrowser.runtime as { id?: string }).id = undefined;
+  await expect(engine.navigate('https://a.com/second')).resolves.toBeUndefined();
+  expect(document.querySelector('.title')!.textContent).toBe('Original');
+  fakeBrowser.runtime.id = original;
 });
 
 test('reports the edit count for the badge whenever edits change', async () => {

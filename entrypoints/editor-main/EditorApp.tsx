@@ -7,7 +7,9 @@ import { GripIcon } from './components/icons';
 import { StatusBadge } from './components/StatusBadge';
 import { Toast, type ToastContent } from './components/Toast';
 import { useElementPicker } from './hooks/useElementPicker';
+import { useExtensionAlive } from './hooks/useExtensionAlive';
 import { captureBeforeAfter } from './snapshot';
+import { safeStorageSet } from '../../lib/extension-context';
 import { t } from '../../lib/i18n';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
 
@@ -28,19 +30,24 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [toast, setToast] = useState<ToastContent | null>(null);
+  const alive = useExtensionAlive();
 
   useEffect(() => {
-    browser.storage.local
-      .get(ONBOARDED_KEY)
-      .then((result) => {
-        if (!result[ONBOARDED_KEY]) setShowOnboarding(true);
-      })
-      .catch(() => setShowOnboarding(true));
+    try {
+      browser.storage.local
+        .get(ONBOARDED_KEY)
+        .then((result) => {
+          if (!result[ONBOARDED_KEY]) setShowOnboarding(true);
+        })
+        .catch(() => setShowOnboarding(true));
+    } catch {
+      // context invalidated — onboarding is pointless in a dead session
+    }
   }, []);
 
   const dismissOnboarding = useCallback(() => {
     setShowOnboarding(false);
-    browser.storage.local.set({ [ONBOARDED_KEY]: true }).catch(() => {});
+    safeStorageSet({ [ONBOARDED_KEY]: true });
   }, []);
 
   const onSnapshot = useCallback(() => {
@@ -72,7 +79,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     });
   }, [mode, onRequestClose]);
 
-  useElementPicker(host, mode === 'edit', { onHover, onSelect, onEscape });
+  useElementPicker(host, mode === 'edit' && alive, { onHover, onSelect, onEscape });
   useUndoRedoShortcuts(host, controller);
 
   const activeSelected = selected?.isConnected ? selected : null;
@@ -80,8 +87,8 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   return (
     <>
       <Overlay
-        hovered={mode === 'edit' && hovered?.isConnected ? hovered : null}
-        selected={mode === 'edit' ? activeSelected : null}
+        hovered={mode === 'edit' && alive && hovered?.isConnected ? hovered : null}
+        selected={mode === 'edit' && alive ? activeSelected : null}
       />
       <StatusBadge
         previewing={previewing}
@@ -106,6 +113,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
       <Panel
         controller={controller}
         selected={activeSelected}
+        stale={!alive}
         mode={mode}
         onModeChange={onModeChange}
         showOnboarding={showOnboarding}

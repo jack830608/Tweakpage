@@ -26,6 +26,7 @@ export type InteractionMode = 'edit' | 'browse';
 export interface PanelProps {
   controller: EditsController;
   selected: Element | null;
+  stale?: boolean;
   mode: InteractionMode;
   onModeChange: (mode: InteractionMode) => void;
   showOnboarding: boolean;
@@ -37,6 +38,11 @@ export interface PanelProps {
   onMinimize: () => void;
   onClose: () => void;
 }
+
+// Resolved at module load, while the extension context is still alive —
+// browser.i18n may already be unreachable by the time this notice renders.
+const STALE_NOTE = t('stale_note');
+const STALE_RELOAD = t('stale_reload');
 
 const INTERACTION_OPTIONS = [
   { value: 'edit', label: <><PencilIcon /> {t('mode_edit')}</>, ariaLabel: 'Edit' },
@@ -97,6 +103,15 @@ export function Panel(props: PanelProps) {
           <button type="button" onClick={onClose} aria-label="Close">✕</button>
         </span>
       </header>
+      {props.stale ? (
+        <div className="pgve-stale" role="alert">
+          <p>{STALE_NOTE}</p>
+          <button type="button" aria-label="Reload page" onClick={() => location.reload()}>
+            {STALE_RELOAD}
+          </button>
+        </div>
+      ) : (
+        <>
       <ModeSwitch
         ariaLabel="Interaction mode"
         options={INTERACTION_OPTIONS}
@@ -153,6 +168,8 @@ export function Panel(props: PanelProps) {
           >
             {t('footer_changes', [count])}
           </button>
+        </>
+      )}
         </>
       )}
     </aside>

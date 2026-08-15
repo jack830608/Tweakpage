@@ -72,6 +72,8 @@ export const MESSAGES: Record<string, string> = {
   pop_empty: 'No saved edits yet. Open any page and start tweaking.',
   pop_open: 'Open',
   pop_clear: 'Clear',
+  stale_note: 'Tweakpage was updated. Reload the page to keep editing — your saved edits are safe.',
+  stale_reload: 'Reload page',
 };
 
 export function t(key: string, subs?: Array<string | number>): string {

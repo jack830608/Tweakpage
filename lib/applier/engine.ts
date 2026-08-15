@@ -1,4 +1,5 @@
 import { browser } from 'wxt/browser';
+import { isExtensionAlive, safeSendMessage } from '../extension-context';
 import { applyAll } from '../edits/apply';
 import { loadPageEdits, pageKey } from '../edits/storage';
 import type { PageEdits } from '../edits/types';
@@ -38,6 +39,7 @@ export class ApplierEngine {
   }
 
   private async loadFor(url: string): Promise<void> {
+    if (!isExtensionAlive()) return;
     const seq = ++this.loadSeq;
     const edits = await loadPageEdits(url);
     if (this.url !== url || seq !== this.loadSeq) return;
@@ -46,9 +48,7 @@ export class ApplierEngine {
 
   private setEdits(edits: PageEdits | null): void {
     this.edits = edits && edits.records.length > 0 ? edits : null;
-    browser.runtime
-      .sendMessage({ type: 'pg:count', count: this.edits?.records.length ?? 0 })
-      .catch(() => {});
+    safeSendMessage({ type: 'pg:count', count: this.edits?.records.length ?? 0 });
     if (this.edits) {
       this.applyNow();
       this.observe();

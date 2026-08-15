@@ -236,5 +236,11 @@
   },
   "pop_clear": {
     "message": "清除"
+  },
+  "stale_note": {
+    "message": "Tweakpage 已更新，請重新整理頁面後繼續編輯 — 已儲存的修改不會遺失。"
+  },
+  "stale_reload": {
+    "message": "重新整理頁面"
   }
 }

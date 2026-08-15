@@ -1,4 +1,5 @@
 import { browser } from 'wxt/browser';
+import { safeStorageSet } from '../../lib/extension-context';
 import type { Position } from './hooks/useDraggable';
 
 const KEY = 'tweakpage:panel-position';
@@ -14,5 +15,5 @@ export async function getSavedPanelPosition(): Promise<Position | null> {
 }
 
 export function savePanelPosition(position: Position): void {
-  browser.storage.local.set({ [KEY]: position }).catch(() => {});
+  safeStorageSet({ [KEY]: position });
 }
