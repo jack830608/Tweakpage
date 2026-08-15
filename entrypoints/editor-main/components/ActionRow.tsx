@@ -46,11 +46,26 @@ export function ActionRow({ controller, selected, onDeselect, onToast }: ActionR
 
   return (
     <div className="pgve-action-row">
-      <button type="button" disabled={!selected || previewing} onClick={onHide}>
-        🙈 Hide element
+      <button
+        type="button"
+        aria-label="Hide element"
+        title="Hide the selected element"
+        disabled={!selected || previewing}
+        onClick={onHide}
+      >
+        🙈 Hide
       </button>
-      <button type="button" onClick={() => void onMarkdown()}>📋 Copy summary</button>
-      <button type="button" onClick={onJson}>⤓ Export JSON</button>
+      <button
+        type="button"
+        aria-label="Copy summary"
+        title="Copy a Markdown summary for engineers"
+        onClick={() => void onMarkdown()}
+      >
+        📋 Copy
+      </button>
+      <button type="button" aria-label="Export JSON" title="Download the edits as JSON" onClick={onJson}>
+        ⤓ Export
+      </button>
     </div>
   );
 }

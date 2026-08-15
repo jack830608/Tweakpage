@@ -16,7 +16,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-empty { padding: 16px; color: #6b7280; }
 .pgve-sections { padding: 12px; display: flex; flex-direction: column; gap: 16px; }
 .pgve-section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 8px; }
-.pgve-section label { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.pgve-section label { display: grid; grid-template-columns: minmax(0, 1fr) auto 22px; align-items: center; gap: 8px; margin-bottom: 6px; }
 .pgve-section input[type='number'], .pgve-section input[type='text'], .pgve-section select { width: 130px; padding: 4px 6px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; }
 .pgve-section textarea { width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; resize: vertical; }
 .pgve-section button { padding: 4px 10px; border: 1px solid #d1d5db; border-radius: 4px; background: #f9fafb; cursor: pointer; }
@@ -57,7 +57,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-segment { flex: 1; padding: 6px 0; border: none; border-radius: 6px; background: none; cursor: pointer; font-size: 12px; color: #374151; }
 .pgve-segment-active { background: #ff3b30; color: #fff; font-weight: 600; }
 .pgve-action-row { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; margin-top: 8px; }
-.pgve-action-row button { flex: 1; padding: 6px 4px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; cursor: pointer; font-size: 11px; }
+.pgve-action-row button { flex: 1; padding: 6px 4px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; cursor: pointer; font-size: 12px; white-space: nowrap; }
 .pgve-action-row button:disabled { opacity: 0.45; cursor: default; }
 .pgve-selection-card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
 .pgve-selection-label { font-weight: 600; word-break: break-all; }

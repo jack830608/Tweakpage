@@ -71,8 +71,8 @@ export function TypographySection({ element, controller }: SectionProps) {
         label="Color"
         value={rgbToHex(cs.color)}
         onChange={(hex) => controller.recordEdit(element, 'style', 'color', original.color, hex)}
+        trailing={<ResetButton controller={controller} element={element} property="color" />}
       />
-      <ResetButton controller={controller} element={element} property="color" />
     </section>
   );
 }

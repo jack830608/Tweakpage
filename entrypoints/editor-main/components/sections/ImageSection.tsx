@@ -16,6 +16,7 @@ export function ImageSection({ element, controller }: SectionProps) {
       <label>
         Image URL
         <input type="text" aria-label="Image URL" value={url} onChange={(e) => setUrl(e.target.value)} />
+        <span className="pgve-reset-slot" aria-hidden="true" />
       </label>
       <button
         type="button"

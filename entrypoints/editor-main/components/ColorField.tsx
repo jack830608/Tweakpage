@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 interface ColorFieldProps {
   label: string;
   value: string | null;
   onChange: (hex: string) => void;
+  trailing?: ReactNode;
 }
 
-export function ColorField({ label, value, onChange }: ColorFieldProps) {
+export function ColorField({ label, value, onChange, trailing }: ColorFieldProps) {
   const [draft, setDraft] = useState(value ?? '');
   useEffect(() => setDraft(value ?? ''), [value]);
   return (
@@ -30,6 +31,7 @@ export function ColorField({ label, value, onChange }: ColorFieldProps) {
           }}
         />
       </span>
+      {trailing}
     </label>
   );
 }

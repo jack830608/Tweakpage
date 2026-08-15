@@ -18,8 +18,8 @@ export function BackgroundSection({ element, controller }: SectionProps) {
         label="Background color"
         value={isTransparent(cs.backgroundColor) ? null : rgbToHex(cs.backgroundColor)}
         onChange={(hex) => controller.recordEdit(element, 'style', 'backgroundColor', original, hex)}
+        trailing={<ResetButton controller={controller} element={element} property="backgroundColor" />}
       />
-      <ResetButton controller={controller} element={element} property="backgroundColor" />
     </section>
   );
 }
