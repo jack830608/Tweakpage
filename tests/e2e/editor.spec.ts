@@ -172,6 +172,83 @@ test('swapping a responsive image actually changes what the browser shows', asyn
     .toContain('00ff00');
 });
 
+test('every control in the panel is labelled, addressable and in a field row', async ({
+  context,
+}) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  for (const section of ['text', 'typography', 'background', 'appearance', 'size', 'layout', 'spacing']) {
+    const header = page.locator(`[data-section="${section}"]`);
+    if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+  }
+
+  const audit = await page.evaluate(() => {
+    const root = document.getElementById('tweakpage-host')!.shadowRoot!;
+    const problems: string[] = [];
+    const controls = Array.from(root.querySelectorAll('input, select, textarea'));
+    for (const el of controls) {
+      const id = el.getAttribute('data-testid') ?? el.getAttribute('aria-label') ?? el.outerHTML.slice(0, 50);
+      if (!el.getAttribute('data-testid')) problems.push(`${id}: no data-testid`);
+      if (!el.getAttribute('aria-label')) problems.push(`${id}: no aria-label`);
+      // A property editor belongs in a Field row — that is what gives it a name and a reset.
+      if (el.closest('.pgve-section') && !el.closest('.pgve-field') && !el.closest('.pgve-box')) {
+        problems.push(`${id}: in a section but not in a field row`);
+      }
+    }
+    return { count: controls.length, problems };
+  });
+
+  expect(audit.count, 'the sweep should reach every control').toBeGreaterThan(20);
+  expect(audit.problems).toEqual([]);
+});
+
+test('no field wears a native decoration over its unit', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  for (const section of ['size', 'appearance']) {
+    const header = page.locator(`[data-section="${section}"]`);
+    if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+  }
+
+  // Chrome's spinner and datalist arrow are drawn in the same corner as the unit chip, and
+  // their computed style lies inside a shadow root — so measure the pixels instead.
+  const darkPixelsAtRightEdge = async (testid: string) => {
+    const field = page.locator(`[data-testid="${testid}"]`);
+    // The panel scrolls internally, so a field can sit outside the captured area.
+    await field.scrollIntoViewIfNeeded();
+    const box = (await field.boundingBox())!;
+    await page.mouse.move(box.x + box.width - 8, box.y + box.height / 2);
+    await page.waitForTimeout(250);
+    const shot = await page.screenshot({
+      clip: { x: box.x + box.width - 22, y: box.y + 2, width: 18, height: box.height - 4 },
+    });
+    // PNG pixels via canvas in the page, so the test needs no image library.
+    return page.evaluate(async (bytes) => {
+      const blob = new Blob([new Uint8Array(bytes)], { type: 'image/png' });
+      const bitmap = await createImageBitmap(blob);
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(bitmap, 0, 0);
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let dark = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        if ((data[i] + data[i + 1] + data[i + 2]) / 3 < 120) dark++;
+      }
+      return dark;
+    }, Array.from(shot));
+  };
+
+  // width carries a datalist, border-width is a number input: the two decorations Chrome adds.
+  expect(await darkPixelsAtRightEdge('width'), 'a datalist arrow is sitting on the unit').toBeLessThan(20);
+  expect(await darkPixelsAtRightEdge('border-width'), 'a spinner is sitting on the unit').toBeLessThan(20);
+});
+
 test('header and change count stay reachable when the panel scrolls', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');

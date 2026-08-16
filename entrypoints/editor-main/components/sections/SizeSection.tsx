@@ -42,6 +42,7 @@ export function SizeSection({ element, controller }: SectionProps) {
           controller={controller}
         />
       ))}
+      <p className="pgve-hint">{t('size_hint')}</p>
       <datalist id="pgve-size-suggestions">
         <option value="auto" />
         <option value="100%" />

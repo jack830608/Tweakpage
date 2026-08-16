@@ -130,6 +130,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-section input[type='number'] { appearance: textfield; -moz-appearance: textfield; }
 .pgve-section input[type='number']::-webkit-outer-spin-button,
 .pgve-section input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* A field bound to a datalist gets a picker arrow on hover, in the same place as the
+   unit chip. Suggestions still appear while typing; the arrow only collided.
+   The bang is required: without it Chrome's own style for this pseudo-element wins,
+   which is why a plain `display: none` here did nothing. */
+.pgve-panel input::-webkit-calendar-picker-indicator { display: none !important; }
 .pgve-prop--scrub { cursor: ew-resize; user-select: none; }
 .pgve-prop--scrub:hover { color: var(--ink); text-decoration: underline dotted; text-underline-offset: 3px; }
 .pgve-unit { position: absolute; right: 8px; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); pointer-events: none; }

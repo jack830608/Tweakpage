@@ -49,6 +49,7 @@ export const MESSAGES: Record<string, string> = {
   image_url_placeholder: "https://\u2026 or pick a file",
   aria_choose_image: "Choose image file",
   aria_choose_bg_image: "Choose background image file",
+  size_hint: "Also takes auto, a percentage, or fit-content.",
   size_placeholder: "auto, 50%, 320",
   aria_select_change: "Select $1",
   search_changes: "Filter changes",

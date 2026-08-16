@@ -57,7 +57,7 @@ export function ImageSection({ element, controller }: SectionProps) {
       <div className="pgve-field pgve-field--actions">
         <span aria-hidden="true" />
         <div className="pgve-field-actions">
-          <ImagePicker ariaLabel={t('aria_choose_image')} onPicked={applySrc} />
+          <ImagePicker ariaLabel={t('aria_choose_image')} testId="image-file" onPicked={applySrc} />
         </div>
       </div>
     </section>

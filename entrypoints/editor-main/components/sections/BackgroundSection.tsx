@@ -80,7 +80,7 @@ export function BackgroundSection({ element, controller }: SectionProps) {
       <div className="pgve-field pgve-field--actions">
         <span aria-hidden="true" />
         <div className="pgve-field-actions">
-        <ImagePicker ariaLabel={t('aria_choose_bg_image')} onPicked={setImage} />
+        <ImagePicker ariaLabel={t('aria_choose_bg_image')} testId="background-image-file" onPicked={setImage} />
         </div>
       </div>
     </section>
