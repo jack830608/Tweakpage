@@ -1,5 +1,14 @@
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
-import { getSavedPanelPosition, savePanelPosition } from '../panel-position';
+import { useEffect, useRef, useState, useSyncExternalStore, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import {
+  clampWidth,
+  DEFAULT_PREFS,
+  getPanelPrefs,
+  getSavedPanelPosition,
+  savePanelPosition,
+  savePanelPrefs,
+  type PanelPrefs,
+  type ThemeChoice,
+} from '../panel-position';
 import type { Position } from '../hooks/useDraggable';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
@@ -36,6 +45,8 @@ export interface PanelProps {
   onHighlight: (el: Element | null) => void;
   onToast: (toast: ToastContent) => void;
   onSnapshot: () => void;
+  showMarks?: boolean;
+  onToggleMarks?: (on: boolean) => void;
   onMinimize: () => void;
   onClose: () => void;
 }
@@ -99,9 +110,47 @@ export function Panel(props: PanelProps) {
     restoredPosition,
     onDragEnd: savePanelPosition,
   });
+  const [prefs, setPrefs] = useState<PanelPrefs>(DEFAULT_PREFS);
+  useEffect(() => {
+    void getPanelPrefs().then(setPrefs);
+  }, []);
+  const updatePrefs = (next: PanelPrefs) => {
+    setPrefs(next);
+    savePanelPrefs(next);
+  };
+  const onResize = (e: ReactPointerEvent<HTMLElement>) => {
+    const startX = e.clientX;
+    const startWidth = panelRef.current?.getBoundingClientRect().width ?? prefs.width;
+    const move = (ev: PointerEvent) => {
+      // The panel is anchored on the right, so dragging left makes it wider.
+      setPrefs((p) => ({ ...p, width: clampWidth(startWidth + (startX - ev.clientX)) }));
+    };
+    const up = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      setPrefs((p) => {
+        savePanelPrefs(p);
+        return p;
+      });
+    };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+  };
 
   return (
-    <aside className="pgve-panel" ref={panelRef} style={style}>
+    <aside
+      className="pgve-panel"
+      ref={panelRef}
+      data-theme={prefs.theme === 'system' ? undefined : prefs.theme}
+      style={{ ...style, width: prefs.width }}
+    >
+      <span
+        className="pgve-resize"
+        role="separator"
+        aria-label={t('aria_resize')}
+        data-testid="resize-panel"
+        onPointerDown={onResize}
+      />
       <header className="pgve-header" {...handleProps}>
         <strong><GripIcon /> Tweakpage</strong>
         <span className="pgve-header-buttons">
@@ -123,6 +172,17 @@ export function Panel(props: PanelProps) {
           >
             <RedoIcon />
           </button>
+          <select
+            className="pgve-theme"
+            aria-label={t('aria_theme')}
+            data-testid="panel-theme"
+            value={prefs.theme}
+            onChange={(e) => updatePrefs({ ...prefs, theme: e.target.value as ThemeChoice })}
+          >
+            <option value="system">{t('theme_system')}</option>
+            <option value="light">{t('theme_light')}</option>
+            <option value="dark">{t('theme_dark')}</option>
+          </select>
           <span className="pgve-header-divider" aria-hidden="true" />
           <button type="button" onClick={props.onMinimize} aria-label={t('aria_minimize')} data-testid="minimize" title={t('tip_minimize')}><MinusIcon /></button>
           <button type="button" onClick={onClose} aria-label={t('aria_close')} data-testid="close" title={t('tip_close')}>✕</button>
@@ -150,6 +210,18 @@ export function Panel(props: PanelProps) {
         onChange={(value) => controller.setPreviewOriginal(value === 'original')}
       />
       <ShareRow controller={controller} onToast={props.onToast} onSnapshot={props.onSnapshot} />
+      {view === 'edit' && count > 0 && props.onToggleMarks && (
+        <label className="pgve-marks-toggle">
+          <input
+            type="checkbox"
+            aria-label={t('aria_show_marks')}
+            data-testid="show-marks"
+            checked={props.showMarks ?? true}
+            onChange={(e) => props.onToggleMarks?.(e.target.checked)}
+          />
+          {t('show_marks')}
+        </label>
+      )}
       {stale > 0 && view === 'edit' && (
         <button
           type="button"

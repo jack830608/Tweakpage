@@ -7,6 +7,7 @@ import { GripIcon } from './components/icons';
 import { StatusBadge } from './components/StatusBadge';
 import { Toast, type ToastContent } from './components/Toast';
 import { useElementPicker } from './hooks/useElementPicker';
+import { useKeyboardPicker } from './hooks/useKeyboardPicker';
 import { useExtensionAlive } from './hooks/useExtensionAlive';
 import { captureBeforeAfter } from './snapshot';
 import { safeStorageSet } from '../../lib/extension-context';
@@ -29,6 +30,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   const [mode, setMode] = useState<InteractionMode>('edit');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [minimized, setMinimized] = useState(false);
+  const [showMarks, setShowMarks] = useState(true);
   const [toast, setToast] = useState<ToastContent | null>(null);
   const alive = useExtensionAlive();
 
@@ -44,6 +46,17 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
       // context invalidated — onboarding is pointless in a dead session
     }
   }, []);
+
+  useEffect(() => {
+    const onNavigated = (e: Event) => {
+      const url = (e as CustomEvent<{ url?: string }>).detail?.url ?? location.href;
+      setSelected(null);
+      setHovered(null);
+      void controller.navigate(url);
+    };
+    document.addEventListener('pg-editor:navigated', onNavigated);
+    return () => document.removeEventListener('pg-editor:navigated', onNavigated);
+  }, [controller]);
 
   useEffect(() => {
     const onSaveFailed = () => setToast({ message: t('toast_save_failed') });
@@ -87,6 +100,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
 
   useElementPicker(host, mode === 'edit' && alive, { onHover, onSelect, onEscape });
   useUndoRedoShortcuts(host, controller);
+  useKeyboardPicker(host, { enabled: mode === 'edit' && alive, selected, onSelect });
 
   const activeSelected = selected?.isConnected ? selected : null;
 
@@ -95,6 +109,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
       <Overlay
         hovered={mode === 'edit' && alive && hovered?.isConnected ? hovered : null}
         selected={mode === 'edit' && alive ? activeSelected : null}
+        edited={mode === 'edit' && showMarks ? Array.from(document.querySelectorAll('[data-tweakpage]')) : []}
       />
       <StatusBadge
         previewing={previewing}
@@ -128,6 +143,8 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         onHighlight={setHovered}
         onToast={setToast}
         onSnapshot={onSnapshot}
+        showMarks={showMarks}
+        onToggleMarks={setShowMarks}
         onMinimize={() => setMinimized(true)}
         onClose={onRequestClose}
       />

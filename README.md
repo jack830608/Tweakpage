@@ -39,20 +39,27 @@ Every edit is recorded as a structured diff (selector + property + old → new),
    and the untouched original — the page badge takes you back.
 4. Select an element and edit it in the collapsible sections: Text, Typography (family, size,
    weight, line height, align, letter spacing, transform, color), Background (color + image),
-   Image, Appearance (corner radius, opacity, border), Size, Spacing. Fields are named after
+   Image, Appearance (corner radius, opacity, border), Size, Layout (display, flex, gap,
+   position, shadow), Spacing. Text with inline markup gets one box per run, so a heading
+   keeps the link or coloured span inside it. Images can come from a local file, and colours
+   keep their transparency. Fields are named after
    the CSS property they write, and an edited one shows a ↺ beside its name. Color fields have
    an eyedropper (pick from the page) and recent swatches. Use the breadcrumb to reach
    parents/children.
-5. Selection card: **Hide / Unhide** the selected element (editing locks while hidden).
-   Share row: **Copy** (Markdown summary for engineers), **Export JSON**, **Snap**
-   (before & after screenshots of the visible page).
+5. Selection card: **Hide / Unhide** the selected element (editing locks while hidden), and
+   **apply style edits to every similar element** when the element is one of a family.
+   Hand off with **Copy** (Markdown summary), **CSS** (a pasteable stylesheet) or **Snap**
+   (one image with the original and the edited page side by side); send with **Copy JSON**
+   or **Export JSON**.
 6. Footer **Review** opens the change list (delete individual edits, revert all, **Import JSON**
    from a teammate — edits for other pages are stored and apply when you open them).
-7. `⌘Z` / `⇧⌘Z` (or `Ctrl+Z`) undo and redo edits. Each change in Review can be toggled,
-   hovered (highlights the element), or clicked (selects it).
-8. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere (it
-   remembers its spot) or minimize it to a corner pill. Dark mode follows your system, and
-   the UI ships in English and Traditional Chinese. Edits stay applied and survive reloads.
+7. `⌘Z` / `⇧⌘Z` (or `Ctrl+Z`) undo and redo, or the arrows in the header. Each change in
+   Review can be toggled, hovered (highlights the element) or selected (scrolls the page to
+   it). `⌥` + arrow keys move the selection through the page without a mouse.
+8. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere,
+   drag its left edge to resize, or minimize it to a corner pill — all remembered. The theme
+   follows your system unless you pick Light or Dark in the header. The UI ships in English
+   and Traditional Chinese. Edits survive reloads and follow client-side navigation.
 
 
 ## Development

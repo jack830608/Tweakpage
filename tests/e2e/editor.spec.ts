@@ -139,7 +139,7 @@ test('clicking a change scrolls the page back to its element', async ({ context 
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
 
   await page.locator('[data-testid="review-changes"]').click();
-  await page.locator('.pgve-change').first().click();
+  await page.locator('.pgve-change button[data-testid^="select-change-"]').first().click();
 
   // Smooth scrolling settles over a few frames.
   await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 }).toBeLessThan(300);
@@ -277,9 +277,12 @@ test('panel can be dragged to a new position and stays in the viewport', async (
   const before = (await panel.boundingBox())!;
   const header = (await page.locator('.pgve-header').boundingBox())!;
 
-  await page.mouse.move(header.x + header.width / 2, header.y + header.height / 2);
+  // Grab the title, not the middle — the header carries undo, redo and the theme picker.
+  const grabX = header.x + 60;
+  const grabY = header.y + header.height / 2;
+  await page.mouse.move(grabX, grabY);
   await page.mouse.down();
-  await page.mouse.move(header.x + header.width / 2 - 400, header.y + header.height / 2 + 150, { steps: 5 });
+  await page.mouse.move(grabX - 400, grabY + 150, { steps: 5 });
   await page.mouse.up();
 
   const after = (await panel.boundingBox())!;
@@ -368,7 +371,7 @@ test('importing a json file applies edits to the matching page', async ({ contex
   await expect(page.locator('h1')).toHaveText('Imported headline');
 });
 
-test('snapshot downloads before and after captures', async ({ context }) => {
+test('snapshot saves one image with the two states side by side', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
@@ -377,7 +380,7 @@ test('snapshot downloads before and after captures', async ({ context }) => {
   await page.locator('[data-testid="snapshot-before-and-after"]').click();
 
   // Playwright reroutes downloads into its artifacts dir under random names, so assert
-  // on content: two completed downloads, both PNG, with different pixels (before ≠ after).
+  // on content rather than filename.
   const [worker] = context.serviceWorkers();
   const files: string[] = await worker.evaluate(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -386,15 +389,20 @@ test('snapshot downloads before and after captures', async ({ context }) => {
     while (Date.now() < deadline) {
       const items = await c.downloads.search({});
       const done = items.filter((i: { state: string }) => i.state === 'complete');
-      if (done.length >= 2) return done.map((i: { filename: string }) => i.filename);
+      if (done.length >= 1) return done.map((i: { filename: string }) => i.filename);
       await new Promise((resolve) => setTimeout(resolve, 200));
     }
-    throw new Error('captures did not complete');
+    throw new Error('the capture did not complete');
   });
-  expect(files).toHaveLength(2);
-  const first = fs.readFileSync(files[0]);
-  const second = fs.readFileSync(files[1]);
-  expect(first.subarray(1, 4).toString()).toBe('PNG');
-  expect(second.subarray(1, 4).toString()).toBe('PNG');
-  expect(first.equals(second)).toBe(false);
+
+  expect(files, 'the two states arrive as one image, not two files').toHaveLength(1);
+  const png = fs.readFileSync(files[0]);
+  expect(png.subarray(1, 4).toString()).toBe('PNG');
+
+  // PNG header: width and height are big-endian 32-bit values at byte 16.
+  const width = png.readUInt32BE(16);
+  const height = png.readUInt32BE(20);
+  const viewport = page.viewportSize()!;
+  expect(width, 'both captures sit next to each other').toBeGreaterThan(viewport.width * 1.5);
+  expect(height).toBeGreaterThan(viewport.height);
 });

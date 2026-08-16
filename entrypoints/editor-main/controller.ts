@@ -2,7 +2,7 @@ import { applyAll, revertAll, type ApplyStatus } from '../../lib/edits/apply';
 import { findRecord, upsertRecord } from '../../lib/edits/coalesce';
 import { mergeRecords } from '../../lib/edits/import';
 import { revertDomEdit } from '../../lib/edits/dom';
-import { normalizePageUrl, savePageEdits } from '../../lib/edits/storage';
+import { loadPageEdits, normalizePageUrl, savePageEdits } from '../../lib/edits/storage';
 import { emptyPageEdits, type EditRecord, type EditType, type PageEdits } from '../../lib/edits/types';
 import { generateSelector, type GeneratedSelector } from '../../lib/selector/generate';
 import { resolveRecord } from '../../lib/selector/resolve';
@@ -165,6 +165,27 @@ export class EditsController {
       this.lastEditTarget = null;
       this.setRecords(moved);
     }
+  }
+
+  /**
+   * Follows a client-side route change.
+   *
+   * The editor used to close itself on navigation, so using a single-page app meant
+   * reopening from the toolbar after every link. The undo history belongs to the page
+   * that was open, so it starts again here.
+   */
+  async navigate(url: string): Promise<void> {
+    const next = normalizePageUrl(url);
+    if (next === this.page.url) return;
+    revertAll(this.page.records, this.doc);
+    const loaded = await loadPageEdits(url);
+    if (normalizePageUrl(this.doc.location.href) !== next) return;
+    this.page = loaded ?? emptyPageEdits(next, this.doc.title, this.now());
+    this.undoStack = [];
+    this.redoStack = [];
+    this.lastEditTarget = null;
+    this.statuses = applyAll(this.page.records, this.doc);
+    this.listeners.forEach((fn) => fn());
   }
 
   /** Clears several properties of one element as a single undo step. */

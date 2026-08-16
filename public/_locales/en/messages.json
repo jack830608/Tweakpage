@@ -449,5 +449,32 @@
   },
   "err_css_value": {
     "message": "That value has characters CSS treats as the end of a rule"
+  },
+  "theme_system": {
+    "message": "Match system"
+  },
+  "theme_light": {
+    "message": "Light"
+  },
+  "theme_dark": {
+    "message": "Dark"
+  },
+  "aria_theme": {
+    "message": "Panel theme"
+  },
+  "aria_resize": {
+    "message": "Resize panel"
+  },
+  "aria_show_marks": {
+    "message": "Show edited elements"
+  },
+  "show_marks": {
+    "message": "Mark edited elements"
+  },
+  "search_changes": {
+    "message": "Filter changes"
+  },
+  "aria_select_change": {
+    "message": "Select $1"
   }
 }

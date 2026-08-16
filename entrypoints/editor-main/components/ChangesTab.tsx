@@ -1,4 +1,4 @@
-import { useRef, useSyncExternalStore } from 'react';
+import { useRef, useState, useSyncExternalStore } from 'react';
 import { cssPropertyName } from '../../../lib/edits/css';
 import { importPageEdits, parseImport } from '../../../lib/edits/import';
 import { normalizePageUrl } from '../../../lib/edits/storage';
@@ -20,6 +20,13 @@ interface ChangesTabProps {
 export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }: ChangesTabProps) {
   const page = useSyncExternalStore(controller.subscribe, controller.getPage);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [filter, setFilter] = useState('');
+  const needle = filter.trim().toLowerCase();
+  const visible = needle
+    ? page.records.filter((r) =>
+        `${r.elementLabel} ${labelFor(r)} ${r.oldValue} ${r.newValue}`.toLowerCase().includes(needle),
+      )
+    : page.records;
 
   const onImportFile = async (file: File) => {
     const result = parseImport(await file.text());
@@ -62,25 +69,47 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
           }}
         />
       </div>
+      {page.records.length > 3 && (
+        <input
+          type="search"
+          className="pgve-changes-filter"
+          aria-label={t('search_changes')}
+          data-testid="filter-changes"
+          placeholder={t('search_changes')}
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
+      )}
       {page.records.length === 0 ? (
         <p className="pgve-empty">{t('no_changes')}</p>
       ) : (
         <ul>
-          {page.records.map((record) => (
+          {visible.map((record) => (
             <li
               key={record.id}
               className={record.enabled ? 'pgve-change' : 'pgve-change pgve-change-off'}
               onMouseEnter={() => onHighlight(resolveRecord(record, document))}
               onMouseLeave={() => onHighlight(null)}
-              onClick={() => {
-                const el = resolveRecord(record, document);
-                if (!el) return;
-                revealElement(el);
-                onSelectRecord(el);
-              }}
             >
               <div className="pgve-change-head">
-                <div className="pgve-change-target">{record.elementLabel}</div>
+                {/* Selecting is a control, so it is a button: reachable by keyboard and
+                    announced for what it does, rather than a click handler on a row. */}
+                <button
+                  type="button"
+                  className="pgve-change-target"
+                  aria-label={t('aria_select_change', [record.elementLabel])}
+                  data-testid={`select-change-${record.id}`}
+                  onFocus={() => onHighlight(resolveRecord(record, document))}
+                  onBlur={() => onHighlight(null)}
+                  onClick={() => {
+                    const el = resolveRecord(record, document);
+                    if (!el) return;
+                    revealElement(el);
+                    onSelectRecord(el);
+                  }}
+                >
+                  {record.elementLabel}
+                </button>
                 <input
                   type="checkbox"
                   className="pgve-change-switch"

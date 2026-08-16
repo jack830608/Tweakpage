@@ -449,5 +449,32 @@
   },
   "err_css_value": {
     "message": "這個值含有 CSS 會視為規則結束的字元"
+  },
+  "theme_system": {
+    "message": "跟隨系統"
+  },
+  "theme_light": {
+    "message": "淺色"
+  },
+  "theme_dark": {
+    "message": "深色"
+  },
+  "aria_theme": {
+    "message": "面板主題"
+  },
+  "aria_resize": {
+    "message": "調整面板寬度"
+  },
+  "aria_show_marks": {
+    "message": "標記已改動的元素"
+  },
+  "show_marks": {
+    "message": "標記已改動的元素"
+  },
+  "search_changes": {
+    "message": "篩選改動"
+  },
+  "aria_select_change": {
+    "message": "選取 $1"
   }
 }
