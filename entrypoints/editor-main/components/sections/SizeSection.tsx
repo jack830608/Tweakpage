@@ -1,6 +1,8 @@
+import { isBareNumber } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { useFieldDraft } from '../../hooks/useFieldDraft';
 import { Field } from '../Field';
+import { scrubbedValue } from '../../scrub';
 import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
@@ -63,7 +65,25 @@ function SizeField({ ariaLabel, property, element, controller }: SizeFieldProps)
   const computed = getComputedStyle(element).getPropertyValue(property);
   const field = useFieldDraft(controller, element, property, computed, showSize);
   return (
-    <Field name={property} property={property} controller={controller} element={element} error={field.error}>
+    <Field
+      name={property}
+      property={property}
+      controller={controller}
+      element={element}
+      error={field.error}
+      unit={isBareNumber(field.value) ? 'px' : undefined}
+      // Dragging a keyword like auto has no meaning; a number can be scrubbed like any other.
+      onScrub={
+        isBareNumber(field.value)
+          ? (steps) => {
+              const next = scrubbedValue(controller, element, property, field.original, steps, {
+                min: 0,
+              });
+              controller.recordEdit(element, 'style', property, field.original, `${next}px`);
+            }
+          : undefined
+      }
+    >
       <input
         type="text"
         inputMode="text"

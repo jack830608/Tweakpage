@@ -58,3 +58,8 @@ export function isTransparent(value: string): boolean {
   const m = trimmed.match(/^rgba\(\s*\d+[,\s]+\d+[,\s]+\d+[,\s/]+([\d.]+)\s*\)$/);
   return m !== null && Number.parseFloat(m[1]) === 0;
 }
+
+/** True when a field's value is a number on its own, with no unit or keyword. */
+export function isBareNumber(value: string): boolean {
+  return /^-?\d*\.?\d+$/.test(value.trim());
+}

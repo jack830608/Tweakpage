@@ -357,6 +357,50 @@ describe('dragging the property name changes the value', () => {
   });
 });
 
+describe('what a bare number means is always stated', () => {
+  function unitOf(label: string): string | null {
+    const row = control(label).closest('.pgve-field');
+    return row?.querySelector('.pgve-unit')?.textContent ?? null;
+  }
+
+  test('fields with a fixed unit always show it', () => {
+    setup();
+    openSection('typography');
+    expect(unitOf('Font size')).toBe('px');
+    expect(unitOf('Letter spacing')).toBe('px');
+  });
+
+  test('a bare line-height is a multiple of the font size, not pixels', () => {
+    setup();
+    openSection('typography');
+    fireEvent.change(control('Line height'), { target: { value: '1.5' } });
+    expect(unitOf('Line height')).toBe('×');
+  });
+
+  test('a line-height that carries its own unit says nothing extra', () => {
+    setup();
+    openSection('typography');
+    fireEvent.change(control('Line height'), { target: { value: '24px' } });
+    expect(unitOf('Line height')).toBeNull();
+  });
+
+  test('width in pixels says so instead of showing a naked number', () => {
+    setup();
+    openSection('size');
+    expect(control('Width').value).toMatch(/^\d+$/);
+    expect(unitOf('Width'), 'a bare 1270 could be anything').toBe('px');
+  });
+
+  test('width set to a keyword or a percentage drops the unit', () => {
+    setup();
+    openSection('size');
+    fireEvent.change(control('Width'), { target: { value: 'auto' } });
+    expect(unitOf('Width')).toBeNull();
+    fireEvent.change(control('Width'), { target: { value: '50%' } });
+    expect(unitOf('Width')).toBeNull();
+  });
+});
+
 describe('border width', () => {
   test('adds a border style so the width shows, and takes it back on reset', () => {
     // An element with no border at all: border-style is 'none', so a width alone
