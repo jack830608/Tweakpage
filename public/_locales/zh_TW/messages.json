@@ -44,9 +44,6 @@
   "hidden_note": {
     "message": "元素已隱藏 — 取消隱藏後才能編輯。"
   },
-  "mixed_warning": {
-    "message": "這個元素包含格式化內容 — 在此編輯文字會將其變為純文字。建議用麵包屑選擇內層元素。"
-  },
   "footer_changes": {
     "message": "$param1$ 筆改動 · 檢視 ›",
     "placeholders": {
@@ -425,5 +422,32 @@
   },
   "aria_border_color": {
     "message": "框線顏色"
+  },
+  "aria_text_run": {
+    "message": "$1 裡的文字"
+  },
+  "runs_hint": {
+    "message": "每個框是一段文字 — 中間的標籤結構會原樣保留。"
+  },
+  "apply_similar": {
+    "message": "套用樣式改動到全部 $1 個相似元素"
+  },
+  "aria_apply_similar": {
+    "message": "套用到相似元素"
+  },
+  "export_viewport": {
+    "message": "在視窗寬度 $1px 下記錄"
+  },
+  "record_viewport": {
+    "message": "於 $1px"
+  },
+  "sec_layout": {
+    "message": "版面"
+  },
+  "layout_hint": {
+    "message": "版面調整會連帶影響周圍元素的排列方式。"
+  },
+  "err_css_value": {
+    "message": "這個值含有 CSS 會視為規則結束的字元"
   }
 }

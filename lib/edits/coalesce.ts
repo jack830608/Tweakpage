@@ -9,6 +9,7 @@ export interface NewEdit {
   property: string;
   oldValue: string;
   newValue: string;
+  viewport?: number;
 }
 
 export function findRecord(
@@ -24,7 +25,7 @@ export function upsertRecord(records: EditRecord[], edit: NewEdit, now: string):
   if (existing) {
     return records.map((r) =>
       r === existing
-        ? { ...r, newValue: edit.newValue, elementLabel: edit.elementLabel, updatedAt: now }
+        ? { ...r, newValue: edit.newValue, elementLabel: edit.elementLabel, viewport: edit.viewport ?? r.viewport, updatedAt: now }
         : r,
     );
   }

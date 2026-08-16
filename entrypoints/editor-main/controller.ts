@@ -6,6 +6,7 @@ import { normalizePageUrl, savePageEdits } from '../../lib/edits/storage';
 import { emptyPageEdits, type EditRecord, type EditType, type PageEdits } from '../../lib/edits/types';
 import { generateSelector, type GeneratedSelector } from '../../lib/selector/generate';
 import { resolveRecord } from '../../lib/selector/resolve';
+import { similarSelector } from '../../lib/selector/similar';
 
 export class EditsController {
   private page: PageEdits;
@@ -88,7 +89,11 @@ export class EditsController {
     }
     if (!existing && newValue === oldValue) return;
     this.setRecords(
-      upsertRecord(this.page.records, { ...gen, type, property, oldValue, newValue }, this.now()),
+      upsertRecord(
+        this.page.records,
+        { ...gen, type, property, oldValue, newValue, viewport: this.viewportWidth() },
+        this.now(),
+      ),
       { mergeSnapshot: target === this.lastEditTarget },
     );
     this.lastEditTarget = target;
@@ -114,6 +119,52 @@ export class EditsController {
     if (this.previewing) this.setPreviewOriginal(false);
     this.lastEditTarget = null;
     this.setRecords(mergeRecords(this.page.records, records));
+  }
+
+  private viewportWidth(): number | undefined {
+    const width = this.doc.defaultView?.innerWidth;
+    return typeof width === 'number' && width > 0 ? width : undefined;
+  }
+
+  /** How many other elements this one belongs with, if any. */
+  similarTo(el: Element): { selector: string; count: number } | null {
+    return similarSelector(el);
+  }
+
+  /** True when this element's style edits are already pointed at the whole family. */
+  appliesToSimilar(el: Element): boolean {
+    const set = similarSelector(el);
+    if (!set) return false;
+    return this.page.records.some((r) => r.scope === 'similar' && r.selector === set.selector);
+  }
+
+  /**
+   * Re-points this element's style edits at every similar element, or back at the one.
+   *
+   * Selectors are made unique on purpose, which is right for "change this heading" and
+   * useless for "change all the buttons" — this is the deliberate way to say the latter.
+   */
+  setSimilarScope(el: Element, all: boolean): void {
+    const set = similarSelector(el);
+    if (!set) return;
+    const own = this.genFor(el);
+    const from = all ? own.selector : set.selector;
+    const to = all ? set.selector : own.selector;
+    const moved = this.page.records.map((record) =>
+      record.type === 'style' && record.selector === from
+        ? {
+            ...record,
+            selector: to,
+            scope: all ? ('similar' as const) : ('element' as const),
+            elementLabel: all ? `${set.count} × ${record.elementLabel}` : own.elementLabel,
+            updatedAt: this.now(),
+          }
+        : record,
+    );
+    if (moved.some((r, i) => r !== this.page.records[i])) {
+      this.lastEditTarget = null;
+      this.setRecords(moved);
+    }
   }
 
   /** Clears several properties of one element as a single undo step. */

@@ -44,9 +44,6 @@
   "hidden_note": {
     "message": "Element is hidden — Unhide to edit it."
   },
-  "mixed_warning": {
-    "message": "This element contains formatted parts — editing text here replaces them with plain text. Use the breadcrumb to edit an inner element instead."
-  },
   "footer_changes": {
     "message": "$param1$ changes · Review ›",
     "placeholders": {
@@ -425,5 +422,32 @@
   },
   "aria_border_color": {
     "message": "Border color"
+  },
+  "aria_text_run": {
+    "message": "Text in $1"
+  },
+  "runs_hint": {
+    "message": "Each box is one run of text — the markup between them stays as it is."
+  },
+  "apply_similar": {
+    "message": "Apply style edits to all $1 similar elements"
+  },
+  "aria_apply_similar": {
+    "message": "Apply to similar elements"
+  },
+  "export_viewport": {
+    "message": "Captured at $1px wide"
+  },
+  "record_viewport": {
+    "message": "at $1px"
+  },
+  "sec_layout": {
+    "message": "Layout"
+  },
+  "layout_hint": {
+    "message": "Layout changes affect how neighbours sit around this element."
+  },
+  "err_css_value": {
+    "message": "That value has characters CSS treats as the end of a rule"
   }
 }

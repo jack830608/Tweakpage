@@ -110,16 +110,33 @@ test('an edited property shows a reset control that reverts it', () => {
   expect(controller.getPage().records).toHaveLength(0);
 });
 
-test('warns when text editing would flatten nested markup', () => {
+test('an element with inline markup gets one box per run of text', () => {
   document.body.innerHTML =
     '<h1 id="title" style="font-size: 32px; color: rgb(51, 51, 51)">Save <strong>20%</strong> today</h1>';
-  setup(document.getElementById('title'));
-  expect(screen.getByText(/replaces them with\s+plain text/)).toBeTruthy();
+  const { controller } = setup(document.getElementById('title'));
+
+  const first = screen.getByTestId('text-run-0') as HTMLTextAreaElement;
+  expect(first.value).toBe('Save ');
+  fireEvent.change(first, { target: { value: 'Take ' } });
+
+  // Editing used to write textContent, which replaced <strong> with a flat string.
+  expect(document.querySelector('#title strong')?.textContent).toBe('20%');
+  expect(document.getElementById('title')!.textContent).toBe('Take 20% today');
+  expect(controller.getPage().records[0].property).toBe('textNode:0');
 });
 
-test('no flattening warning for plain text elements', () => {
+test('editing the emphasised run leaves the surrounding text alone', () => {
+  document.body.innerHTML = '<h1 id="title">Save <strong>20%</strong> today</h1>';
+  setup(document.getElementById('title'));
+  fireEvent.change(screen.getByTestId('text-run-1'), { target: { value: '30%' } });
+  expect(document.querySelector('#title strong')!.textContent).toBe('30%');
+  expect(document.getElementById('title')!.textContent).toBe('Save 30% today');
+});
+
+test('a plain element still edits as one box', () => {
   setup();
-  expect(screen.queryByText(/replaces them with\s+plain text/)).toBeNull();
+  expect(screen.getByTestId('text')).toBeTruthy();
+  expect(screen.queryByTestId('text-run-0')).toBeNull();
 });
 
 test('line height input keeps the typed value instead of snapping to computed px', () => {

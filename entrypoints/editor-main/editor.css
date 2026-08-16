@@ -99,6 +99,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-selection-head button:hover { border-color: var(--border-strong); color: var(--ink); }
 
 .pgve-breadcrumb { display: flex; flex-wrap: wrap; gap: 4px; }
+.pgve-similar { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-2); cursor: pointer; }
+.pgve-similar input { accent-color: var(--accent); }
 .pgve-breadcrumb button { padding: 2px 7px; border: 1px solid transparent; border-radius: 999px; background: none; cursor: pointer; font-size: 11px; font-family: var(--mono); color: var(--ink-2); }
 .pgve-breadcrumb button:hover { background: var(--surface); border-color: var(--border); }
 .pgve-breadcrumb .pgve-crumb-active { background: var(--accent-soft); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
