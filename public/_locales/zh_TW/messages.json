@@ -224,5 +224,206 @@
   },
   "err_image_url": {
     "message": "需要以 https:// 開頭 — 或直接選檔案"
+  },
+  "share_hand_off": {
+    "message": "交付"
+  },
+  "share_send": {
+    "message": "傳送"
+  },
+  "share_css": {
+    "message": "CSS"
+  },
+  "share_copy_json": {
+    "message": "複製 JSON"
+  },
+  "toast_copied_css": {
+    "message": "CSS 已複製到剪貼簿"
+  },
+  "toast_copied_json": {
+    "message": "JSON 已複製 — 直接貼給同事"
+  },
+  "tip_copy_summary": {
+    "message": "複製給工程師的 Markdown 摘要"
+  },
+  "tip_copy_css": {
+    "message": "把改動複製成一份樣式表"
+  },
+  "tip_snap": {
+    "message": "儲存修改前後的截圖"
+  },
+  "tip_copy_json": {
+    "message": "複製這些改動,同事可以直接匯入"
+  },
+  "tip_export": {
+    "message": "把改動下載成 JSON"
+  },
+  "choose_file": {
+    "message": "選擇檔案…"
+  },
+  "err_not_image": {
+    "message": "這個檔案不是圖片"
+  },
+  "err_image_too_large": {
+    "message": "圖片太大存不下 — 請用 1.5 MB 以內的"
+  },
+  "err_image_unreadable": {
+    "message": "無法讀取這個檔案"
+  },
+  "tip_undo": {
+    "message": "復原 (⌘Z)"
+  },
+  "tip_redo": {
+    "message": "重做 (⇧⌘Z)"
+  },
+  "tip_minimize": {
+    "message": "縮成角落的小標籤"
+  },
+  "tip_close": {
+    "message": "關閉編輯器"
+  },
+  "aria_apply_bg_image": {
+    "message": "套用背景圖片"
+  },
+  "aria_apply_image": {
+    "message": "套用圖片"
+  },
+  "aria_back_to_editing": {
+    "message": "回到編輯"
+  },
+  "aria_bg_image_url": {
+    "message": "背景圖片網址"
+  },
+  "aria_border_width": {
+    "message": "框線寬度"
+  },
+  "aria_browsing": {
+    "message": "瀏覽中 — 切換回編輯"
+  },
+  "aria_close": {
+    "message": "關閉"
+  },
+  "aria_copy_css": {
+    "message": "複製 CSS"
+  },
+  "aria_copy_json": {
+    "message": "複製 JSON"
+  },
+  "aria_copy_summary": {
+    "message": "複製摘要"
+  },
+  "aria_radius_value": {
+    "message": "圓角數值"
+  },
+  "aria_radius": {
+    "message": "圓角"
+  },
+  "aria_expand": {
+    "message": "展開 Tweakpage"
+  },
+  "aria_export_json": {
+    "message": "匯出 JSON"
+  },
+  "aria_font_family": {
+    "message": "字型"
+  },
+  "aria_font_size": {
+    "message": "字級"
+  },
+  "aria_font_weight": {
+    "message": "字重"
+  },
+  "aria_image_url": {
+    "message": "圖片網址"
+  },
+  "aria_import_json": {
+    "message": "匯入 JSON 檔案"
+  },
+  "aria_letter_spacing": {
+    "message": "字距"
+  },
+  "aria_line_height": {
+    "message": "行高"
+  },
+  "aria_minimize": {
+    "message": "縮小"
+  },
+  "aria_opacity_value": {
+    "message": "不透明度數值"
+  },
+  "aria_opacity": {
+    "message": "不透明度"
+  },
+  "aria_redo": {
+    "message": "重做"
+  },
+  "aria_reload_page": {
+    "message": "重新整理頁面"
+  },
+  "aria_reset_spacing": {
+    "message": "重設間距"
+  },
+  "aria_review_changes": {
+    "message": "檢視改動"
+  },
+  "aria_review_unmatched": {
+    "message": "檢視對不上的改動"
+  },
+  "aria_snapshot": {
+    "message": "截取修改前後"
+  },
+  "aria_text_align": {
+    "message": "對齊"
+  },
+  "aria_text_transform": {
+    "message": "大小寫"
+  },
+  "aria_text": {
+    "message": "文字"
+  },
+  "aria_undo": {
+    "message": "復原"
+  },
+  "aria_viewing_original": {
+    "message": "檢視原始版 — 回到修改版"
+  },
+  "aria_reset": {
+    "message": "重設 $1"
+  },
+  "tip_reset": {
+    "message": "還原成原本的值"
+  },
+  "aria_interaction_mode": {
+    "message": "互動模式"
+  },
+  "aria_compare": {
+    "message": "比較"
+  },
+  "aria_padding": {
+    "message": "內距 $1"
+  },
+  "aria_margin": {
+    "message": "外距 $1"
+  },
+  "side_top": {
+    "message": "上"
+  },
+  "side_right": {
+    "message": "右"
+  },
+  "side_bottom": {
+    "message": "下"
+  },
+  "side_left": {
+    "message": "左"
+  },
+  "aria_color": {
+    "message": "文字顏色"
+  },
+  "aria_bg_color": {
+    "message": "背景顏色"
+  },
+  "aria_border_color": {
+    "message": "框線顏色"
   }
 }

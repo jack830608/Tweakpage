@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest';
-import { isTransparent, pxToNumber, rgbToHex } from './css-values';
+import { alphaPercent, hexWithoutAlpha, isTransparent, pxToNumber, rgbToHex, withAlphaPercent } from './css-values';
 
 test('rgbToHex parses rgb() and rgba()', () => {
   expect(rgbToHex('rgb(255, 0, 0)')).toBe('#ff0000');
-  expect(rgbToHex('rgba(17, 34, 51, 0.5)')).toBe('#112233');
+  expect(rgbToHex('rgba(17, 34, 51, 0.5)'), 'alpha is kept, not dropped').toBe('#11223380');
 });
 
 test('rgbToHex normalizes hex forms', () => {
@@ -29,4 +29,20 @@ test('isTransparent detects unset backgrounds', () => {
   expect(isTransparent('')).toBe(true);
   expect(isTransparent('rgb(255, 0, 0)')).toBe(false);
   expect(isTransparent('rgba(255, 0, 0, 0.5)')).toBe(false);
+});
+
+test('rgbToHex keeps alpha as an 8-digit hex', () => {
+  expect(rgbToHex('rgba(0, 0, 0, 0.5)')).toBe('#00000080');
+  expect(rgbToHex('rgba(255, 0, 0, 1)')).toBe('#ff0000');
+  expect(rgbToHex('rgb(255 0 0 / 0.25)')).toBe('#ff000040');
+  expect(rgbToHex('#00ff0080')).toBe('#00ff0080');
+});
+
+test('alpha helpers split and rebuild the value', () => {
+  expect(hexWithoutAlpha('#11223344')).toBe('#112233');
+  expect(hexWithoutAlpha('#112233')).toBe('#112233');
+  expect(alphaPercent('#11223380')).toBe(50);
+  expect(alphaPercent('#112233')).toBe(100);
+  expect(withAlphaPercent('#112233', 50)).toBe('#11223380');
+  expect(withAlphaPercent('#11223380', 100)).toBe('#112233');
 });

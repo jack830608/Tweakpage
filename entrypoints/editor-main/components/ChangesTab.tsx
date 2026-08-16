@@ -53,7 +53,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
           ref={fileRef}
           type="file"
           accept="application/json,.json"
-          aria-label="Import JSON file"
+          aria-label={t('aria_import_json')} data-testid="import-json-file"
           style={{ display: 'none' }}
           onChange={(e) => {
             const file = e.target.files?.[0];

@@ -15,6 +15,9 @@ export function toMarkdown(page: PageEdits, exportedAt: string): string {
   }
   for (const [label, records] of groups) {
     lines.push(`## ${label}`);
+    lines.push('');
+    lines.push(`\`${records[0].selector}\``);
+    lines.push('');
     for (const record of records) lines.push(formatLine(record));
     lines.push('');
   }

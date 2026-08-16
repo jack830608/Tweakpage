@@ -1,4 +1,5 @@
 import type { EditsController } from '../controller';
+import { t } from '../../../lib/i18n';
 
 interface ResetButtonProps {
   controller: EditsController;
@@ -17,8 +18,9 @@ export function ResetButton({ controller, element, property, companions }: Reset
     <button
       type="button"
       className="pgve-reset"
-      aria-label={`Reset ${property}`}
-      title="Reset to original"
+      aria-label={t('aria_reset', [property])}
+      data-testid={`reset-${property}`}
+      title={t('tip_reset')}
       onClick={() =>
         companions?.length
           ? controller.resetProperties(element, [property, ...companions])

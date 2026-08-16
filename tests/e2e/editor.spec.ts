@@ -10,10 +10,10 @@ test('edit → persist → replay → export', async ({ context }) => {
   await expect(page.locator('#tweakpage-host aside')).toBeVisible();
 
   await page.locator('h1').click();
-  await page.getByLabel('Text', { exact: true }).fill('New headline');
+  await page.locator('[data-testid="text"]').fill('New headline');
   await expect(page.locator('h1')).toHaveText('New headline');
 
-  await page.getByLabel('Color hex', { exact: true }).fill('#ff0000');
+  await page.locator('input[aria-label$="hex"]').first().fill('#ff0000');
   await expect(page.locator('h1')).toHaveCSS('color', 'rgb(255, 0, 0)');
 
   await page.reload();
@@ -21,8 +21,8 @@ test('edit → persist → replay → export', async ({ context }) => {
   await expect(page.locator('h1')).toHaveCSS('color', 'rgb(255, 0, 0)');
 
   await activateEditor(context);
-  await page.getByRole('button', { name: /Review/ }).click();
-  await page.getByRole('button', { name: 'Export JSON' }).click();
+  await page.locator('[data-testid="review-changes"]').click();
+  await page.locator('[data-testid="export-json"]').click();
 
   // Export JSON is delivered via chrome.downloads from the background service worker (a
   // blob: URL created in the content script's isolated world can't be resolved for a real
@@ -56,18 +56,18 @@ test('fields show the edited value and snap back on reset', async ({ context }) 
 
   // Attribute selectors, not getByLabel: the reset button sits inside the same
   // <label>, so a label lookup matches two elements once an edit exists.
-  const lineHeight = page.locator('input[aria-label="Line height"]');
+  const lineHeight = page.locator('[data-testid="line-height"]');
   const originalCss = await page.locator('h1').evaluate((el) => getComputedStyle(el).lineHeight);
   const originalInput = await lineHeight.inputValue();
   await lineHeight.fill('1.5');
   await expect(page.locator('h1')).toHaveCSS('line-height', '48px');
   await expect(lineHeight).toHaveValue('1.5');
-  await page.getByRole('button', { name: 'Reset lineHeight' }).click();
+  await page.locator('[data-testid="reset-lineHeight"]').click();
   await expect(page.locator('h1')).toHaveCSS('line-height', originalCss);
   await expect(lineHeight).toHaveValue(originalInput);
 
   // Sub-pixel values used to round to 0 on the way back into the input.
-  const letterSpacing = page.locator('input[aria-label="Letter spacing"]');
+  const letterSpacing = page.locator('[data-testid="letter-spacing"]');
   await letterSpacing.fill('0.4');
   await expect(page.locator('h1')).toHaveCSS('letter-spacing', '0.4px');
   await expect(letterSpacing).toHaveValue('0.4');
@@ -76,30 +76,30 @@ test('fields show the edited value and snap back on reset', async ({ context }) 
 // The unit sweep runs against happy-dom, which has no real cascade — this is the same
 // pass in a browser that actually applies our injected stylesheet.
 const FIELDS = [
-  { section: 'text', aria: 'Text', kind: 'fill', value: 'Swept headline', property: 'textContent' },
-  { section: 'typography', aria: 'Font family', kind: 'fill', value: 'Verdana', property: 'fontFamily' },
-  { section: 'typography', aria: 'Font size', kind: 'fill', value: '41', property: 'fontSize' },
-  { section: 'typography', aria: 'Font weight', kind: 'select', value: '300', property: 'fontWeight' },
-  { section: 'typography', aria: 'Line height', kind: 'fill', value: '1.75', property: 'lineHeight' },
-  { section: 'typography', aria: 'Text align', kind: 'select', value: 'center', property: 'textAlign' },
-  { section: 'typography', aria: 'Letter spacing', kind: 'fill', value: '0.3', property: 'letterSpacing' },
-  { section: 'typography', aria: 'Text transform', kind: 'select', value: 'uppercase', property: 'textTransform' },
-  { section: 'typography', aria: 'Color hex', kind: 'fill', value: '#ff0000', property: 'color' },
-  { section: 'background', aria: 'Background color hex', kind: 'fill', value: '#00ff00', property: 'backgroundColor' },
-  { section: 'appearance', aria: 'Corner radius value', kind: 'fill', value: '9', property: 'borderRadius' },
-  { section: 'appearance', aria: 'Opacity value', kind: 'fill', value: '60', property: 'opacity' },
-  { section: 'appearance', aria: 'Border width', kind: 'fill', value: '2', property: 'borderWidth' },
-  { section: 'appearance', aria: 'Border color hex', kind: 'fill', value: '#0000ff', property: 'borderColor' },
-  { section: 'size', aria: 'Width', kind: 'fill', value: '260', property: 'width' },
-  { section: 'size', aria: 'Height', kind: 'fill', value: '70', property: 'height' },
-  { section: 'spacing', aria: 'padding top', kind: 'fill', value: '21', property: 'paddingTop' },
-  { section: 'spacing', aria: 'padding right', kind: 'fill', value: '22', property: 'paddingRight' },
-  { section: 'spacing', aria: 'padding bottom', kind: 'fill', value: '23', property: 'paddingBottom' },
-  { section: 'spacing', aria: 'padding left', kind: 'fill', value: '24', property: 'paddingLeft' },
-  { section: 'spacing', aria: 'margin top', kind: 'fill', value: '11', property: 'marginTop' },
-  { section: 'spacing', aria: 'margin right', kind: 'fill', value: '12', property: 'marginRight' },
-  { section: 'spacing', aria: 'margin bottom', kind: 'fill', value: '13', property: 'marginBottom' },
-  { section: 'spacing', aria: 'margin left', kind: 'fill', value: '14', property: 'marginLeft' },
+  { section: 'text', testid: 'text', kind: 'fill', value: 'Swept headline', property: 'textContent' },
+  { section: 'typography', testid: 'font-family', kind: 'fill', value: 'Verdana', property: 'fontFamily' },
+  { section: 'typography', testid: 'font-size', kind: 'fill', value: '41', property: 'fontSize' },
+  { section: 'typography', testid: 'font-weight', kind: 'select', value: '300', property: 'fontWeight' },
+  { section: 'typography', testid: 'line-height', kind: 'fill', value: '1.75', property: 'lineHeight' },
+  { section: 'typography', testid: 'text-align', kind: 'select', value: 'center', property: 'textAlign' },
+  { section: 'typography', testid: 'letter-spacing', kind: 'fill', value: '0.3', property: 'letterSpacing' },
+  { section: 'typography', testid: 'text-transform', kind: 'select', value: 'uppercase', property: 'textTransform' },
+  { section: 'typography', testid: 'color-hex', kind: 'fill', value: '#ff0000', property: 'color' },
+  { section: 'background', testid: 'backgroundColor-hex', kind: 'fill', value: '#00ff00', property: 'backgroundColor' },
+  { section: 'appearance', testid: 'corner-radius-value', kind: 'fill', value: '9', property: 'borderRadius' },
+  { section: 'appearance', testid: 'opacity-value', kind: 'fill', value: '60', property: 'opacity' },
+  { section: 'appearance', testid: 'border-width', kind: 'fill', value: '2', property: 'borderWidth' },
+  { section: 'appearance', testid: 'borderColor-hex', kind: 'fill', value: '#0000ff', property: 'borderColor' },
+  { section: 'size', testid: 'width', kind: 'fill', value: '260', property: 'width' },
+  { section: 'size', testid: 'height', kind: 'fill', value: '70', property: 'height' },
+  { section: 'spacing', testid: 'padding-top', kind: 'fill', value: '21', property: 'paddingTop' },
+  { section: 'spacing', testid: 'padding-right', kind: 'fill', value: '22', property: 'paddingRight' },
+  { section: 'spacing', testid: 'padding-bottom', kind: 'fill', value: '23', property: 'paddingBottom' },
+  { section: 'spacing', testid: 'padding-left', kind: 'fill', value: '24', property: 'paddingLeft' },
+  { section: 'spacing', testid: 'margin-top', kind: 'fill', value: '11', property: 'marginTop' },
+  { section: 'spacing', testid: 'margin-right', kind: 'fill', value: '12', property: 'marginRight' },
+  { section: 'spacing', testid: 'margin-bottom', kind: 'fill', value: '13', property: 'marginBottom' },
+  { section: 'spacing', testid: 'margin-left', kind: 'fill', value: '14', property: 'marginLeft' },
 ] as const;
 
 test('every field records what was typed and resets back to the original', async ({ context }) => {
@@ -111,21 +111,21 @@ test('every field records what was typed and resets back to the original', async
     await page.locator(`[data-section="${section}"]`).click();
   }
 
-  for (const { aria, kind, value, property, section } of FIELDS) {
-    const field = page.locator(`[aria-label="${aria}"]`);
+  for (const { testid, kind, value, property, section } of FIELDS) {
+    const field = page.locator(`[data-testid="${testid}"]`);
     const before = await field.inputValue();
 
     if (kind === 'select') await field.selectOption(value);
     else await field.fill(value);
 
-    await expect(field, `${aria} should show what was typed`).toHaveValue(value);
+    await expect(field, `${testid} should show what was typed`).toHaveValue(value);
 
-    const resetName = section === 'spacing' ? 'Reset spacing' : `Reset ${property}`;
-    await page.getByRole('button', { name: resetName }).click();
-    await expect(field, `${aria} should return to its original value`).toHaveValue(before);
+    const reset = section === 'spacing' ? 'reset-spacing' : `reset-${property}`;
+    await page.locator(`[data-testid="${reset}"]`).click();
+    await expect(field, `${testid} should return to its original value`).toHaveValue(before);
   }
 
-  await expect(page.getByRole('button', { name: 'Review changes' })).toContainText('0');
+  await expect(page.locator('[data-testid="review-changes"]')).toContainText('0');
 });
 
 test('clicking a change scrolls the page back to its element', async ({ context }) => {
@@ -133,12 +133,12 @@ test('clicking a change scrolls the page back to its element', async ({ context 
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
-  await page.getByLabel('Text', { exact: true }).fill('Scrolled headline');
+  await page.locator('[data-testid="text"]').fill('Scrolled headline');
 
   await page.evaluate(() => window.scrollTo(0, 1800));
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
 
-  await page.getByRole('button', { name: 'Review changes' }).click();
+  await page.locator('[data-testid="review-changes"]').click();
   await page.locator('.pgve-change').first().click();
 
   // Smooth scrolling settles over a few frames.
@@ -164,7 +164,7 @@ test('header and change count stay reachable when the panel scrolls', async ({ c
   expect(headerBox.y).toBeGreaterThanOrEqual(panelBox.y - 1);
   expect(headerBox.y).toBeLessThan(panelBox.y + headerBox.height + 1);
   expect(footerBox.y + footerBox.height).toBeLessThanOrEqual(panelBox.y + panelBox.height + 1);
-  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
+  await expect(page.locator('[data-testid="close"]')).toBeVisible();
 });
 
 test('selection outline stays legible against the page', async ({ context }) => {
@@ -224,7 +224,7 @@ test('the minimized pill follows the colour scheme', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
-  await page.getByRole('button', { name: 'Minimize' }).click();
+  await page.locator('[data-testid="minimize"]').click();
   const pill = page.locator('.pgve-pill');
   await expect(pill).toBeVisible();
 
@@ -258,7 +258,7 @@ test('spacing box-model editor fits inside the panel', async ({ context }) => {
   await page.locator('h1').click();
   await page.locator('[data-section="spacing"]').click();
 
-  const inputBox = (await page.getByLabel('padding top').boundingBox())!;
+  const inputBox = (await page.locator('[data-testid="padding-top"]').boundingBox())!;
   expect(inputBox.width).toBeLessThan(60);
 
   const panelBox = (await page.locator('#tweakpage-host aside').boundingBox())!;
@@ -294,12 +294,12 @@ test('compare switch previews the original and the badge exits preview', async (
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
-  await page.getByLabel('Text', { exact: true }).fill('New headline');
+  await page.locator('[data-testid="text"]').fill('New headline');
   await expect(page.locator('h1')).toHaveText('New headline');
 
-  await page.getByRole('button', { name: 'Original', exact: true }).click();
+  await page.locator('[data-testid="mode-original"]').click();
   await expect(page.locator('h1')).toHaveText('Original Headline');
-  const badge = page.getByRole('button', { name: /Viewing original/ });
+  const badge = page.locator('[data-testid="viewing-original-back-to-edited"]');
   await expect(badge).toBeVisible();
   await page.waitForTimeout(200);
   await expect(page.locator('h1')).toHaveText('Original Headline');
@@ -316,13 +316,13 @@ test('browse mode passes clicks through; edit mode selects', async ({ context })
   await page.locator('h1').click();
   await expect(page.locator('.pgve-outline--selected')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Browse', exact: true }).click();
+  await page.locator('[data-testid="mode-browse"]').click();
   await expect(page.locator('.pgve-outline--selected')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /Browsing/ })).toBeVisible();
+  await expect(page.locator('[data-testid="browsing-switch-to-edit"]')).toBeVisible();
   await page.locator('#anchor-link').click();
   expect(page.url()).toContain('#test-anchor');
 
-  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await page.locator('[data-testid="mode-edit"]').click();
   await expect(page.locator('.pgve-outline--selected')).toBeVisible();
   await expect(page.locator('.pgve-selection-label')).toBeVisible();
   expect(page.url()).toContain('#test-anchor');
@@ -333,7 +333,7 @@ test('cmd+z undoes and shift+cmd+z redoes', async ({ context }) => {
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
-  await page.getByLabel('Text', { exact: true }).fill('New headline');
+  await page.locator('[data-testid="text"]').fill('New headline');
   await expect(page.locator('h1')).toHaveText('New headline');
 
   await page.locator('p.lead').click();
@@ -347,7 +347,7 @@ test('importing a json file applies edits to the matching page', async ({ contex
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
-  await page.getByRole('button', { name: /Review/ }).click();
+  await page.locator('[data-testid="review-changes"]').click();
   const json = JSON.stringify({
     version: 1,
     url: 'http://localhost:4173/',
@@ -360,7 +360,7 @@ test('importing a json file applies edits to the matching page', async ({ contex
       enabled: true, createdAt: 'n', updatedAt: 'n',
     }],
   });
-  await page.getByLabel('Import JSON file').setInputFiles({
+  await page.locator('[data-testid="import-json-file"]').setInputFiles({
     name: 'edits.json',
     mimeType: 'application/json',
     buffer: Buffer.from(json),
@@ -373,8 +373,8 @@ test('snapshot downloads before and after captures', async ({ context }) => {
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
-  await page.getByLabel('Text', { exact: true }).fill('New headline');
-  await page.getByRole('button', { name: 'Snapshot before and after' }).click();
+  await page.locator('[data-testid="text"]').fill('New headline');
+  await page.locator('[data-testid="snapshot-before-and-after"]').click();
 
   // Playwright reroutes downloads into its artifacts dir under random names, so assert
   // on content: two completed downloads, both PNG, with different pixels (before ≠ after).

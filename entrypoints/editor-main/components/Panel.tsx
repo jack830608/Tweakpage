@@ -9,7 +9,7 @@ import { ShareRow } from './ShareRow';
 import { ChangesTab } from './ChangesTab';
 import { CollapsibleSection } from './CollapsibleSection';
 import { ModeSwitch } from './ModeSwitch';
-import { GripIcon, HandIcon, MinusIcon, PencilIcon } from './icons';
+import { GripIcon, HandIcon, MinusIcon, PencilIcon, RedoIcon, UndoIcon } from './icons';
 import { OnboardingCard } from './OnboardingCard';
 import { SelectionCard } from './SelectionCard';
 import { AppearanceSection } from './sections/AppearanceSection';
@@ -45,13 +45,13 @@ const STALE_NOTE = t('stale_note');
 const STALE_RELOAD = t('stale_reload');
 
 const INTERACTION_OPTIONS = [
-  { value: 'edit', label: <><PencilIcon /> {t('mode_edit')}</>, ariaLabel: 'Edit' },
-  { value: 'browse', label: <><HandIcon /> {t('mode_browse')}</>, ariaLabel: 'Browse' },
+  { value: 'edit', label: <><PencilIcon /> {t('mode_edit')}</>, ariaLabel: t('mode_edit') },
+  { value: 'browse', label: <><HandIcon /> {t('mode_browse')}</>, ariaLabel: t('mode_browse') },
 ] as const;
 
 const COMPARE_OPTIONS = [
-  { value: 'edited', label: t('compare_edited'), ariaLabel: 'Edited' },
-  { value: 'original', label: t('compare_original'), ariaLabel: 'Original' },
+  { value: 'edited', label: t('compare_edited'), ariaLabel: t('compare_edited') },
+  { value: 'original', label: t('compare_original'), ariaLabel: t('compare_original') },
 ] as const;
 
 const SECTION_DEFS: Array<{
@@ -83,6 +83,8 @@ export function Panel(props: PanelProps) {
   const records = useSyncExternalStore(controller.subscribe, controller.getPage).records;
   const count = records.length;
   const stale = records.filter((r) => controller.getStatus(r.id) === 'not-found').length;
+  const canUndo = controller.canUndo();
+  const canRedo = controller.canRedo();
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
   const panelRef = useRef<HTMLElement>(null);
   const [restoredPosition, setRestoredPosition] = useState<Position | null>(null);
@@ -101,27 +103,46 @@ export function Panel(props: PanelProps) {
       <header className="pgve-header" {...handleProps}>
         <strong><GripIcon /> Tweakpage</strong>
         <span className="pgve-header-buttons">
-          <button type="button" onClick={props.onMinimize} aria-label="Minimize"><MinusIcon /></button>
-          <button type="button" onClick={onClose} aria-label="Close">✕</button>
+          <button
+            type="button"
+            onClick={() => controller.undo()}
+            disabled={!canUndo}
+            aria-label={t('aria_undo')} data-testid="undo"
+            title={t('tip_undo')}
+          >
+            <UndoIcon />
+          </button>
+          <button
+            type="button"
+            onClick={() => controller.redo()}
+            disabled={!canRedo}
+            aria-label={t('aria_redo')} data-testid="redo"
+            title={t('tip_redo')}
+          >
+            <RedoIcon />
+          </button>
+          <span className="pgve-header-divider" aria-hidden="true" />
+          <button type="button" onClick={props.onMinimize} aria-label={t('aria_minimize')} data-testid="minimize" title={t('tip_minimize')}><MinusIcon /></button>
+          <button type="button" onClick={onClose} aria-label={t('aria_close')} data-testid="close" title={t('tip_close')}>✕</button>
         </span>
       </header>
       {props.stale ? (
         <div className="pgve-stale" role="alert">
           <p>{STALE_NOTE}</p>
-          <button type="button" aria-label="Reload page" onClick={() => location.reload()}>
+          <button type="button" aria-label={t('aria_reload_page')} data-testid="reload-page" onClick={() => location.reload()}>
             {STALE_RELOAD}
           </button>
         </div>
       ) : (
         <>
       <ModeSwitch
-        ariaLabel="Interaction mode"
+        ariaLabel={t('aria_interaction_mode')}
         options={INTERACTION_OPTIONS}
         value={mode}
         onChange={onModeChange}
       />
       <ModeSwitch
-        ariaLabel="Compare"
+        ariaLabel={t('aria_compare')}
         options={COMPARE_OPTIONS}
         value={previewing ? 'original' : 'edited'}
         onChange={(value) => controller.setPreviewOriginal(value === 'original')}
@@ -131,7 +152,7 @@ export function Panel(props: PanelProps) {
         <button
           type="button"
           className="pgve-stale-edits"
-          aria-label="Review unmatched edits"
+          aria-label={t('aria_review_unmatched')} data-testid="review-unmatched-edits"
           onClick={() => setView('changes')}
         >
           {t('stale_edits', [stale, count])}
@@ -142,7 +163,7 @@ export function Panel(props: PanelProps) {
           <button
             type="button"
             className="pgve-back-row"
-            aria-label="Back to editing"
+            aria-label={t('aria_back_to_editing')} data-testid="back-to-editing"
             onClick={() => setView('edit')}
           >
             {t('back_row')}
@@ -175,7 +196,7 @@ export function Panel(props: PanelProps) {
           <button
             type="button"
             className={count > 0 ? 'pgve-footer pgve-footer-active' : 'pgve-footer'}
-            aria-label="Review changes"
+            aria-label={t('aria_review_changes')} data-testid="review-changes"
             onClick={() => setView('changes')}
           >
             {t('footer_changes', [count])}

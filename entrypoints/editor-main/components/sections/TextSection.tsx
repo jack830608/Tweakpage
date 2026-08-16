@@ -22,7 +22,7 @@ export function TextSection({ element, controller }: SectionProps) {
     <section className="pgve-section">
       <Field name="text" property="textContent" controller={controller} element={element} stacked>
         <textarea
-          aria-label="Text"
+          aria-label={t('aria_text')} data-testid="text"
           rows={3}
           value={value}
           onChange={(e) =>

@@ -66,6 +66,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-header button { border: none; background: none; cursor: pointer; color: var(--ink-3); font-size: 13px; padding: 2px 6px; border-radius: var(--r-control); }
 .pgve-header button:hover { color: var(--ink); background: var(--sunken); }
 .pgve-header-buttons { display: inline-flex; align-items: center; gap: 2px; }
+.pgve-header button:disabled { opacity: 0.35; cursor: default; }
+.pgve-header button:disabled:hover { background: none; color: var(--ink-3); }
+.pgve-header-divider { width: 1px; height: 14px; margin: 0 3px; background: var(--border); }
 .pgve-pill { position: fixed; right: 16px; bottom: 16px; z-index: 2147483647; display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border: none; border-radius: 999px; background: var(--surface); color: var(--ink); font: 600 12.5px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ui-sans-serif, system-ui, sans-serif; cursor: pointer; box-shadow: 0 0 0 1px rgba(24, 24, 27, 0.09), 0 8px 24px rgba(24, 24, 27, 0.22); }
 .pgve-pill svg { color: var(--ink-3); }
 .pgve-pill-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 11px; }
@@ -79,7 +82,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- share row ---------- */
 .pgve-share { display: flex; flex-direction: column; gap: 6px; padding: 8px 12px 12px; border-bottom: 1px solid var(--border); }
 .pgve-share-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
-.pgve-share-buttons { display: flex; gap: 6px; }
+.pgve-share-buttons { display: flex; gap: 6px; margin-bottom: 8px; }
+.pgve-share-buttons:last-child { margin-bottom: 0; }
 .pgve-share-buttons button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; font-size: 12px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
 .pgve-share-buttons button:hover { border-color: var(--border-strong); color: var(--ink); }
 
@@ -111,6 +115,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-field--stacked { grid-template-columns: minmax(0, 1fr); gap: 5px; }
 /* Reset sits in a gutter beside the property name, like a diff marker — a column of
    its own on the right stole width from every control to hold a usually-absent button. */
+.pgve-field-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .pgve-field-error { grid-column: 1 / -1; margin-top: 3px; font-size: 11px; color: var(--warn-ink); }
 .pgve-field:has(.pgve-field-error) input, .pgve-field:has(.pgve-field-error) select { border-color: var(--warn-ink); }
 .pgve-field-name { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; gap: 3px; min-width: 0; }
@@ -134,6 +139,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-color-field input[type='text'] { flex: 1; min-width: 0; width: auto; }
 .pgve-color-field button { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; padding: 0; color: var(--ink-2); }
 .pgve-color-field button:hover { border-color: var(--border-strong); color: var(--ink); }
+.pgve-alpha-row { margin-top: -3px; }
+.pgve-alpha-value { flex: none; width: 40px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); text-align: right; }
 .pgve-swatches-row { margin-top: -3px; }
 .pgve-swatches { display: flex; gap: 4px; }
 .pgve-swatches button { width: 16px; height: 16px; border: 1px solid rgba(24, 24, 27, 0.12); border-radius: 4px; cursor: pointer; padding: 0; }

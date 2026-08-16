@@ -21,6 +21,7 @@ export function ModeSwitch<T extends string>({ ariaLabel, options, value, onChan
           key={option.value}
           type="button"
           aria-label={option.ariaLabel}
+          data-testid={`mode-${option.value}`}
           aria-pressed={value === option.value}
           className={value === option.value ? 'pgve-segment pgve-segment-active' : 'pgve-segment'}
           onClick={() => {

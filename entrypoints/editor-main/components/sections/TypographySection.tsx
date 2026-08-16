@@ -11,6 +11,7 @@ interface SectionProps {
 }
 
 const WEIGHTS = ['100', '200', '300', '400', '500', '600', '700', '800', '900'];
+const ALIGNMENTS = ['left', 'center', 'right', 'justify', 'start', 'end'];
 
 export function TypographySection({ element, controller }: SectionProps) {
   const cs = getComputedStyle(element);
@@ -43,7 +44,7 @@ export function TypographySection({ element, controller }: SectionProps) {
       <Field name="font-family" property="fontFamily" controller={controller} element={element} error={fontFamily.error}>
         <input
           type="text"
-          aria-label="Font family"
+          aria-label={t('aria_font_family')} data-testid="font-family"
           list="pgve-font-suggestions"
           value={fontFamily.value}
           onChange={(e) => {
@@ -75,7 +76,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         <input
           type="number"
           min={1}
-          aria-label="Font size"
+          aria-label={t('aria_font_size')} data-testid="font-size"
           value={fontSize.value}
           onChange={(e) => {
             const raw = e.target.value;
@@ -91,12 +92,15 @@ export function TypographySection({ element, controller }: SectionProps) {
       </Field>
       <Field name="font-weight" property="fontWeight" controller={controller} element={element}>
         <select
-          aria-label="Font weight"
+          aria-label={t('aria_font_weight')} data-testid="font-weight"
           value={fontWeight.value}
           onChange={(e) =>
             controller.recordEdit(element, 'style', 'fontWeight', fontWeight.original, e.target.value)
           }
         >
+          {!WEIGHTS.includes(fontWeight.value) && (
+            <option value={fontWeight.value}>{fontWeight.value}</option>
+          )}
           {WEIGHTS.map((w) => (
             <option key={w} value={w}>{w}</option>
           ))}
@@ -105,7 +109,7 @@ export function TypographySection({ element, controller }: SectionProps) {
       <Field name="line-height" property="lineHeight" controller={controller} element={element} error={lineHeight.error}>
         <input
           type="text"
-          aria-label="Line height"
+          aria-label={t('aria_line_height')} data-testid="line-height"
           value={lineHeight.value}
           placeholder="normal"
           onChange={(e) => {
@@ -122,22 +126,25 @@ export function TypographySection({ element, controller }: SectionProps) {
       </Field>
       <Field name="text-align" property="textAlign" controller={controller} element={element}>
         <select
-          aria-label="Text align"
+          aria-label={t('aria_text_align')} data-testid="text-align"
           value={textAlign.value}
           onChange={(e) =>
             controller.recordEdit(element, 'style', 'textAlign', textAlign.original, e.target.value)
           }
         >
-          <option value="left">left</option>
-          <option value="center">center</option>
-          <option value="right">right</option>
+          {!ALIGNMENTS.includes(textAlign.value) && (
+            <option value={textAlign.value}>{textAlign.value}</option>
+          )}
+          {ALIGNMENTS.map((value) => (
+            <option key={value} value={value}>{value}</option>
+          ))}
         </select>
       </Field>
       <Field name="letter-spacing" property="letterSpacing" controller={controller} element={element} error={letterSpacing.error}>
         <input
           type="number"
           step={0.1}
-          aria-label="Letter spacing"
+          aria-label={t('aria_letter_spacing')} data-testid="letter-spacing"
           value={letterSpacing.value}
           onChange={(e) => {
             const raw = e.target.value;
@@ -159,7 +166,7 @@ export function TypographySection({ element, controller }: SectionProps) {
       </Field>
       <Field name="text-transform" property="textTransform" controller={controller} element={element}>
         <select
-          aria-label="Text transform"
+          aria-label={t('aria_text_transform')} data-testid="text-transform"
           value={textTransform.value}
           onChange={(e) =>
             controller.recordEdit(
@@ -182,7 +189,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         property="color"
         controller={controller}
         element={element}
-        ariaLabel="Color"
+        ariaLabel={t('aria_color')}
         value={color.value}
         onChange={(hex) => controller.recordEdit(element, 'style', 'color', color.original, hex)}
       />
@@ -195,13 +202,13 @@ function firstFont(fontFamily: string): string {
   return first.replace(/^["']|["']$/g, '');
 }
 
+/** Keeps whatever the element really uses — showing `justify` as `left` was a lie. */
 function normalizeAlign(align: string): string {
-  if (align === 'center' || align === 'right') return align;
-  return 'left';
+  return align.trim() || 'left';
 }
 
 function normalizeWeight(weight: string): string {
   if (weight === 'normal') return '400';
   if (weight === 'bold') return '700';
-  return WEIGHTS.includes(weight) ? weight : '400';
+  return weight.trim() || '400';
 }

@@ -110,3 +110,21 @@ export const MinusIcon = () => (
     <line x1="5" y1="12" x2="19" y2="12" />
   </Icon>
 );
+
+export function UndoIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 8h7a3 3 0 0 1 0 6H7" />
+      <path d="M6 5 3 8l3 3" />
+    </svg>
+  );
+}
+
+export function RedoIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M13 8H6a3 3 0 0 0 0 6h3" />
+      <path d="M10 5l3 3-3 3" />
+    </svg>
+  );
+}
