@@ -1,8 +1,6 @@
-import { isBareNumber } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { useFieldDraft } from '../../hooks/useFieldDraft';
 import { Field } from '../Field';
-import { scrubbedValue } from '../../scrub';
 import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
@@ -25,9 +23,14 @@ function toCssSize(raw: string): string | null {
   return /^-?\d*\.?\d+$/.test(value) ? `${Number(value)}px` : value;
 }
 
-/** px comes back as a bare number; keywords and percentages stay as they were typed. */
+/**
+ * Shown exactly as CSS holds it — 320px, auto, 50%.
+ *
+ * These fields take more than one unit, so stripping the px would leave a bare number
+ * whose meaning depends on a field the reader cannot see.
+ */
 function showSize(raw: string): string {
-  return raw.endsWith('px') ? String(Number.parseFloat(raw)) : raw;
+  return raw.trim();
 }
 
 export function SizeSection({ element, controller }: SectionProps) {
@@ -72,18 +75,7 @@ function SizeField({ ariaLabel, property, element, controller }: SizeFieldProps)
       controller={controller}
       element={element}
       error={field.error}
-      unit={isBareNumber(field.value) ? 'px' : undefined}
-      // Dragging a keyword like auto has no meaning; a number can be scrubbed like any other.
-      onScrub={
-        isBareNumber(field.value)
-          ? (steps) => {
-              const next = scrubbedValue(controller, element, property, field.original, steps, {
-                min: 0,
-              });
-              controller.recordEdit(element, 'style', property, field.original, `${next}px`);
-            }
-          : undefined
-      }
+      value={field.value}
     >
       <input
         type="text"

@@ -99,8 +99,8 @@ const CASES = [
   { section: 'appearance', label: 'Opacity value', property: 'opacity', recordType: 'style', input: '50', value: '0.5', display: '50' },
   { section: 'appearance', label: 'Border width', property: 'borderWidth', recordType: 'style', input: '3', value: '3px', display: '3' },
   { section: 'appearance', label: 'Border color hex', property: 'borderColor', recordType: 'style', input: '#0000ff', value: '#0000ff', display: '#0000ff' },
-  { section: 'size', label: 'Width', property: 'width', recordType: 'style', input: '250', value: '250px', display: '250' },
-  { section: 'size', label: 'Height', property: 'height', recordType: 'style', input: '80', value: '80px', display: '80' },
+  { section: 'size', label: 'Width', property: 'width', recordType: 'style', input: '250', value: '250px', display: '250px' },
+  { section: 'size', label: 'Height', property: 'height', recordType: 'style', input: '80', value: '80px', display: '80px' },
   { section: 'spacing', label: 'padding top', property: 'paddingTop', recordType: 'style', input: '24', value: '24px', display: '24' },
   { section: 'spacing', label: 'padding right', property: 'paddingRight', recordType: 'style', input: '24', value: '24px', display: '24' },
   { section: 'spacing', label: 'padding bottom', property: 'paddingBottom', recordType: 'style', input: '24', value: '24px', display: '24' },
@@ -249,12 +249,13 @@ describe('width and height take CSS values, not only pixels', () => {
     expect(control('Width').value, 'the field shows what was typed').toBe(typed);
   });
 
-  test('a bare number still means px', () => {
+  test('a bare number means px, and the field then says so in the value', () => {
     const controller = setup();
     openSection('size');
     fireEvent.change(control('Height'), { target: { value: '120' } });
     expect(controller.getPage().records.find((r) => r.property === 'height')!.newValue).toBe('120px');
-    expect(control('Height').value).toBe('120');
+    // Shown as CSS holds it, exactly like line-height: these fields take more than one unit.
+    expect(control('Height').value).toBe('120px');
   });
 
   test('nonsense is held in the field but never recorded', () => {
@@ -370,11 +371,11 @@ describe('what a bare number means is always stated', () => {
     expect(unitOf('Letter spacing')).toBe('px');
   });
 
-  test('a bare line-height is a multiple of the font size, not pixels', () => {
+  test('line-height has no unit of its own, so nothing is claimed for it', () => {
     setup();
     openSection('typography');
     fireEvent.change(control('Line height'), { target: { value: '1.5' } });
-    expect(unitOf('Line height')).toBe('×');
+    expect(unitOf('Line height'), '1.5 is a ratio, not pixels').toBeNull();
   });
 
   test('a line-height that carries its own unit says nothing extra', () => {
@@ -384,11 +385,13 @@ describe('what a bare number means is always stated', () => {
     expect(unitOf('Line height')).toBeNull();
   });
 
-  test('width in pixels says so instead of showing a naked number', () => {
+  test('width carries its unit in the value, the same as line-height', () => {
     setup();
     openSection('size');
-    expect(control('Width').value).toMatch(/^\d+$/);
-    expect(unitOf('Width'), 'a bare 1270 could be anything').toBe('px');
+    // Both fields take several units, so both show what CSS holds rather than a bare
+    // number whose meaning lives somewhere the reader cannot see.
+    expect(control('Width').value).toMatch(/^\d+px$/);
+    expect(unitOf('Width')).toBeNull();
   });
 
   test('width set to a keyword or a percentage drops the unit', () => {

@@ -100,6 +100,7 @@ function Pixels({ name, property, computed, element, controller }: PixelsProps) 
       element={element}
       error={field.error}
       unit="px"
+      value={field.value}
       onScrub={(steps) => {
         const next = scrubbedValue(controller, element, property, field.original, steps, { min: 0 });
         controller.recordEdit(element, 'style', property, field.original, `${next}px`);
