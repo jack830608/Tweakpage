@@ -1,4 +1,4 @@
-import { pxToDisplay, rgbToHex } from '../../../../lib/css-values';
+import { isBareNumber, pxToDisplay, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
@@ -120,7 +120,14 @@ export function TypographySection({ element, controller }: SectionProps) {
           ))}
         </select>
       </Field>
-      <Field name="line-height" property="lineHeight" controller={controller} element={element} error={lineHeight.error}>
+      <Field
+        name="line-height"
+        property="lineHeight"
+        controller={controller}
+        element={element}
+        error={lineHeight.error}
+        unit={isBareNumber(lineHeight.value) ? '×' : undefined}
+      >
         <input
           type="text"
           aria-label={t('aria_line_height')} data-testid="line-height"
