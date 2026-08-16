@@ -13,6 +13,7 @@ interface SelectionCardProps {
 
 export function SelectionCard({ element, controller, onSelect }: SelectionCardProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
+  const similar = controller.similarTo(element);
   const hiddenRecord = controller.recordFor(element, 'display');
   const hidden = hiddenRecord?.newValue === 'none';
 
@@ -38,6 +39,18 @@ export function SelectionCard({ element, controller, onSelect }: SelectionCardPr
         </button>
       </div>
       <Breadcrumb element={element} onSelect={onSelect} />
+      {similar && (
+        <label className="pgve-similar">
+          <input
+            type="checkbox"
+            aria-label={t('aria_apply_similar')}
+            data-testid="apply-to-similar"
+            checked={controller.appliesToSimilar(element)}
+            onChange={(e) => controller.setSimilarScope(element, e.target.checked)}
+          />
+          {t('apply_similar', [similar.count])}
+        </label>
+      )}
     </div>
   );
 }

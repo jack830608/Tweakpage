@@ -24,8 +24,15 @@ export function toMarkdown(page: PageEdits, exportedAt: string): string {
   return lines.join('\n');
 }
 
+function viewportNote(record: EditRecord): string {
+  return record.viewport ? ` _(at ${record.viewport}px)_` : '';
+}
+
 function formatLine(record: EditRecord): string {
-  if (record.type === 'text') return `- text: "${record.oldValue}" → "${record.newValue}"`;
-  if (record.type === 'attr') return `- ${record.property}: \`${record.oldValue}\` → \`${record.newValue}\``;
-  return `- ${cssPropertyName(record.property)}: \`${record.oldValue}\` → \`${record.newValue}\``;
+  const note = viewportNote(record);
+  if (record.type === 'text') return `- text: "${record.oldValue}" → "${record.newValue}"${note}`;
+  if (record.type === 'attr') {
+    return `- ${record.property}: \`${record.oldValue}\` → \`${record.newValue}\`${note}`;
+  }
+  return `- ${cssPropertyName(record.property)}: \`${record.oldValue}\` → \`${record.newValue}\`${note}`;
 }

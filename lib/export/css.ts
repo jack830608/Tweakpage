@@ -17,7 +17,9 @@ export function toCss(page: PageEdits, exportedAt: string): string {
     groups.set(record.selector, [...(groups.get(record.selector) ?? []), record]);
   }
   for (const [selector, records] of groups) {
-    lines.push(`/* ${records[0].elementLabel} */`);
+    const widths = [...new Set(records.map((r) => r.viewport).filter(Boolean))];
+    const at = widths.length > 0 ? ` — captured at ${widths.join('px, ')}px` : '';
+    lines.push(`/* ${records[0].elementLabel}${at} */`);
     lines.push(`${selector} {`);
     for (const record of records) {
       lines.push(`  ${cssPropertyName(record.property)}: ${record.newValue};`);

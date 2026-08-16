@@ -28,15 +28,25 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
       statuses.set(record.id, 'disabled');
       continue;
     }
-    const el = resolveRecord(record, doc);
-    if (!el || (record.type === 'style' && !isSafeRecordId(record.id))) {
+    if (record.type === 'style' && !isSafeRecordId(record.id)) {
       statuses.set(record.id, 'not-found');
       continue;
     }
-    if (record.type === 'style') {
-      marks.set(el, [...(marks.get(el) ?? []), record.id]);
-    } else {
-      applyDomEdit(el, record);
+    // A 'similar' edit is aimed at a family on purpose, so every match gets the mark.
+    const targets =
+      record.scope === 'similar' && record.type === 'style'
+        ? matchAll(doc, record.selector)
+        : [resolveRecord(record, doc)].filter((el): el is Element => el !== null);
+    if (targets.length === 0) {
+      statuses.set(record.id, 'not-found');
+      continue;
+    }
+    for (const el of targets) {
+      if (record.type === 'style') {
+        marks.set(el, [...(marks.get(el) ?? []), record.id]);
+      } else {
+        applyDomEdit(el, record);
+      }
     }
     applied.push(record);
     statuses.set(record.id, 'applied');
@@ -54,6 +64,14 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
     doc.querySelector(STYLE_TAG_SELECTOR)?.remove();
   }
   return statuses;
+}
+
+function matchAll(doc: Document, selector: string): Element[] {
+  try {
+    return Array.from(doc.querySelectorAll(selector));
+  } catch {
+    return [];
+  }
 }
 
 /** Writes only what changed: an unchanged setAttribute still notifies observers. */

@@ -1,5 +1,8 @@
 export type EditType = 'style' | 'text' | 'attr';
 
+/** 'similar' points a style edit at every element the selector matches, not just one. */
+export type EditScope = 'element' | 'similar';
+
 export interface EditRecord {
   id: string;
   selector: string;
@@ -11,6 +14,9 @@ export interface EditRecord {
   oldValue: string;
   newValue: string;
   enabled: boolean;
+  scope?: EditScope;
+  /** Viewport width when the edit was made — an engineer needs it to place the change. */
+  viewport?: number;
   createdAt: string;
   updatedAt: string;
 }

@@ -15,6 +15,7 @@ import { SelectionCard } from './SelectionCard';
 import { AppearanceSection } from './sections/AppearanceSection';
 import { BackgroundSection } from './sections/BackgroundSection';
 import { ImageSection } from './sections/ImageSection';
+import { LayoutSection } from './sections/LayoutSection';
 import { SizeSection } from './sections/SizeSection';
 import { SpacingSection } from './sections/SpacingSection';
 import { TextSection, hasDirectText } from './sections/TextSection';
@@ -65,6 +66,7 @@ const SECTION_DEFS: Array<{
   { id: 'image', applies: (el) => el.tagName === 'IMG', render: (el, c) => <ImageSection element={el} controller={c} /> },
   { id: 'appearance', render: (el, c) => <AppearanceSection element={el} controller={c} /> },
   { id: 'size', render: (el, c) => <SizeSection element={el} controller={c} /> },
+  { id: 'layout', render: (el, c) => <LayoutSection element={el} controller={c} /> },
   { id: 'spacing', render: (el, c) => <SpacingSection element={el} controller={c} /> },
 ];
 

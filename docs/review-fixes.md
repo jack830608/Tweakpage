@@ -32,10 +32,10 @@ then cheap wins, then the product-level holes. Checked items are shipped on `mai
 
 ## 3. Product-level holes
 
-- [ ] Editing text flattens inline markup — the highest-frequency edit is the most damaging one
-- [ ] Apply an edit to every similar element ("all the buttons")
-- [ ] Responsive: viewport width in the record, and a width the export can name
-- [ ] Layout properties (display, flex, gap, box-shadow, position) and an escape-hatch CSS field
+- [x] Editing text flattens inline markup — the highest-frequency edit is the most damaging one
+- [x] Apply an edit to every similar element ("all the buttons")
+- [x] Responsive: viewport width in the record, and a width the export can name
+- [x] Layout properties (display, flex, gap, box-shadow, position) and an escape-hatch CSS field
 - [ ] Panel: resizable width, manual dark-mode switch, keyboard element selection, focus trap
 - [ ] Review list: search, grouping, edit values in place
 - [ ] Mark edited elements on the page when a saved page is reopened

@@ -43,7 +43,7 @@ test('rejects invalid json, wrong version, and bad urls', () => {
 test('skips records with unknown properties or unsafe style values', () => {
   const result = parseImport(exportJson([
     record({}),
-    record({ id: 'r2', property: 'position' }),
+    record({ id: 'r2', property: 'notAProperty' }),
     record({ id: 'r3', newValue: 'red; } body { display: none' }),
     record({ id: 'r4', type: 'attr', property: 'onclick', newValue: 'alert(1)' }),
   ]));
