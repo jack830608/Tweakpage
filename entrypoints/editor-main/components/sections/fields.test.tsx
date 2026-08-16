@@ -304,6 +304,59 @@ describe('rejected input says why', () => {
   });
 });
 
+describe('dragging the property name changes the value', () => {
+  function drag(label: string, pixels: number) {
+    const handle = screen.getByTitle(new RegExp(`Drag to change ${label}`));
+    fireEvent.pointerDown(handle, { clientX: 0 });
+    fireEvent.pointerMove(document, { clientX: pixels });
+    fireEvent.pointerUp(document);
+  }
+
+  test('font-size moves a pixel at a time', () => {
+    const controller = setup();
+    openSection('typography');
+    drag('font-size', 40); // 40px of travel at 4px per step
+    expect(controller.getPage().records.find((r) => r.property === 'fontSize')!.newValue).toBe('42px');
+  });
+
+  test('letter-spacing moves in tenths and can go negative', () => {
+    const controller = setup();
+    openSection('typography');
+    drag('letter-spacing', -20);
+    expect(controller.getPage().records.find((r) => r.property === 'letterSpacing')!.newValue).toBe(
+      '-0.5px',
+    );
+  });
+
+  test('a whole drag is one undo step, not one per pixel', () => {
+    const controller = setup();
+    openSection('typography');
+    const handle = screen.getByTitle(/Drag to change font-size/);
+    fireEvent.pointerDown(handle, { clientX: 0 });
+    for (const x of [8, 16, 24, 32]) fireEvent.pointerMove(document, { clientX: x });
+    fireEvent.pointerUp(document);
+    expect(controller.getPage().records[0].newValue).toBe('40px');
+
+    controller.undo();
+    expect(controller.getPage().records, 'one undo should clear the whole drag').toHaveLength(0);
+  });
+
+  test('sizes that cannot go negative stop at zero', () => {
+    const controller = setup();
+    openSection('appearance');
+    drag('border-radius', -200);
+    expect(controller.getPage().records.find((r) => r.property === 'borderRadius')!.newValue).toBe(
+      '0px',
+    );
+  });
+
+  test('fields without a numeric value have no drag handle', () => {
+    setup();
+    openSection('typography');
+    expect(screen.queryByTitle(/Drag to change font-family/)).toBeNull();
+  });
+});
+
 describe('border width', () => {
   test('adds a border style so the width shows, and takes it back on reset', () => {
     // An element with no border at all: border-style is 'none', so a width alone

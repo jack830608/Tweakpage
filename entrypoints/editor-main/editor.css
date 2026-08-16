@@ -125,6 +125,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
    its own on the right stole width from every control to hold a usually-absent button. */
 .pgve-unit-wrap { position: relative; display: flex; align-items: center; }
 .pgve-unit-wrap input { padding-right: 26px; }
+/* The native spinner only shows on hover, lands on top of the unit, and cannot be
+   styled — the property name is the scrub handle instead. */
+.pgve-section input[type='number'] { appearance: textfield; -moz-appearance: textfield; }
+.pgve-section input[type='number']::-webkit-outer-spin-button,
+.pgve-section input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pgve-prop--scrub { cursor: ew-resize; user-select: none; }
+.pgve-prop--scrub:hover { color: var(--ink); text-decoration: underline dotted; text-underline-offset: 3px; }
 .pgve-unit { position: absolute; right: 8px; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); pointer-events: none; }
 .pgve-field-actions { grid-column: 2; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: -3px; margin-bottom: 7px; }
 .pgve-section .pgve-field-actions button { padding: 3px 9px; font-size: 11px; }

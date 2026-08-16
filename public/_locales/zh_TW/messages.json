@@ -479,5 +479,8 @@
   },
   "aria_choose_bg_image": {
     "message": "選擇背景圖片檔案"
+  },
+  "tip_scrub": {
+    "message": "拖曳可調整 $1"
   }
 }
