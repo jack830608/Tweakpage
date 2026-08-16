@@ -482,5 +482,8 @@
   },
   "tip_scrub": {
     "message": "拖曳可調整 $1"
+  },
+  "size_hint": {
+    "message": "也可以填 auto、百分比或 fit-content。"
   }
 }

@@ -482,5 +482,8 @@
   },
   "tip_scrub": {
     "message": "Drag to change $1"
+  },
+  "size_hint": {
+    "message": "Also takes auto, a percentage, or fit-content."
   }
 }
