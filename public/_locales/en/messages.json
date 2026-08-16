@@ -509,5 +509,38 @@
   },
   "err_href": {
     "message": "Try https://…, /a-path, #a-section, or mailto:"
+  },
+  "tip_viewport": {
+    "message": "Window width. Edits record the width they were made at — resize the window, or use the browser device toolbar, to work at another one."
+  },
+  "made_at_width": {
+    "message": "Made at $1px wide"
+  },
+  "variants": {
+    "message": "Proposals"
+  },
+  "variant_new": {
+    "message": "+ Save these edits"
+  },
+  "variant_save": {
+    "message": "Save"
+  },
+  "variant_default_name": {
+    "message": "Option $1"
+  },
+  "aria_new_variant": {
+    "message": "Save the current edits as a proposal"
+  },
+  "aria_save_variant": {
+    "message": "Save proposal"
+  },
+  "aria_variant_name": {
+    "message": "Proposal name"
+  },
+  "aria_load_variant": {
+    "message": "Switch to $1"
+  },
+  "aria_delete_variant": {
+    "message": "Delete $1"
   }
 }

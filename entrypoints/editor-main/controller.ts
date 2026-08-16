@@ -5,7 +5,14 @@ import { findRecord, upsertRecord } from '../../lib/edits/coalesce';
 import { mergeRecords } from '../../lib/edits/import';
 import { revertDomEdit } from '../../lib/edits/dom';
 import { loadPageEdits, normalizePageUrl, savePageEdits } from '../../lib/edits/storage';
-import { emptyPageEdits, type EditRecord, type EditType, type PageEdits } from '../../lib/edits/types';
+import {
+  emptyPageEdits,
+  makeId,
+  type EditRecord,
+  type EditType,
+  type PageEdits,
+  type Variant,
+} from '../../lib/edits/types';
 import { generateSelector, type GeneratedSelector } from '../../lib/selector/generate';
 import { resolveRecord } from '../../lib/selector/resolve';
 import { similarSelector } from '../../lib/selector/similar';
@@ -193,6 +200,48 @@ export class EditsController {
     this.redoStack = [];
     this.lastEditTarget = null;
     this.statuses = applyAll(this.page.records, this.doc);
+    this.listeners.forEach((fn) => fn());
+  }
+
+  getVariants = (): Variant[] => this.page.variants ?? [];
+
+  /**
+   * Keeps the current edits as a named proposal.
+   *
+   * Comparing two directions meant exporting one, reverting, rebuilding the other, and
+   * holding both in your head. A variant is the same records under a name; switching
+   * between them is an ordinary transition, so undo, replay and export all keep working.
+   */
+  saveVariant(name: string): void {
+    const trimmed = name.trim().slice(0, 60);
+    if (trimmed === '') return;
+    const existing = this.getVariants().find((v) => v.name === trimmed);
+    const variant: Variant = {
+      id: existing?.id ?? makeId(),
+      name: trimmed,
+      records: this.page.records,
+      savedAt: this.now(),
+    };
+    const variants = existing
+      ? this.getVariants().map((v) => (v.id === existing.id ? variant : v))
+      : [...this.getVariants(), variant];
+    this.page = { ...this.page, variants, updatedAt: this.now() };
+    savePageEdits(this.page).catch(() => {});
+    this.listeners.forEach((fn) => fn());
+  }
+
+  /** Loads a saved proposal over the live edits. Undo puts the previous set back. */
+  loadVariant(id: string): void {
+    const variant = this.getVariants().find((v) => v.id === id);
+    if (!variant) return;
+    this.lastEditTarget = null;
+    this.setRecords(variant.records);
+  }
+
+  deleteVariant(id: string): void {
+    const variants = this.getVariants().filter((v) => v.id !== id);
+    this.page = { ...this.page, variants, updatedAt: this.now() };
+    savePageEdits(this.page).catch(() => {});
     this.listeners.forEach((fn) => fn());
   }
 

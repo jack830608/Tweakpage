@@ -21,11 +21,21 @@ export interface EditRecord {
   updatedAt: string;
 }
 
+/** A saved set of edits kept beside the live one, so two proposals can be compared. */
+export interface Variant {
+  id: string;
+  name: string;
+  records: EditRecord[];
+  savedAt: string;
+}
+
 export interface PageEdits {
   version: 1;
   url: string;
   title: string;
   records: EditRecord[];
+  /** Travels with the export, so a colleague receives every proposal, not just the live one. */
+  variants?: Variant[];
   updatedAt: string;
 }
 

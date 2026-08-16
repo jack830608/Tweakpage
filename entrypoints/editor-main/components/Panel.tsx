@@ -15,6 +15,7 @@ import type { ToastContent } from './Toast';
 import { useDraggable } from '../hooks/useDraggable';
 import { t } from '../../../lib/i18n';
 import { ShareRow } from './ShareRow';
+import { VariantsRow } from './VariantsRow';
 import { ChangesTab } from './ChangesTab';
 import { CollapsibleSection } from './CollapsibleSection';
 import { ModeSwitch } from './ModeSwitch';
@@ -97,6 +98,13 @@ export function Panel(props: PanelProps) {
   const records = useSyncExternalStore(controller.subscribe, controller.getPage).records;
   const count = records.length;
   const stale = records.filter((r) => controller.getStatus(r.id) === 'not-found').length;
+  // Edits are recorded with the width they were made at, so show which width that is.
+  const [viewport, setViewport] = useState(() => window.innerWidth);
+  useEffect(() => {
+    const onResize = () => setViewport(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   const saveState = controller.getSaveState();
   const canUndo = controller.canUndo();
   const canRedo = controller.canRedo();
@@ -159,6 +167,9 @@ export function Panel(props: PanelProps) {
       <header className="pgve-header" {...handleProps}>
         <strong><GripIcon /> Tweakpage</strong>
         <span className="pgve-header-buttons">
+          <span className="pgve-viewport" data-testid="viewport-width" title={t('tip_viewport')}>
+            {viewport}px
+          </span>
           <button
             type="button"
             onClick={() => controller.undo()}
@@ -226,6 +237,7 @@ export function Panel(props: PanelProps) {
           {t('show_marks')}
         </label>
       )}
+      <VariantsRow controller={controller} />
       <ShareRow controller={controller} onToast={props.onToast} onSnapshot={props.onSnapshot} />
       {stale > 0 && view === 'edit' && (
         <button

@@ -267,6 +267,31 @@ test('no field wears a native decoration over its unit', async ({ context }) => 
   expect(await darkPixelsAtRightEdge('border-width'), 'a spinner is sitting on the unit').toBeLessThan(20);
 });
 
+test('two proposals can be saved and switched between', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+
+  await page.locator('[data-testid="text"]').fill('Option A headline');
+  await page.locator('[data-testid="new-variant"]').click();
+  await page.locator('[data-testid="variant-name"]').fill('A');
+  await page.locator('[data-testid="save-variant"]').click();
+
+  await page.locator('[data-testid="text"]').fill('Option B headline');
+  await expect(page.locator('h1')).toHaveText('Option B headline');
+
+  // Switching back is what makes the two comparable without rebuilding either.
+  await page.locator('.pgve-variant button', { hasText: 'A' }).first().click();
+  await expect(page.locator('h1')).toHaveText('Option A headline');
+
+  // And it survives a reload, because a proposal is stored with the page.
+  await page.reload();
+  await expect(page.locator('h1')).toHaveText('Option A headline');
+  await activateEditor(context);
+  await expect(page.locator('.pgve-variant')).toHaveCount(1);
+});
+
 test('header and change count stay reachable when the panel scrolls', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
