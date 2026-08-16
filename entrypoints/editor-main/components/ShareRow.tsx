@@ -33,7 +33,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
 
   return (
     <div className="pgve-share">
-      <span className="pgve-share-label">{t('share_hand_off')}</span>
+      <span className="pgve-share-label">{t('share')}</span>
       <div className="pgve-share-buttons">
         <button
           type="button"
@@ -41,7 +41,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           title={t('tip_copy_summary')}
           onClick={() => void copy(toMarkdown(controller.getPage(), today()), t('toast_copied'))}
         >
-          <CopyIcon /> {t('share_copy')}
+          <CopyIcon /> {t('share_summary')}
         </button>
         <button
           type="button"
@@ -59,19 +59,17 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
         >
           <CameraIcon /> {t('share_snap')}
         </button>
-      </div>
-      <span className="pgve-share-label">{t('share_send')}</span>
-      <div className="pgve-share-buttons">
+
         <button
           type="button"
           aria-label={t('aria_copy_json')} data-testid="copy-json"
           title={t('tip_copy_json')}
           onClick={() => void copy(toJson(controller.getPage()), t('toast_copied_json'))}
         >
-          <CopyIcon /> {t('share_copy_json')}
+          <CopyIcon /> {t('share_json')}
         </button>
         <button type="button" aria-label={t('aria_export_json')} data-testid="export-json" title={t('tip_export')} onClick={onJsonFile}>
-          <DownloadIcon /> {t('share_export')}
+          <DownloadIcon /> {t('share_download')}
         </button>
       </div>
     </div>

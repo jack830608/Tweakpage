@@ -49,6 +49,14 @@ describe('translations', () => {
     expect(missing, 'missing from the MESSAGES table in lib/i18n.ts').toEqual([]);
   });
 
+  test('no key is declared twice', () => {
+    // A later duplicate silently wins, so the string you edited may not be the one shown.
+    const source = fs.readFileSync('lib/i18n.ts', 'utf8');
+    const declared = [...source.matchAll(/^ {2}([a-z0-9_]+):/gm)].map((m) => m[1]);
+    const duplicates = [...new Set(declared.filter((k, i) => declared.indexOf(k) !== i))].sort();
+    expect(duplicates).toEqual([]);
+  });
+
   test('locales agree on which keys exist', () => {
     const [first, ...rest] = LOCALES.map((locale) => [locale, localeKeys(locale)] as const);
     for (const [locale, keys] of rest) {
