@@ -172,6 +172,8 @@ export class EditsController {
     this.statuses = applyAll(records, this.doc);
     savePageEdits(this.page).catch((error: unknown) => {
       console.warn('[tweakpage] failed to save edits', error);
+      // Storage is the only copy. Silently losing it is worse than any other failure here.
+      this.doc.dispatchEvent(new CustomEvent('pg-editor:save-failed'));
     });
     this.listeners.forEach((fn) => fn());
   }

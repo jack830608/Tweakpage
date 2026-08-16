@@ -8,6 +8,10 @@ export interface FieldDraft {
   original: string;
   /** hold text the user is part-way through typing */
   setDraft: (next: string) => void;
+  /** why the current text was not recorded, if it wasn't */
+  error: string | null;
+  /** say why a value was rejected instead of dropping it in silence */
+  reject: (reason: string | null) => void;
 }
 
 const sameText = (a: string, b: string) => a === b;
@@ -37,17 +41,26 @@ export function useFieldDraft(
   const authoritative = format(record ? record.newValue : computed);
 
   const [draft, setDraft] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [synced, setSynced] = useState({ element, value: authoritative });
   if (synced.element !== element || synced.value !== authoritative) {
     setSynced({ element, value: authoritative });
     // Keep the draft when this change is the echo of what the user just typed;
     // drop it when the value moved for any other reason (reset, undo, new element).
-    if (draft === null || !equals(draft, authoritative)) setDraft(null);
+    if (draft === null || !equals(draft, authoritative)) {
+      setDraft(null);
+      setError(null);
+    }
   }
 
   return {
     value: draft ?? authoritative,
     original: record?.oldValue ?? computed,
-    setDraft,
+    setDraft: (next: string) => {
+      setDraft(next);
+      setError(null);
+    },
+    error,
+    reject: setError,
   };
 }

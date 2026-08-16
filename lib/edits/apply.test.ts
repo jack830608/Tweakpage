@@ -28,7 +28,7 @@ test('applyAll writes style rules into a single data-pg-editor tag', () => {
   applyAll([record({})], document);
   const tags = document.querySelectorAll('style[data-pg-editor]');
   expect(tags).toHaveLength(1);
-  expect(tags[0].textContent).toBe('.title { color: #ff0000 !important; }');
+  expect(tags[0].textContent).toBe('[data-tweakpage~="r1"] { color: #ff0000 !important; }');
 });
 
 test('applyAll is idempotent: second run keeps one tag and identical css', () => {
@@ -87,4 +87,40 @@ test('applyAll removes the style tag when no enabled style records remain', () =
   expect(document.querySelector('style[data-pg-editor]')).toBeNull();
   applyAll([], document);
   expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+});
+
+test('a selector that now matches several elements styles none of them', () => {
+  document.body.innerHTML = '<button class="btn">One</button><button class="btn">Two</button>';
+  const statuses = applyAll([record({ selector: '.btn', type: 'style', property: 'color' })], document);
+
+  // The rule used to be emitted as `.btn { ... }`, which restyled both buttons while the
+  // review list reported the edit as not applied.
+  expect(statuses.get('r1')).toBe('not-found');
+  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(document.querySelectorAll('[data-tweakpage]')).toHaveLength(0);
+});
+
+test('the mark lands only on the element the record resolved to', () => {
+  document.body.innerHTML = '<h1 class="title">One</h1><h1 class="other">Two</h1>';
+  applyAll([record({ selector: '.title', type: 'style', property: 'color' })], document);
+  expect(document.querySelector('.title')!.getAttribute('data-tweakpage')).toBe('r1');
+  expect(document.querySelector('.other')!.hasAttribute('data-tweakpage')).toBe(false);
+});
+
+test('marks are dropped when their record goes away', () => {
+  applyAll([record({ type: 'style', property: 'color' })], document);
+  expect(document.querySelectorAll('[data-tweakpage]')).toHaveLength(1);
+  applyAll([], document);
+  expect(document.querySelectorAll('[data-tweakpage]')).toHaveLength(0);
+});
+
+test('two style edits on one element share a single mark', () => {
+  applyAll(
+    [
+      record({ id: 'r1', type: 'style', property: 'color' }),
+      record({ id: 'r2', type: 'style', property: 'fontSize', newValue: '40px' }),
+    ],
+    document,
+  );
+  expect(document.querySelector('.title')!.getAttribute('data-tweakpage')).toBe('r1 r2');
 });

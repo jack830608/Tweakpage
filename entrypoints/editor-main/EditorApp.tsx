@@ -45,6 +45,12 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     }
   }, []);
 
+  useEffect(() => {
+    const onSaveFailed = () => setToast({ message: t('toast_save_failed') });
+    document.addEventListener('pg-editor:save-failed', onSaveFailed);
+    return () => document.removeEventListener('pg-editor:save-failed', onSaveFailed);
+  }, []);
+
   const dismissOnboarding = useCallback(() => {
     setShowOnboarding(false);
     safeStorageSet({ [ONBOARDED_KEY]: true });

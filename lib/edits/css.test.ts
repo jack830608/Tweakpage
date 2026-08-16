@@ -32,7 +32,8 @@ test('buildCssText emits one !important rule per enabled style record', () => {
     record({ id: 'r2', property: 'fontSize', newValue: '40px' }),
   ]);
   expect(css).toBe(
-    '.hero { color: #ff0000 !important; }\n.hero { font-size: 40px !important; }',
+    '[data-tweakpage~="r1"] { color: #ff0000 !important; }\n' +
+      '[data-tweakpage~="r2"] { font-size: 40px !important; }',
   );
 });
 
@@ -41,5 +42,10 @@ test('buildCssText skips disabled and non-style records', () => {
     record({ enabled: false }),
     record({ id: 'r2', type: 'text', property: 'textContent', newValue: 'Hi' }),
   ]);
+  expect(css).toBe('');
+});
+
+test('a record id that could break out of the attribute selector is dropped', () => {
+  const css = buildCssText([record({ id: 'x"] { } body { display: none' })]);
   expect(css).toBe('');
 });

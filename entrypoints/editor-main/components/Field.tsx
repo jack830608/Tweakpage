@@ -11,6 +11,8 @@ interface FieldProps {
   companions?: string[];
   /** Put the control on its own row below the name — for full-width controls. */
   stacked?: boolean;
+  /** Shown under the row when the typed value was refused. */
+  error?: string | null;
   children: ReactNode;
 }
 
@@ -29,6 +31,7 @@ export function Field({
   element,
   companions,
   stacked,
+  error,
   children,
 }: FieldProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
@@ -47,6 +50,11 @@ export function Field({
         </span>
       </span>
       {children}
+      {error && (
+        <p className="pgve-field-error" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { importPageEdits, parseImport } from '../../../lib/edits/import';
 import { normalizePageUrl } from '../../../lib/edits/storage';
 import { resolveRecord } from '../../../lib/selector/resolve';
 import { revealElement } from '../reveal';
+import { ConfirmButton } from './ConfirmButton';
 import type { EditRecord } from '../../../lib/edits/types';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
@@ -42,7 +43,11 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
       <div className="pgve-changes-actions">
         <button type="button" onClick={() => fileRef.current?.click()}>{t('import_json')}</button>
         {page.records.length > 0 && (
-          <button type="button" onClick={() => controller.revertAllEdits()}>{t('revert_all')}</button>
+          <ConfirmButton
+            label={t('revert_all')}
+            ariaLabel="Revert all"
+            onConfirm={() => controller.revertAllEdits()}
+          />
         )}
         <input
           ref={fileRef}

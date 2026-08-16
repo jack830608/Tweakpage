@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { isTextEntry } from './useUndoRedoShortcuts';
 
 export interface PickerCallbacks {
   onHover: (el: Element | null) => void;
@@ -37,7 +38,12 @@ export function useElementPicker(
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      if (e.composedPath().includes(host)) return;
+      const target = e.composedPath()[0] ?? e.target;
+      // Escape out of a field first; a second press then leaves the selection.
+      if (isTextEntry(target)) {
+        (target as HTMLElement).blur();
+        return;
+      }
       e.preventDefault();
       onEscape();
     };

@@ -111,6 +111,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-field--stacked { grid-template-columns: minmax(0, 1fr); gap: 5px; }
 /* Reset sits in a gutter beside the property name, like a diff marker — a column of
    its own on the right stole width from every control to hold a usually-absent button. */
+.pgve-field-error { grid-column: 1 / -1; margin-top: 3px; font-size: 11px; color: var(--warn-ink); }
+.pgve-field:has(.pgve-field-error) input, .pgve-field:has(.pgve-field-error) select { border-color: var(--warn-ink); }
 .pgve-field-name { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; gap: 3px; min-width: 0; }
 .pgve-section input[type='number'], .pgve-section input[type='text'], .pgve-section select { width: 100%; padding: 4px 7px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink); font-family: var(--mono); font-size: 12px; transition: border-color var(--ease); }
 .pgve-section select { font-family: var(--sans); }
@@ -176,6 +178,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-changes { display: flex; flex-direction: column; gap: 8px; padding: 4px 12px 12px; }
 .pgve-changes-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .pgve-changes-actions button { padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; font-size: 12px; color: var(--ink-2); }
+.pgve-changes-actions button.is-armed, .pgve-section button.is-armed { border-color: var(--warn-ink); color: var(--warn-ink); background: var(--warn-bg); font-weight: 600; }
+.pgve-stale-edits { display: block; width: calc(100% - 24px); margin: 0 12px 8px; padding: 7px 10px; border: 1px solid var(--warn-ink); border-radius: var(--r-control); background: var(--warn-bg); color: var(--warn-ink); font-size: 11.5px; font-weight: 500; text-align: left; cursor: pointer; }
 .pgve-changes-actions button:hover { border-color: var(--border-strong); color: var(--ink); }
 .pgve-changes ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
 .pgve-change { background: var(--sunken); border-radius: var(--r-card); padding: 9px 10px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background var(--ease); }

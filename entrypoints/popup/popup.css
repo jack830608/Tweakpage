@@ -39,3 +39,5 @@ body { width: 320px; background: var(--surface); color: var(--ink); font: 400 12
 .pop-count { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 11px; }
 .pop-list button { flex: none; padding: 3px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); cursor: pointer; font-size: 11px; color: var(--ink-2); }
 .pop-list button:hover { color: var(--ink); }
+.pop-list button.is-armed { border-color: #b45309; color: #b45309; font-weight: 600; }
+@media (prefers-color-scheme: dark) { .pop-list button.is-armed { border-color: #fbbf24; color: #fbbf24; } }

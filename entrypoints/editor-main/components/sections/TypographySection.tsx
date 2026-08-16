@@ -3,6 +3,7 @@ import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
 import { Field } from '../Field';
+import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -39,7 +40,7 @@ export function TypographySection({ element, controller }: SectionProps) {
 
   return (
     <section className="pgve-section">
-      <Field name="font-family" property="fontFamily" controller={controller} element={element}>
+      <Field name="font-family" property="fontFamily" controller={controller} element={element} error={fontFamily.error}>
         <input
           type="text"
           aria-label="Font family"
@@ -48,7 +49,11 @@ export function TypographySection({ element, controller }: SectionProps) {
           onChange={(e) => {
             const value = e.target.value;
             fontFamily.setDraft(value);
-            if (value.trim() === '' || /[;{}]/.test(value)) return;
+            if (value.trim() === '') return;
+            if (/[;{}]/.test(value)) {
+              fontFamily.reject(t('err_font_family'));
+              return;
+            }
             controller.recordEdit(element, 'style', 'fontFamily', fontFamily.original, value.trim());
           }}
         />
@@ -66,7 +71,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         <option value="sans-serif" />
         <option value="monospace" />
       </datalist>
-      <Field name="font-size" property="fontSize" controller={controller} element={element}>
+      <Field name="font-size" property="fontSize" controller={controller} element={element} error={fontSize.error}>
         <input
           type="number"
           min={1}
@@ -75,7 +80,11 @@ export function TypographySection({ element, controller }: SectionProps) {
           onChange={(e) => {
             const raw = e.target.value;
             fontSize.setDraft(raw);
-            if (raw.trim() === '' || !Number.isFinite(Number(raw))) return;
+            if (raw.trim() === '') return;
+            if (!Number.isFinite(Number(raw))) {
+              fontSize.reject(t('err_number'));
+              return;
+            }
             controller.recordEdit(element, 'style', 'fontSize', fontSize.original, `${Number(raw)}px`);
           }}
         />
@@ -93,7 +102,7 @@ export function TypographySection({ element, controller }: SectionProps) {
           ))}
         </select>
       </Field>
-      <Field name="line-height" property="lineHeight" controller={controller} element={element}>
+      <Field name="line-height" property="lineHeight" controller={controller} element={element} error={lineHeight.error}>
         <input
           type="text"
           aria-label="Line height"
@@ -103,7 +112,10 @@ export function TypographySection({ element, controller }: SectionProps) {
             const value = e.target.value;
             lineHeight.setDraft(value);
             if (value === '') return;
-            if (!/^(normal|\d*\.?\d+(px|em|rem|%)?)$/.test(value.trim())) return;
+            if (!/^(normal|\d*\.?\d+(px|em|rem|%)?)$/.test(value.trim())) {
+              lineHeight.reject(t('err_line_height'));
+              return;
+            }
             controller.recordEdit(element, 'style', 'lineHeight', lineHeight.original, value.trim());
           }}
         />
@@ -121,7 +133,7 @@ export function TypographySection({ element, controller }: SectionProps) {
           <option value="right">right</option>
         </select>
       </Field>
-      <Field name="letter-spacing" property="letterSpacing" controller={controller} element={element}>
+      <Field name="letter-spacing" property="letterSpacing" controller={controller} element={element} error={letterSpacing.error}>
         <input
           type="number"
           step={0.1}
@@ -130,7 +142,11 @@ export function TypographySection({ element, controller }: SectionProps) {
           onChange={(e) => {
             const raw = e.target.value;
             letterSpacing.setDraft(raw);
-            if (raw.trim() === '' || !Number.isFinite(Number(raw))) return;
+            if (raw.trim() === '') return;
+            if (!Number.isFinite(Number(raw))) {
+              letterSpacing.reject(t('err_number'));
+              return;
+            }
             controller.recordEdit(
               element,
               'style',

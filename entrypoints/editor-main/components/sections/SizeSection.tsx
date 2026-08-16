@@ -1,6 +1,7 @@
 import type { EditsController } from '../../controller';
 import { useFieldDraft } from '../../hooks/useFieldDraft';
 import { Field } from '../Field';
+import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -62,7 +63,7 @@ function SizeField({ ariaLabel, property, element, controller }: SizeFieldProps)
   const computed = getComputedStyle(element).getPropertyValue(property);
   const field = useFieldDraft(controller, element, property, computed, showSize);
   return (
-    <Field name={property} property={property} controller={controller} element={element}>
+    <Field name={property} property={property} controller={controller} element={element} error={field.error}>
       <input
         type="text"
         inputMode="text"
@@ -72,8 +73,12 @@ function SizeField({ ariaLabel, property, element, controller }: SizeFieldProps)
         onChange={(e) => {
           const raw = e.target.value;
           field.setDraft(raw);
+          if (raw.trim() === '') return;
           const next = toCssSize(raw);
-          if (next === null) return;
+          if (next === null) {
+            field.reject(t('err_size'));
+            return;
+          }
           controller.recordEdit(element, 'style', property, field.original, next);
         }}
       />

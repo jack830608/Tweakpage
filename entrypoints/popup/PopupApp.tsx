@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { pageKey } from '../../lib/edits/storage';
 import type { PageEdits } from '../../lib/edits/types';
+import { ConfirmButton } from '../editor-main/components/ConfirmButton';
 import { t } from '../../lib/i18n';
 
 interface PageEntry {
@@ -121,13 +122,11 @@ export function PopupApp() {
                     {t('pop_open')}
                   </button>
                 )}
-                <button
-                  type="button"
-                  aria-label={`Clear edits for ${page.url}`}
-                  onClick={() => void onClear(key)}
-                >
-                  {t('pop_clear')}
-                </button>
+                <ConfirmButton
+                  label={t('pop_clear')}
+                  ariaLabel={`Clear edits for ${page.url}`}
+                  onConfirm={() => void onClear(key)}
+                />
               </li>
             );
           })}
