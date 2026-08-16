@@ -187,7 +187,7 @@
     "message": "清除"
   },
   "stale_note": {
-    "message": "Tweakpage 已更新，請重新整理頁面後繼續編輯 — 已儲存的修改不會遺失。"
+    "message": "Tweakpage 已更新,請重新整理頁面後繼續編輯 — 已儲存的修改不會遺失。"
   },
   "stale_reload": {
     "message": "重新整理頁面"
@@ -200,5 +200,29 @@
   },
   "pop_applied_here": {
     "message": "已套用在目前頁面"
+  },
+  "confirm_again": {
+    "message": "確定?"
+  },
+  "toast_save_failed": {
+    "message": "存檔失敗 — 目前的修改只存在畫面上,請檢查儲存空間。"
+  },
+  "stale_edits": {
+    "message": "有 $1 / $2 筆改動對不上目前的頁面"
+  },
+  "err_font_family": {
+    "message": "只能是文字、數字、空白與引號"
+  },
+  "err_line_height": {
+    "message": "可填 1.5、24px 或 150%"
+  },
+  "err_number": {
+    "message": "只能填數字"
+  },
+  "err_size": {
+    "message": "可填 320、50%、auto 或 fit-content"
+  },
+  "err_image_url": {
+    "message": "需要以 https:// 開頭 — 或直接選檔案"
   }
 }

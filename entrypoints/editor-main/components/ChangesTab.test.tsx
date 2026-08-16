@@ -49,6 +49,9 @@ test('revert all clears records', () => {
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
   render(<ChangesTab controller={controller} onToast={vi.fn()} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: 'Revert all' }));
+  expect(controller.getPage().records, 'one click must not throw the edits away').toHaveLength(1);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Revert all — confirm' }));
   expect(controller.getPage().records).toHaveLength(0);
   expect(screen.getByText('No changes yet.')).toBeTruthy();
 });

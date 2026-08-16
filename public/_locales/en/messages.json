@@ -200,5 +200,29 @@
   },
   "pop_applied_here": {
     "message": "Applied on this page"
+  },
+  "confirm_again": {
+    "message": "Sure?"
+  },
+  "toast_save_failed": {
+    "message": "Couldn't save — your edits are only on screen. Check storage space."
+  },
+  "stale_edits": {
+    "message": "$1 of $2 edits no longer match this page"
+  },
+  "err_font_family": {
+    "message": "Letters, numbers, spaces and quotes only"
+  },
+  "err_line_height": {
+    "message": "Try 1.5, 24px, or 150%"
+  },
+  "err_number": {
+    "message": "Numbers only"
+  },
+  "err_size": {
+    "message": "Try 320, 50%, auto or fit-content"
+  },
+  "err_image_url": {
+    "message": "Needs to start with https:// — or pick a file"
   }
 }

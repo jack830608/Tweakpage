@@ -80,7 +80,9 @@ export function Panel(props: PanelProps) {
       setOpenSections((open) => (open.image ? open : { ...open, image: true }));
     }
   }, [props.selected]);
-  const count = useSyncExternalStore(controller.subscribe, controller.getPage).records.length;
+  const records = useSyncExternalStore(controller.subscribe, controller.getPage).records;
+  const count = records.length;
+  const stale = records.filter((r) => controller.getStatus(r.id) === 'not-found').length;
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
   const panelRef = useRef<HTMLElement>(null);
   const [restoredPosition, setRestoredPosition] = useState<Position | null>(null);
@@ -125,6 +127,16 @@ export function Panel(props: PanelProps) {
         onChange={(value) => controller.setPreviewOriginal(value === 'original')}
       />
       <ShareRow controller={controller} onToast={props.onToast} onSnapshot={props.onSnapshot} />
+      {stale > 0 && view === 'edit' && (
+        <button
+          type="button"
+          className="pgve-stale-edits"
+          aria-label="Review unmatched edits"
+          onClick={() => setView('changes')}
+        >
+          {t('stale_edits', [stale, count])}
+        </button>
+      )}
       {view === 'changes' ? (
         <div>
           <button

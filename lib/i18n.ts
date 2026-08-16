@@ -55,11 +55,19 @@ export const MESSAGES: Record<string, string> = {
   pop_empty: 'No saved edits yet. Open any page and start tweaking.',
   pop_open: 'Open',
   pop_clear: 'Clear',
+  confirm_again: "Sure?",
+  toast_save_failed: "Couldn't save \u2014 your edits are only on screen. Check storage space.",
   pop_edit: 'Edit',
   pop_applied_here: 'Applied on this page',
   reset_spacing: 'Reset spacing',
   stale_note: 'Tweakpage was updated. Reload the page to keep editing — your saved edits are safe.',
   stale_reload: 'Reload page',
+  err_font_family: 'Letters, numbers, spaces and quotes only',
+  err_line_height: 'Try 1.5, 24px, or 150%',
+  err_number: 'Numbers only',
+  err_size: 'Try 320, 50%, auto or fit-content',
+  err_image_url: 'Needs to start with https:// — or pick a file',
+  stale_edits: '$1 of $2 edits no longer match this page',
 };
 
 export function t(key: string, subs?: Array<string | number>): string {

@@ -42,7 +42,10 @@ test('lists pages with edits and clears them', async () => {
   render(<PopupApp />);
   expect(await screen.findByText('Landing')).toBeTruthy();
   expect(screen.getByText('1')).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: /Clear edits for/ }));
+  fireEvent.click(screen.getByRole('button', { name: /^Clear edits for/ }));
+  expect(screen.getByText('Landing'), 'one click must not wipe the only copy').toBeTruthy();
+
+  fireEvent.click(screen.getByRole('button', { name: /Clear edits for .* — confirm/ }));
   await waitFor(() => expect(screen.queryByText('Landing')).toBeNull());
   expect(await screen.findByText(/No saved edits yet/)).toBeTruthy();
 });

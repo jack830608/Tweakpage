@@ -27,22 +27,38 @@ test('returns null for events inside the host', () => {
   expect(eventTargetElement(e, host)).toBeNull();
 });
 
-test('Escape inside the host does not fire onEscape; Escape outside does', () => {
+test('Escape works from inside the panel as well as from the page', () => {
   const host = document.getElementById('host')!;
   const onEscape = vi.fn();
   renderHook(() =>
     useElementPicker(host, true, { onHover: () => {}, onSelect: () => {}, onEscape }),
   );
 
+  // Ignoring keys from inside the panel left Escape dead whenever focus sat on a control.
   document.getElementById('inside')!.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }),
   );
-  expect(onEscape).not.toHaveBeenCalled();
+  expect(onEscape).toHaveBeenCalledTimes(1);
 
   document.body.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }),
   );
-  expect(onEscape).toHaveBeenCalledTimes(1);
+  expect(onEscape).toHaveBeenCalledTimes(2);
+});
+
+test('Escape in a text field leaves the field instead of the selection', () => {
+  const host = document.getElementById('host')!;
+  const onEscape = vi.fn();
+  renderHook(() =>
+    useElementPicker(host, true, { onHover: () => {}, onSelect: () => {}, onEscape }),
+  );
+  const input = document.createElement('input');
+  document.getElementById('inside')!.append(input);
+  input.focus();
+
+  input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }));
+  expect(onEscape).not.toHaveBeenCalled();
+  expect(document.activeElement).not.toBe(input);
 });
 
 test('Alt-held clicks and hovers pass through to the page', () => {

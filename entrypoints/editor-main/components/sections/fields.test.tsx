@@ -263,6 +263,34 @@ describe('width and height take CSS values, not only pixels', () => {
   });
 });
 
+describe('rejected input says why', () => {
+  // Number inputs need no message: the browser refuses the keystroke, so nothing is lost.
+  test.each([
+    ['typography', 'Font family', 'Helvetica; }', /Letters, numbers/],
+    ['typography', 'Line height', 'very tall', /Try 1.5/],
+    ['size', 'Width', '100px; position: fixed', /Try 320/],
+  ])('%s / %s', (section, label, typed, message) => {
+    const controller = setup();
+    openSection(section);
+    fireEvent.change(control(label), { target: { value: typed } });
+
+    // Silently dropping the value read as "this field is broken".
+    expect(screen.getByRole('alert').textContent).toMatch(message);
+    expect(controller.getPage().records).toHaveLength(0);
+    expect(control(label).value, 'the text stays put so it can be corrected').toBe(typed);
+  });
+
+  test('the message clears once the value is acceptable', () => {
+    const controller = setup();
+    openSection('size');
+    fireEvent.change(control('Width'), { target: { value: 'nope' } });
+    expect(screen.queryByRole('alert')).toBeTruthy();
+    fireEvent.change(control('Width'), { target: { value: '50%' } });
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(controller.getPage().records[0].newValue).toBe('50%');
+  });
+});
+
 describe('border width', () => {
   test('adds a border style so the width shows, and takes it back on reset', () => {
     // An element with no border at all: border-style is 'none', so a width alone
