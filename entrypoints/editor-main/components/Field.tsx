@@ -13,6 +13,8 @@ interface FieldProps {
   stacked?: boolean;
   /** Shown under the row when the typed value was refused. */
   error?: string | null;
+  /** The unit a bare number means here, printed inside the control. */
+  unit?: string;
   children: ReactNode;
 }
 
@@ -32,6 +34,7 @@ export function Field({
   companions,
   stacked,
   error,
+  unit,
   children,
 }: FieldProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
@@ -49,7 +52,14 @@ export function Field({
           {name}
         </span>
       </span>
-      {children}
+      {unit ? (
+        <span className="pgve-unit-wrap">
+          {children}
+          <span className="pgve-unit" aria-hidden="true">{unit}</span>
+        </span>
+      ) : (
+        children
+      )}
       {error && (
         <p className="pgve-field-error" role="alert">
           {error}

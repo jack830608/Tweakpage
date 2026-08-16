@@ -69,6 +69,7 @@ function SizeField({ ariaLabel, property, element, controller }: SizeFieldProps)
         inputMode="text"
         aria-label={ariaLabel}
         data-testid={property}
+        placeholder={t('size_placeholder')}
         list="pgve-size-suggestions"
         value={field.value}
         onChange={(e) => {

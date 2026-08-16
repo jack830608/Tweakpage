@@ -68,11 +68,14 @@ export function BackgroundSection({ element, controller }: SectionProps) {
           onChange={(e) => image.setDraft(e.target.value)}
         />
       </Field>
-      <div className="pgve-field-actions">
+      <div className="pgve-field pgve-field--actions">
+        <span aria-hidden="true" />
+        <div className="pgve-field-actions">
         <button type="button" aria-label={t('aria_apply_bg_image')} data-testid="apply-background-image" onClick={onApplyImage}>
           {t('apply')}
         </button>
         <ImagePicker ariaLabel="Choose background image file" onPicked={setImage} />
+        </div>
       </div>
     </section>
   );

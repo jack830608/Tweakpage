@@ -451,7 +451,7 @@
     "message": "That value has characters CSS treats as the end of a rule"
   },
   "theme_system": {
-    "message": "Match system"
+    "message": "System"
   },
   "theme_light": {
     "message": "Light"
@@ -476,5 +476,8 @@
   },
   "aria_select_change": {
     "message": "Select $1"
+  },
+  "size_placeholder": {
+    "message": "auto, 50%, 320"
   }
 }
