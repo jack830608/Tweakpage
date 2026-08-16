@@ -199,6 +199,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-onboarding { padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
 .pgve-onboarding h3 { font-size: 13px; font-weight: 650; color: var(--ink); }
 .pgve-onboarding ol { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; color: var(--ink-2); }
+.pgve-onboarding-safety { padding: 8px 10px; border-radius: var(--r-card); background: var(--accent-soft); color: var(--ink-2); font-size: 11.5px; line-height: 1.55; }
 .pgve-onboarding button { align-self: flex-start; padding: 6px 14px; border: none; border-radius: var(--r-control); background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
 .pgve-onboarding button:hover { background: var(--accent-ink); }
 
@@ -212,6 +213,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-stale-edits { display: block; width: calc(100% - 24px); margin: 0 12px 8px; padding: 7px 10px; border: 1px solid var(--warn-ink); border-radius: var(--r-control); background: var(--warn-bg); color: var(--warn-ink); font-size: 11.5px; font-weight: 500; text-align: left; cursor: pointer; }
 .pgve-changes-actions button:hover { border-color: var(--border-strong); color: var(--ink); }
 .pgve-changes ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.pgve-change-group { list-style: none; margin-bottom: 10px; }
+.pgve-change-group > ul { display: flex; flex-direction: column; gap: 4px; }
+.pgve-change-group-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 2px 4px; }
+.pgve-change-group-label { font-family: var(--mono); font-size: 11px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pgve-change-group-count { flex: none; min-width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--sunken); color: var(--ink-3); font-size: 10px; }
 .pgve-change { background: var(--sunken); border-radius: var(--r-card); padding: 9px 10px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background var(--ease); }
 .pgve-change:hover { background: var(--accent-soft); }
 .pgve-change-off { opacity: 0.55; }
@@ -219,7 +225,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-change-switch { accent-color: var(--accent); cursor: pointer; flex: none; margin-top: 2px; }
 .pgve-change button.pgve-change-target { flex: 1; min-width: 0; align-self: stretch; padding: 0; border: none; background: none; text-align: left; cursor: pointer; }
 .pgve-change-target { font-weight: 600; font-size: 11.5px; font-family: var(--mono); color: var(--ink); word-break: break-all; }
-.pgve-change-diff { word-break: break-all; font-size: 12px; color: var(--ink-2); }
+/* break-all split words down the middle. Only unbreakable runs — a long URL or a
+   selector — should break at all. */
+.pgve-change-diff { overflow-wrap: break-word; font-size: 12px; color: var(--ink-2); line-height: 1.5; }
 .pgve-change-diff s { color: var(--ink-3); }
 .pgve-change-diff b { color: var(--ink); font-weight: 600; }
 .pgve-change-warning { color: var(--warn-ink); font-size: 11px; }
@@ -230,6 +238,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- footer ---------- */
 .pgve-footer { position: sticky; bottom: 0; z-index: 2; display: block; width: 100%; padding: 10px 12px; border: none; border-top: 1px solid var(--border); background: var(--surface); cursor: pointer; text-align: left; color: var(--ink-3); font-size: 12px; margin-top: auto; border-radius: 0 0 var(--r-panel) var(--r-panel); }
+.pgve-saved { float: right; font-size: 11px; color: var(--ink-3); font-weight: 400; }
 .pgve-footer:hover { color: var(--ink); background: var(--sunken); }
 .pgve-footer-active { color: var(--accent-ink); font-weight: 600; }
 

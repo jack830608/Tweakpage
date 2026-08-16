@@ -38,6 +38,10 @@ function setup(selected: Element | null = document.getElementById('title')) {
       onClose={vi.fn()}
     />,
   );
+  // Only Text opens by default now, so a test that reaches into another section opens it.
+  for (const header of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-section]'))) {
+    if (header.getAttribute('aria-expanded') !== 'true') fireEvent.click(header);
+  }
   return { controller, onSelect, onModeChange, onDismissOnboarding };
 }
 
@@ -70,8 +74,10 @@ test('color hex input records a color edit', () => {
   expect(record.newValue).toBe('#ff0000');
 });
 
-test('collapsed sections expand on demand', () => {
+test('a section can be collapsed and reopened', () => {
   const { controller } = setup();
+  // setup() opens everything; collapsing and reopening is the behaviour under test.
+  fireEvent.click(screen.getByRole('button', { name: /Spacing/ }));
   expect(screen.queryByLabelText('padding top')).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: /Spacing/ }));
   fireEvent.change(screen.getByLabelText('padding top'), { target: { value: '24' } });

@@ -24,6 +24,7 @@ import { SelectionCard } from './SelectionCard';
 import { AppearanceSection } from './sections/AppearanceSection';
 import { BackgroundSection } from './sections/BackgroundSection';
 import { ImageSection } from './sections/ImageSection';
+import { isLink, LinkSection } from './sections/LinkSection';
 import { LayoutSection } from './sections/LayoutSection';
 import { SizeSection } from './sections/SizeSection';
 import { SpacingSection } from './sections/SpacingSection';
@@ -75,6 +76,7 @@ const SECTION_DEFS: Array<{
   { id: 'typography', render: (el, c) => <TypographySection element={el} controller={c} /> },
   { id: 'background', render: (el, c) => <BackgroundSection element={el} controller={c} /> },
   { id: 'image', applies: (el) => el.tagName === 'IMG', render: (el, c) => <ImageSection element={el} controller={c} /> },
+  { id: 'link', applies: isLink, render: (el, c) => <LinkSection element={el} controller={c} /> },
   { id: 'appearance', render: (el, c) => <AppearanceSection element={el} controller={c} /> },
   { id: 'size', render: (el, c) => <SizeSection element={el} controller={c} /> },
   { id: 'layout', render: (el, c) => <LayoutSection element={el} controller={c} /> },
@@ -84,10 +86,9 @@ const SECTION_DEFS: Array<{
 export function Panel(props: PanelProps) {
   const { controller, mode, onModeChange, onClose } = props;
   const [view, setView] = useState<View>('edit');
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    text: true,
-    typography: true,
-  });
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
+    DEFAULT_PREFS.openSections,
+  );
   useEffect(() => {
     if (props.selected?.tagName === 'IMG') {
       setOpenSections((open) => (open.image ? open : { ...open, image: true }));
@@ -96,6 +97,7 @@ export function Panel(props: PanelProps) {
   const records = useSyncExternalStore(controller.subscribe, controller.getPage).records;
   const count = records.length;
   const stale = records.filter((r) => controller.getStatus(r.id) === 'not-found').length;
+  const saveState = controller.getSaveState();
   const canUndo = controller.canUndo();
   const canRedo = controller.canRedo();
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
@@ -112,7 +114,10 @@ export function Panel(props: PanelProps) {
   });
   const [prefs, setPrefs] = useState<PanelPrefs>(DEFAULT_PREFS);
   useEffect(() => {
-    void getPanelPrefs().then(setPrefs);
+    void getPanelPrefs().then((saved) => {
+      setPrefs(saved);
+      setOpenSections(saved.openSections);
+    });
   }, []);
   const updatePrefs = (next: PanelPrefs) => {
     setPrefs(next);
@@ -264,7 +269,11 @@ export function Panel(props: PanelProps) {
             onSelect={props.onSelect}
             openSections={openSections}
             onToggleSection={(title) =>
-              setOpenSections((open) => ({ ...open, [title]: !open[title] }))
+              setOpenSections((open) => {
+                const next = { ...open, [title]: !open[title] };
+                savePanelPrefs({ ...prefs, openSections: next });
+                return next;
+              })
             }
           />
           <button
@@ -274,6 +283,15 @@ export function Panel(props: PanelProps) {
             onClick={() => setView('changes')}
           >
             {t('footer_changes', [count])}
+            {count > 0 && (
+              <span className="pgve-saved" data-testid="save-state">
+                {saveState.state === 'failed'
+                  ? t('toast_save_failed')
+                  : saveState.state === 'saving'
+                    ? t('saving')
+                    : t('saved_just_now')}
+              </span>
+            )}
           </button>
         </>
       )}

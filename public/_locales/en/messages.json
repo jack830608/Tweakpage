@@ -479,5 +479,35 @@
   },
   "share_download": {
     "message": "Download JSON"
+  },
+  "pop_unsupported": {
+    "message": "This page belongs to the browser, so no extension can edit it. Try any http:// or https:// page."
+  },
+  "pop_needs_reload": {
+    "message": "This page was open before Tweakpage was installed or updated. Reload it and try again."
+  },
+  "onboarding_step4": {
+    "message": "Nothing here touches the real site — edits live in your browser, apply only for you, and Revert all puts everything back."
+  },
+  "saved_just_now": {
+    "message": "Saved"
+  },
+  "saving": {
+    "message": "Saving…"
+  },
+  "sec_link": {
+    "message": "Link"
+  },
+  "aria_href": {
+    "message": "Link URL"
+  },
+  "aria_alt": {
+    "message": "Alt text"
+  },
+  "alt_placeholder": {
+    "message": "What the image shows"
+  },
+  "err_href": {
+    "message": "Try https://…, /a-path, #a-section, or mailto:"
   }
 }

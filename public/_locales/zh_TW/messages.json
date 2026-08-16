@@ -479,5 +479,35 @@
   },
   "share_download": {
     "message": "下載 JSON"
+  },
+  "pop_unsupported": {
+    "message": "這是瀏覽器自己的頁面,任何擴充功能都無法編輯。請在 http:// 或 https:// 的網頁上使用。"
+  },
+  "pop_needs_reload": {
+    "message": "這個分頁在 Tweakpage 安裝或更新前就開著了,請重新整理後再試一次。"
+  },
+  "onboarding_step4": {
+    "message": "這裡的操作不會動到真正的網站 — 改動只存在你的瀏覽器、只有你看得到,按「全部還原」就會回復原狀。"
+  },
+  "saved_just_now": {
+    "message": "已儲存"
+  },
+  "saving": {
+    "message": "儲存中…"
+  },
+  "sec_link": {
+    "message": "連結"
+  },
+  "aria_href": {
+    "message": "連結網址"
+  },
+  "aria_alt": {
+    "message": "替代文字"
+  },
+  "alt_placeholder": {
+    "message": "這張圖片在表達什麼"
+  },
+  "err_href": {
+    "message": "可填 https://…、/路徑、#區塊 或 mailto:"
   }
 }

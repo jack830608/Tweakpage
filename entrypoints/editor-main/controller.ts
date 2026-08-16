@@ -1,4 +1,6 @@
 import { applyAll, revertAll, type ApplyStatus } from '../../lib/edits/apply';
+
+export type SaveState = 'idle' | 'saving' | 'saved' | 'failed';
 import { findRecord, upsertRecord } from '../../lib/edits/coalesce';
 import { mergeRecords } from '../../lib/edits/import';
 import { revertDomEdit } from '../../lib/edits/dom';
@@ -43,6 +45,12 @@ export class EditsController {
     findRecord(this.page.records, this.genFor(el).selector, property);
 
   isPreviewingOriginal = (): boolean => this.previewing;
+
+  /** What the last write to storage did, so the panel can say the work is safe. */
+  private saveState: SaveState = 'idle';
+  private savedAt = '';
+
+  getSaveState = (): { state: SaveState; at: string } => ({ state: this.saveState, at: this.savedAt });
 
   canUndo = (): boolean => this.undoStack.length > 0;
 

@@ -84,7 +84,14 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
         <p className="pgve-empty">{t('no_changes')}</p>
       ) : (
         <ul>
-          {visible.map((record) => (
+          {groupByElement(visible).map(([label, group]) => (
+            <li key={label} className="pgve-change-group">
+              <div className="pgve-change-group-head">
+                <span className="pgve-change-group-label">{label}</span>
+                <span className="pgve-change-group-count">{group.length}</span>
+              </div>
+              <ul>
+          {group.map((record) => (
             <li
               key={record.id}
               className={record.enabled ? 'pgve-change' : 'pgve-change pgve-change-off'}
@@ -108,7 +115,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
                     onSelectRecord(el);
                   }}
                 >
-                  {record.elementLabel}
+                  {labelFor(record)}
                 </button>
                 <input
                   type="checkbox"
@@ -120,7 +127,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
                 />
               </div>
               <div className="pgve-change-diff">
-                {labelFor(record)}: <s>{shorten(record.oldValue)}</s> → <b>{shorten(record.newValue)}</b>
+                <s>{shorten(record.oldValue)}</s> → <b>{shorten(record.newValue)}</b>
               </div>
               {controller.getStatus(record.id) === 'not-found' && (
                 <div className="pgve-change-warning">{t('couldnt_apply')}</div>
@@ -137,10 +144,22 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
               </button>
             </li>
           ))}
+              </ul>
+            </li>
+          ))}
         </ul>
       )}
     </div>
   );
+}
+
+/** Several edits to one element belong together — a flat list buried that. */
+function groupByElement(records: EditRecord[]): Array<[string, EditRecord[]]> {
+  const groups = new Map<string, EditRecord[]>();
+  for (const record of records) {
+    groups.set(record.elementLabel, [...(groups.get(record.elementLabel) ?? []), record]);
+  }
+  return [...groups];
 }
 
 function labelFor(record: EditRecord): string {
@@ -150,5 +169,5 @@ function labelFor(record: EditRecord): string {
 }
 
 function shorten(value: string): string {
-  return value.length > 40 ? `${value.slice(0, 40)}…` : value;
+  return value.length > 28 ? `${value.slice(0, 28)}…` : value;
 }
