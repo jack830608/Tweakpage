@@ -1,6 +1,7 @@
 import type { EditsController } from '../../controller';
 import { useFieldDraft } from '../../hooks/useFieldDraft';
 import { Field } from '../Field';
+import { clearResponsiveSources } from '../../responsive-images';
 import { ImagePicker } from '../ImagePicker';
 import { t } from '../../../../lib/i18n';
 
@@ -12,6 +13,12 @@ interface SectionProps {
 export function ImageSection({ element, controller }: SectionProps) {
   const src = useFieldDraft(controller, element, 'src', element.getAttribute('src') ?? '');
   if (element.tagName !== 'IMG') return null;
+
+  const applySrc = (url: string) => {
+    if (url.trim() === '') return;
+    controller.recordEdit(element, 'attr', 'src', src.original, url);
+    clearResponsiveSources(element, controller);
+  };
   return (
     <section className="pgve-section">
       <Field name="src" property="src" controller={controller} element={element}>
@@ -28,13 +35,13 @@ export function ImageSection({ element, controller }: SectionProps) {
         <button
           type="button"
           aria-label={t('aria_apply_image')} data-testid="apply-image"
-          onClick={() => controller.recordEdit(element, 'attr', 'src', src.original, src.value)}
+          onClick={() => applySrc(src.value)}
         >
           {t('apply')}
         </button>
         <ImagePicker
           ariaLabel="Choose image file"
-          onPicked={(dataUrl) => controller.recordEdit(element, 'attr', 'src', src.original, dataUrl)}
+          onPicked={applySrc}
         />
         </div>
       </div>

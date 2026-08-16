@@ -142,3 +142,18 @@ test('reports the edit count for the badge whenever edits change', async () => {
   await engine.navigate('https://a.com/nothing');
   expect(counts.at(-1)).toBe(0);
 });
+
+test('re-applies an attribute the page rewrites behind us', async () => {
+  document.body.innerHTML = '<img class="hero" src="/old.jpg">';
+  await seed('https://a.com/page', [
+    record({ type: 'attr', selector: '.hero', property: 'src', oldValue: '/old.jpg', newValue: '/new.jpg' }),
+  ]);
+  const engine = new ApplierEngine(document);
+  await engine.start('https://a.com/page');
+  expect(document.querySelector('.hero')!.getAttribute('src')).toBe('/new.jpg');
+
+  // Lazy loaders and gallery scripts do exactly this after we have applied.
+  document.querySelector('.hero')!.setAttribute('src', '/old.jpg');
+  await wait(120);
+  expect(document.querySelector('.hero')!.getAttribute('src')).toBe('/new.jpg');
+});

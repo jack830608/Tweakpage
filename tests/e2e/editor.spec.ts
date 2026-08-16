@@ -146,6 +146,32 @@ test('clicking a change scrolls the page back to its element', async ({ context 
   await expect(page.locator('.pgve-outline--selected')).toBeVisible();
 });
 
+test('swapping a responsive image actually changes what the browser shows', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  // Selecting an image opens its section already; clicking it here would close it.
+  await page.locator('#responsive').click();
+
+  const green =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='40'%3E%3Crect width='60' height='40' fill='%2300ff00'/%3E%3C/svg%3E";
+  const before = await page.locator('#responsive').evaluate((img: HTMLImageElement) => img.currentSrc);
+  expect(before).toContain('ff0000');
+
+  await page.locator('[data-testid="image-url"]').fill(green);
+  await page.locator('[data-testid="apply-image"]').click();
+
+  // src alone is invisible while srcset holds candidates — this is the whole point.
+  await expect
+    .poll(() => page.locator('#responsive').evaluate((img: HTMLImageElement) => img.currentSrc))
+    .toContain('00ff00');
+
+  await page.reload();
+  await expect
+    .poll(() => page.locator('#responsive').evaluate((img: HTMLImageElement) => img.currentSrc))
+    .toContain('00ff00');
+});
+
 test('header and change count stay reachable when the panel scrolls', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
