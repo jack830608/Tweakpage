@@ -19,7 +19,7 @@ import { VariantsRow } from './VariantsRow';
 import { ChangesTab } from './ChangesTab';
 import { CollapsibleSection } from './CollapsibleSection';
 import { ModeSwitch } from './ModeSwitch';
-import { GripIcon, HandIcon, MinusIcon, PencilIcon, RedoIcon, UndoIcon } from './icons';
+import { CloseIcon, GripIcon, HandIcon, MinusIcon, PencilIcon, RedoIcon, UndoIcon } from './icons';
 import { OnboardingCard } from './OnboardingCard';
 import { SelectionCard } from './SelectionCard';
 import { AppearanceSection } from './sections/AppearanceSection';
@@ -127,6 +127,16 @@ export function Panel(props: PanelProps) {
       setOpenSections(saved.openSections);
     });
   }, []);
+  // The attribute goes on the shadow host: tokens are declared there, so an explicit
+  // choice has to be able to beat the media query on the same element, in both directions.
+  useEffect(() => {
+    const root = panelRef.current?.getRootNode();
+    const hostEl = root instanceof ShadowRoot ? (root.host as HTMLElement) : null;
+    if (!hostEl) return;
+    if (prefs.theme === 'system') hostEl.removeAttribute('data-theme');
+    else hostEl.setAttribute('data-theme', prefs.theme);
+  }, [prefs.theme]);
+
   const updatePrefs = (next: PanelPrefs) => {
     setPrefs(next);
     savePanelPrefs(next);
@@ -151,12 +161,7 @@ export function Panel(props: PanelProps) {
   };
 
   return (
-    <aside
-      className="pgve-panel"
-      ref={panelRef}
-      data-theme={prefs.theme === 'system' ? undefined : prefs.theme}
-      style={{ ...style, width: prefs.width }}
-    >
+    <aside className="pgve-panel" ref={panelRef} style={{ ...style, width: prefs.width }}>
       <span
         className="pgve-resize"
         role="separator"
@@ -167,14 +172,12 @@ export function Panel(props: PanelProps) {
       <header className="pgve-header" {...handleProps}>
         <strong><GripIcon /> Tweakpage</strong>
         <span className="pgve-header-buttons">
-          <span className="pgve-viewport" data-testid="viewport-width" title={t('tip_viewport')}>
-            {viewport}px
-          </span>
           <button
             type="button"
             onClick={() => controller.undo()}
             disabled={!canUndo}
-            aria-label={t('aria_undo')} data-testid="undo"
+            aria-label={t('aria_undo')}
+            data-testid="undo" data-testid="undo"
             title={t('tip_undo')}
           >
             <UndoIcon />
@@ -183,7 +186,8 @@ export function Panel(props: PanelProps) {
             type="button"
             onClick={() => controller.redo()}
             disabled={!canRedo}
-            aria-label={t('aria_redo')} data-testid="redo"
+            aria-label={t('aria_redo')}
+            data-testid="redo" data-testid="redo"
             title={t('tip_redo')}
           >
             <RedoIcon />
@@ -201,7 +205,9 @@ export function Panel(props: PanelProps) {
           </select>
           <span className="pgve-header-divider" aria-hidden="true" />
           <button type="button" onClick={props.onMinimize} aria-label={t('aria_minimize')} data-testid="minimize" title={t('tip_minimize')}><MinusIcon /></button>
-          <button type="button" onClick={onClose} aria-label={t('aria_close')} data-testid="close" title={t('tip_close')}>✕</button>
+          <button type="button" onClick={onClose} aria-label={t('aria_close')} data-testid="close" title={t('tip_close')}>
+            <CloseIcon />
+          </button>
         </span>
       </header>
       {props.stale ? (
@@ -235,6 +241,9 @@ export function Panel(props: PanelProps) {
             onChange={(e) => props.onToggleMarks?.(e.target.checked)}
           />
           {t('show_marks')}
+          <span className="pgve-viewport" data-testid="viewport-width" title={t('tip_viewport')}>
+            {viewport}px
+          </span>
         </label>
       )}
       <VariantsRow controller={controller} />

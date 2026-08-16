@@ -366,6 +366,54 @@ test('the panel fades at rest and comes back solid once you reach for it', async
   expect(await opacityOf('.pgve-panel'), 'reaching for the panel should make it solid').toBe(1);
 });
 
+test('choosing a theme beats the system setting in both directions', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  const background = () =>
+    page.evaluate(
+      () =>
+        getComputedStyle(
+          document.getElementById('tweakpage-host')!.shadowRoot!.querySelector('.pgve-panel')!,
+        ).backgroundColor,
+    );
+
+  // The failing half was light-on-a-dark-system: the tokens lived on two different
+  // elements, so a chosen light theme quietly inherited the dark ones.
+  for (const scheme of ['dark', 'light'] as const) {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.locator('[data-testid="panel-theme"]').selectOption('light');
+    await page.waitForTimeout(200);
+    expect(await background(), `light chosen on a ${scheme} system`).toBe('rgb(255, 255, 255)');
+
+    await page.locator('[data-testid="panel-theme"]').selectOption('dark');
+    await page.waitForTimeout(200);
+    expect(await background(), `dark chosen on a ${scheme} system`).toBe('rgb(33, 33, 38)');
+
+    await page.locator('[data-testid="panel-theme"]').selectOption('system');
+    await page.waitForTimeout(200);
+    expect(await background(), `following a ${scheme} system`).toBe(
+      scheme === 'dark' ? 'rgb(33, 33, 38)' : 'rgb(255, 255, 255)',
+    );
+  }
+});
+
+test('the header controls stay inside the panel', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+
+  const panel = (await page.locator('#tweakpage-host aside').boundingBox())!;
+  for (const testid of ['close', 'minimize', 'panel-theme', 'undo', 'redo']) {
+    const box = (await page.locator(`[data-testid="${testid}"]`).boundingBox())!;
+    expect(box.x, `${testid} starts inside the panel`).toBeGreaterThanOrEqual(panel.x);
+    expect(box.x + box.width, `${testid} ends inside the panel`).toBeLessThanOrEqual(
+      panel.x + panel.width,
+    );
+  }
+});
+
 test('the minimized pill follows the colour scheme', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
