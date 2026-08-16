@@ -90,8 +90,8 @@ const FIELDS = [
   { section: 'appearance', testid: 'opacity-value', kind: 'fill', value: '60', property: 'opacity' },
   { section: 'appearance', testid: 'border-width', kind: 'fill', value: '2', property: 'borderWidth' },
   { section: 'appearance', testid: 'borderColor-hex', kind: 'fill', value: '#0000ff', property: 'borderColor' },
-  { section: 'size', testid: 'width', kind: 'fill', value: '260', property: 'width' },
-  { section: 'size', testid: 'height', kind: 'fill', value: '70', property: 'height' },
+  { section: 'size', testid: 'width', kind: 'fill', value: '260', shown: '260px', property: 'width' },
+  { section: 'size', testid: 'height', kind: 'fill', value: '70', shown: '70px', property: 'height' },
   { section: 'spacing', testid: 'padding-top', kind: 'fill', value: '21', property: 'paddingTop' },
   { section: 'spacing', testid: 'padding-right', kind: 'fill', value: '22', property: 'paddingRight' },
   { section: 'spacing', testid: 'padding-bottom', kind: 'fill', value: '23', property: 'paddingBottom' },
@@ -111,14 +111,16 @@ test('every field records what was typed and resets back to the original', async
     await page.locator(`[data-section="${section}"]`).click();
   }
 
-  for (const { testid, kind, value, property, section } of FIELDS) {
+  for (const { testid, kind, value, shown, property, section } of FIELDS) {
     const field = page.locator(`[data-testid="${testid}"]`);
     const before = await field.inputValue();
 
     if (kind === 'select') await field.selectOption(value);
     else await field.fill(value);
 
-    await expect(field, `${testid} should show what was typed`).toHaveValue(value);
+    // Fields that take several units keep the unit in the value, so what is shown can
+    // differ from what was typed — the row says which.
+    await expect(field, `${testid} should show what was typed`).toHaveValue(shown ?? value);
 
     const reset = section === 'spacing' ? 'reset-spacing' : `reset-${property}`;
     await page.locator(`[data-testid="${reset}"]`).click();

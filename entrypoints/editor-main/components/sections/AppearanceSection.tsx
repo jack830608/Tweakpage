@@ -77,6 +77,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         controller={controller}
         element={element}
         unit="px"
+        value={radius.value}
         onScrub={(steps) =>
           setRadius(String(scrubbedValue(controller, element, 'borderRadius', radius.original, steps, { min: 0 })))
         }
@@ -105,6 +106,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         controller={controller}
         element={element}
         unit="%"
+        value={opacity.value}
         onScrub={(steps) =>
           setOpacity(
             String(
@@ -142,6 +144,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         element={element}
         companions={['borderStyle']}
         unit="px"
+        value={borderWidth.value}
         onScrub={(steps) =>
           setBorderWidth(
             String(scrubbedValue(controller, element, 'borderWidth', borderWidth.original, steps, { min: 0 })),

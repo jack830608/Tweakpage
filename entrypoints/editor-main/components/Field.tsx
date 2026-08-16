@@ -1,5 +1,6 @@
 import { useSyncExternalStore, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import type { EditsController } from '../controller';
+import { isBareNumber } from '../../../lib/css-values';
 import { ResetButton } from './ResetButton';
 import { t } from '../../../lib/i18n';
 
@@ -14,9 +15,17 @@ interface FieldProps {
   stacked?: boolean;
   /** Shown under the row when the typed value was refused. */
   error?: string | null;
-  /** The unit a bare number means here, printed inside the control. */
+  /**
+   * What the control currently shows. Field needs it because two rules depend on the
+   * shape of the value rather than on which field it is:
+   *   a bare number gets its unit stated, and can be dragged;
+   *   a value carrying its own unit or keyword (24px, auto, 50%) gets neither.
+   * Keeping that decision here is what stops fields from drifting apart.
+   */
+  value?: string;
+  /** The unit a bare number means here. Omitted when the property has none, like line-height. */
   unit?: string;
-  /** Makes the property name a scrub handle; called with whole steps dragged. */
+  /** Called with whole steps dragged, when the value is a bare number. */
   onScrub?: (steps: number) => void;
   children: ReactNode;
 }
@@ -37,12 +46,16 @@ export function Field({
   companions,
   stacked,
   error,
+  value,
   unit,
   onScrub,
   children,
 }: FieldProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
   const modified = controller.recordFor(element, property) !== undefined;
+  const bare = value !== undefined && isBareNumber(value);
+  const shownUnit = bare ? unit : undefined;
+  const scrub = bare ? onScrub : undefined;
   return (
     <div className={stacked ? 'pgve-field pgve-field--stacked' : 'pgve-field'}>
       <span className="pgve-field-name">
@@ -56,20 +69,20 @@ export function Field({
           className={[
             'pgve-prop',
             modified ? 'pgve-prop--modified' : '',
-            onScrub ? 'pgve-prop--scrub' : '',
+            scrub ? 'pgve-prop--scrub' : '',
           ]
             .filter(Boolean)
             .join(' ')}
-          title={onScrub ? t('tip_scrub', [name]) : name}
-          onPointerDown={onScrub ? (e) => startScrub(e, onScrub) : undefined}
+          title={scrub ? t('tip_scrub', [name]) : name}
+          onPointerDown={scrub ? (e) => startScrub(e, scrub) : undefined}
         >
           {name}
         </span>
       </span>
-      {unit ? (
+      {shownUnit ? (
         <span className="pgve-unit-wrap">
           {children}
-          <span className="pgve-unit" aria-hidden="true">{unit}</span>
+          <span className="pgve-unit" aria-hidden="true">{shownUnit}</span>
         </span>
       ) : (
         children

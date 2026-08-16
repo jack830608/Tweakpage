@@ -1,4 +1,4 @@
-import { isBareNumber, pxToDisplay, rgbToHex } from '../../../../lib/css-values';
+import { pxToDisplay, rgbToHex } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
@@ -79,6 +79,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         controller={controller}
         element={element}
         unit="px"
+        value={fontSize.value}
         error={fontSize.error}
         onScrub={(steps) => {
           const next = scrubbedValue(controller, element, 'fontSize', fontSize.original, steps, {
@@ -126,7 +127,14 @@ export function TypographySection({ element, controller }: SectionProps) {
         controller={controller}
         element={element}
         error={lineHeight.error}
-        unit={isBareNumber(lineHeight.value) ? '×' : undefined}
+        value={lineHeight.value}
+        onScrub={(steps) => {
+          const next = scrubbedValue(controller, element, 'lineHeight', lineHeight.original, steps, {
+            increment: 0.1,
+            min: 0,
+          });
+          controller.recordEdit(element, 'style', 'lineHeight', lineHeight.original, String(next));
+        }}
       >
         <input
           type="text"
@@ -167,6 +175,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         controller={controller}
         element={element}
         unit="px"
+        value={letterSpacing.value}
         error={letterSpacing.error}
         onScrub={(steps) => {
           const next = scrubbedValue(
