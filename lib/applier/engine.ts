@@ -69,6 +69,10 @@ export class ApplierEngine {
       childList: true,
       subtree: true,
       characterData: true,
+      // Lazy loaders and gallery scripts rewrite these after we apply. Without watching
+      // them an image edit was applied once and then quietly undone by the page.
+      attributes: true,
+      attributeFilter: ['src', 'srcset', 'sizes'],
     });
   }
 
