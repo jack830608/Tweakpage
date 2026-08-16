@@ -12,6 +12,10 @@ import { EditsController } from '../../controller';
  * holds and states nothing. Whether the name can be dragged follows from the same
  * question: a bare number can be scrubbed, a value carrying its own unit cannot.
  *
+ * A slider is separate and rarer: it needs a real range to point at. Opacity has one,
+ * 0 to 100. Corner radius does not — its slider was capped at an invented 64, so a card
+ * with a 200px radius sat pinned at the end of a track that was lying about the value.
+ *
  * The behaviour used to be decided field by field, which is how line-height came to show
  * "24px" while width showed "1104" with a separate px chip — the same kind of field
  * behaving two different ways. This table is the answer to that: adding a field means
@@ -29,6 +33,8 @@ interface FieldRule {
   unit?: string;
   /** A value that carries its own unit or keyword, for the free-form fields. */
   unitful?: string;
+  /** Only for values with a real range — a slider needs somewhere to point. */
+  slider?: true;
 }
 
 const FIELDS: FieldRule[] = [
@@ -40,7 +46,7 @@ const FIELDS: FieldRule[] = [
   { section: 'typography', testid: 'text-align', kind: 'choice' },
   { section: 'typography', testid: 'text-transform', kind: 'choice' },
   { section: 'appearance', testid: 'corner-radius-value', kind: 'fixed-unit', unit: 'px' },
-  { section: 'appearance', testid: 'opacity-value', kind: 'fixed-unit', unit: '%' },
+  { section: 'appearance', testid: 'opacity-value', kind: 'fixed-unit', unit: '%', slider: true },
   { section: 'appearance', testid: 'border-width', kind: 'fixed-unit', unit: 'px' },
   { section: 'size', testid: 'width', kind: 'free-form', unitful: 'auto' },
   { section: 'size', testid: 'height', kind: 'free-form', unitful: '50%' },
@@ -98,6 +104,7 @@ function row(testid: string): Element {
 }
 
 const unitOf = (testid: string) => row(testid).querySelector('.pgve-unit')?.textContent ?? null;
+const sliderIn = (testid: string) => row(testid).querySelector('input[type="range"]');
 const scrubHandle = (testid: string) => row(testid).querySelector('.pgve-prop--scrub');
 
 describe.each(FIELDS)('$testid ($kind)', (field) => {
@@ -123,6 +130,14 @@ describe.each(FIELDS)('$testid ($kind)', (field) => {
     } else {
       expect(draggable).toBe(bare);
     }
+  });
+
+  test('has a slider only if its value has a real range', () => {
+    setup();
+    const hasSlider = sliderIn(field.testid) !== null;
+    expect(hasSlider, field.slider ? 'a bounded value should offer one' : 'nothing to point at').toBe(
+      field.slider === true,
+    );
   });
 
   test('is reachable and labelled', () => {
