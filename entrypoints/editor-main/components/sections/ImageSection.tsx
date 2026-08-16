@@ -14,6 +14,7 @@ const IMAGE_URL = /^(https?:\/\/|data:image\/|\/)/;
 
 export function ImageSection({ element, controller }: SectionProps) {
   const src = useFieldDraft(controller, element, 'src', element.getAttribute('src') ?? '');
+  const alt = useFieldDraft(controller, element, 'alt', element.getAttribute('alt') ?? '');
   if (element.tagName !== 'IMG') return null;
 
   const applySrc = (url: string) => {
@@ -51,6 +52,21 @@ export function ImageSection({ element, controller }: SectionProps) {
             if (e.key !== 'Enter') return;
             e.preventDefault();
             commit();
+          }}
+        />
+      </Field>
+      <Field name="alt" property="alt" controller={controller} element={element}>
+        <input
+          type="text"
+          aria-label={t('aria_alt')}
+          data-testid="alt"
+          placeholder={t('alt_placeholder')}
+          value={alt.value}
+          onChange={(e) => alt.setDraft(e.target.value)}
+          onBlur={() => {
+            if (alt.value !== element.getAttribute('alt')) {
+              controller.recordEdit(element, 'attr', 'alt', alt.original, alt.value);
+            }
           }}
         />
       </Field>

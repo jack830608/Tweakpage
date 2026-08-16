@@ -9,6 +9,7 @@ export function OnboardingCard({ onDismiss }: { onDismiss: () => void }) {
         <li>{t('onboarding_step2')}</li>
         <li>{t('onboarding_step3')}</li>
       </ol>
+      <p className="pgve-onboarding-safety">{t('onboarding_step4')}</p>
       <button type="button" onClick={onDismiss}>{t('got_it')}</button>
     </div>
   );

@@ -25,9 +25,16 @@ export type ThemeChoice = 'system' | 'light' | 'dark';
 export interface PanelPrefs {
   width: number;
   theme: ThemeChoice;
+  /** Which sections are open. Remembered so the panel reopens the way it was left. */
+  openSections: Record<string, boolean>;
 }
 
-export const DEFAULT_PREFS: PanelPrefs = { width: 320, theme: 'system' };
+export const DEFAULT_PREFS: PanelPrefs = {
+  width: 320,
+  theme: 'system',
+  // Everything open at once is a wall of fields; the rest is one click away.
+  openSections: { text: true },
+};
 export const MIN_WIDTH = 280;
 export const MAX_WIDTH = 560;
 
@@ -38,6 +45,10 @@ export async function getPanelPrefs(): Promise<PanelPrefs> {
     return {
       width: clampWidth(typeof value?.width === 'number' ? value.width : DEFAULT_PREFS.width),
       theme: value?.theme === 'light' || value?.theme === 'dark' ? value.theme : 'system',
+      openSections:
+        value?.openSections && typeof value.openSections === 'object'
+          ? value.openSections
+          : DEFAULT_PREFS.openSections,
     };
   } catch {
     return DEFAULT_PREFS;

@@ -41,3 +41,4 @@ body { width: 320px; background: var(--surface); color: var(--ink); font: 400 12
 .pop-list button:hover { color: var(--ink); }
 .pop-list button.is-armed { border-color: #b45309; color: #b45309; font-weight: 600; }
 @media (prefers-color-scheme: dark) { .pop-list button.is-armed { border-color: #fbbf24; color: #fbbf24; } }
+.pop-blocked { padding: 8px 10px; border-radius: 8px; background: var(--sunken); color: var(--ink-2); font-size: 12px; line-height: 1.5; }

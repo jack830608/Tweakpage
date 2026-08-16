@@ -19,9 +19,12 @@ function keyForUrl(url: string | undefined): string | null {
   }
 }
 
+type Blocked = 'unsupported-page' | 'needs-reload' | null;
+
 export function PopupApp() {
   const [entries, setEntries] = useState<PageEntry[]>([]);
   const [currentKey, setCurrentKey] = useState<string | null>(null);
+  const [blocked, setBlocked] = useState<Blocked>(null);
 
   const load = async () => {
     try {
@@ -46,12 +49,19 @@ export function PopupApp() {
   }, []);
 
   const onEditThisPage = async () => {
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    // chrome://, the Web Store and other browser-owned pages refuse content scripts.
+    if (!tab?.url || !/^https?:/.test(tab.url)) {
+      setBlocked('unsupported-page');
+      return;
+    }
     try {
-      const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-      if (tab?.id != null) await browser.tabs.sendMessage(tab.id, { type: 'pg:toggle' });
+      if (tab.id != null) await browser.tabs.sendMessage(tab.id, { type: 'pg:toggle' });
       window.close();
     } catch {
-      // Pages without the content script (chrome://, web store) can't be edited.
+      // The page was open before the extension was installed or updated, so nothing is
+      // listening in it yet.
+      setBlocked('needs-reload');
     }
   };
 
@@ -87,6 +97,11 @@ export function PopupApp() {
       <button type="button" className="pop-primary" onClick={() => void onEditThisPage()}>
         {t('pop_edit_this_page')}
       </button>
+      {blocked && (
+        <p className="pop-blocked" role="alert" data-testid="blocked-reason">
+          {t(blocked === 'unsupported-page' ? 'pop_unsupported' : 'pop_needs_reload')}
+        </p>
+      )}
       <div className="pop-section-title">{t('pop_pages')}</div>
       {entries.length === 0 ? (
         <p className="pop-empty">{t('pop_empty')}</p>

@@ -2,6 +2,12 @@ import fs from 'node:fs';
 import { expect } from '@playwright/test';
 import { activateEditor, test } from './fixtures';
 
+/** Opens a section if it is closed. Only Text is open by default. */
+async function openSection(page: import('@playwright/test').Page, id: string): Promise<void> {
+  const header = page.locator(`[data-section="${id}"]`);
+  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+}
+
 test('edit → persist → replay → export', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
@@ -13,7 +19,8 @@ test('edit → persist → replay → export', async ({ context }) => {
   await page.locator('[data-testid="text"]').fill('New headline');
   await expect(page.locator('h1')).toHaveText('New headline');
 
-  await page.locator('input[aria-label$="hex"]').first().fill('#ff0000');
+  await openSection(page, 'typography');
+  await page.locator('[data-testid="color-hex"]').fill('#ff0000');
   await expect(page.locator('h1')).toHaveCSS('color', 'rgb(255, 0, 0)');
 
   await page.reload();
@@ -56,6 +63,7 @@ test('fields show the edited value and snap back on reset', async ({ context }) 
 
   // Attribute selectors, not getByLabel: the reset button sits inside the same
   // <label>, so a label lookup matches two elements once an edit exists.
+  await openSection(page, 'typography');
   const lineHeight = page.locator('[data-testid="line-height"]');
   const originalCss = await page.locator('h1').evaluate((el) => getComputedStyle(el).lineHeight);
   const originalInput = await lineHeight.inputValue();
@@ -117,8 +125,8 @@ test('every field records what was typed and resets back to the original', async
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
-  for (const section of ['background', 'appearance', 'size', 'spacing']) {
-    await page.locator(`[data-section="${section}"]`).click();
+  for (const section of new Set(FIELDS.map((f) => f.section))) {
+    await openSection(page, section);
   }
 
   for (const { testid, kind, value, shown, property, section } of FIELDS) {
@@ -192,8 +200,7 @@ test('every control in the panel is labelled, addressable and in a field row', a
   await activateEditor(context);
   await page.locator('h1').click();
   for (const section of ['text', 'typography', 'background', 'appearance', 'size', 'layout', 'spacing']) {
-    const header = page.locator(`[data-section="${section}"]`);
-    if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+    await openSection(page, section);
   }
 
   const audit = await page.evaluate(() => {
@@ -222,8 +229,7 @@ test('no field wears a native decoration over its unit', async ({ context }) => 
   await activateEditor(context);
   await page.locator('h1').click();
   for (const section of ['size', 'appearance']) {
-    const header = page.locator(`[data-section="${section}"]`);
-    if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+    await openSection(page, section);
   }
 
   // Chrome's spinner and datalist arrow are drawn in the same corner as the unit chip, and
@@ -266,8 +272,8 @@ test('header and change count stay reachable when the panel scrolls', async ({ c
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
-  for (const section of ['background', 'appearance', 'size', 'spacing']) {
-    await page.locator(`[data-section="${section}"]`).click();
+  for (const section of new Set(FIELDS.map((f) => f.section))) {
+    await openSection(page, section);
   }
 
   const panel = page.locator('#tweakpage-host aside');
@@ -371,7 +377,7 @@ test('spacing box-model editor fits inside the panel', async ({ context }) => {
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
-  await page.locator('[data-section="spacing"]').click();
+  await openSection(page, 'spacing');
 
   const inputBox = (await page.locator('[data-testid="padding-top"]').boundingBox())!;
   expect(inputBox.width).toBeLessThan(60);

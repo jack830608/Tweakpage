@@ -23,7 +23,9 @@ test('lists records with label and diff, delete removes them', () => {
   const controller = new EditsController(null, document, NOW);
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
   render(<ChangesTab controller={controller} onToast={vi.fn()} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
+  // The element names the group; each row inside it names what changed.
   expect(screen.getByText(/h1#title/)).toBeTruthy();
+  expect(screen.getByRole('button', { name: /Select h1#title/ }).textContent).toBe('text');
   fireEvent.click(screen.getByRole('button', { name: /Delete/ }));
   expect(controller.getPage().records).toHaveLength(0);
   expect(document.getElementById('title')!.textContent).toBe('Original');
@@ -107,7 +109,7 @@ test('hovering a change highlights its element; clicking selects it; the switch 
   render(
     <ChangesTab controller={controller} onToast={vi.fn()} onHighlight={onHighlight} onSelectRecord={onSelectRecord} />,
   );
-  const item = screen.getByText(/h1#title/).closest('li')!;
+  const item = screen.getByRole('button', { name: /Select h1#title/ }).closest('li')!;
   fireEvent.mouseEnter(item);
   expect(onHighlight).toHaveBeenCalledWith(el);
   fireEvent.mouseLeave(item);
