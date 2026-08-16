@@ -91,9 +91,6 @@
   "sec_spacing": {
     "message": "間距"
   },
-  "apply": {
-    "message": "套用"
-  },
   "import_json": {
     "message": "匯入 JSON"
   },
@@ -278,12 +275,6 @@
   },
   "tip_close": {
     "message": "關閉編輯器"
-  },
-  "aria_apply_bg_image": {
-    "message": "套用背景圖片"
-  },
-  "aria_apply_image": {
-    "message": "套用圖片"
   },
   "aria_back_to_editing": {
     "message": "回到編輯"
@@ -479,5 +470,14 @@
   },
   "size_placeholder": {
     "message": "auto、50%、320"
+  },
+  "image_url_placeholder": {
+    "message": "https://… 或選擇檔案"
+  },
+  "aria_choose_image": {
+    "message": "選擇圖片檔案"
+  },
+  "aria_choose_bg_image": {
+    "message": "選擇背景圖片檔案"
   }
 }

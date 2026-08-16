@@ -91,9 +91,6 @@
   "sec_spacing": {
     "message": "Spacing"
   },
-  "apply": {
-    "message": "Apply"
-  },
   "import_json": {
     "message": "Import JSON"
   },
@@ -278,12 +275,6 @@
   },
   "tip_close": {
     "message": "Close the editor"
-  },
-  "aria_apply_bg_image": {
-    "message": "Apply background image"
-  },
-  "aria_apply_image": {
-    "message": "Apply image"
   },
   "aria_back_to_editing": {
     "message": "Back to editing"
@@ -479,5 +470,14 @@
   },
   "size_placeholder": {
     "message": "auto, 50%, 320"
+  },
+  "image_url_placeholder": {
+    "message": "https://… or pick a file"
+  },
+  "aria_choose_image": {
+    "message": "Choose image file"
+  },
+  "aria_choose_bg_image": {
+    "message": "Choose background image file"
   }
 }

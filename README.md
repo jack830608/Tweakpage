@@ -41,8 +41,8 @@ Every edit is recorded as a structured diff (selector + property + old → new),
    weight, line height, align, letter spacing, transform, color), Background (color + image),
    Image, Appearance (corner radius, opacity, border), Size, Layout (display, flex, gap,
    position, shadow), Spacing. Text with inline markup gets one box per run, so a heading
-   keeps the link or coloured span inside it. Images can come from a local file, and colours
-   keep their transparency. Fields are named after
+   keeps the link or coloured span inside it. Images can come from a local file or a URL (which applies
+   when you leave the field or press Enter), and colours keep their transparency. Fields are named after
    the CSS property they write, and an edited one shows a ↺ beside its name. Color fields have
    an eyedropper (pick from the page) and recent swatches. Use the breadcrumb to reach
    parents/children.
