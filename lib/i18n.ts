@@ -109,6 +109,7 @@ export const MESSAGES: Record<string, string> = {
   aria_text: "Text",
   aria_text_align: "Text align",
   aria_text_transform: "Text transform",
+  tip_scrub: "Drag to change $1",
   aria_undo: "Undo",
   aria_viewing_original: "Viewing original \u2014 back to edited",
   tip_undo: "Undo (\u2318Z)",

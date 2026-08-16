@@ -3,6 +3,7 @@ import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
 import { Field } from '../Field';
+import { scrubbedValue } from '../../scrub';
 import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
@@ -70,7 +71,16 @@ export function AppearanceSection({ element, controller }: SectionProps) {
 
   return (
     <section className="pgve-section">
-      <Field name="border-radius" property="borderRadius" controller={controller} element={element} unit="px">
+      <Field
+        name="border-radius"
+        property="borderRadius"
+        controller={controller}
+        element={element}
+        unit="px"
+        onScrub={(steps) =>
+          setRadius(String(scrubbedValue(controller, element, 'borderRadius', radius.original, steps, { min: 0 })))
+        }
+      >
         <span className="pgve-slider-pair">
           <input
             type="range"
@@ -89,7 +99,23 @@ export function AppearanceSection({ element, controller }: SectionProps) {
           />
         </span>
       </Field>
-      <Field name="opacity" property="opacity" controller={controller} element={element} unit="%">
+      <Field
+        name="opacity"
+        property="opacity"
+        controller={controller}
+        element={element}
+        unit="%"
+        onScrub={(steps) =>
+          setOpacity(
+            String(
+              scrubbedValue(controller, element, 'opacity', String(Number(opacity.original) * 100), steps, {
+                min: 0,
+                max: 100,
+              }),
+            ),
+          )
+        }
+      >
         <span className="pgve-slider-pair">
           <input
             type="range"
@@ -116,6 +142,11 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         element={element}
         companions={['borderStyle']}
         unit="px"
+        onScrub={(steps) =>
+          setBorderWidth(
+            String(scrubbedValue(controller, element, 'borderWidth', borderWidth.original, steps, { min: 0 })),
+          )
+        }
       >
         <input
           type="number"

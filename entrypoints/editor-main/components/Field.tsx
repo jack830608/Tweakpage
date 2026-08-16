@@ -1,6 +1,7 @@
-import { useSyncExternalStore, type ReactNode } from 'react';
+import { useSyncExternalStore, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import type { EditsController } from '../controller';
 import { ResetButton } from './ResetButton';
+import { t } from '../../../lib/i18n';
 
 interface FieldProps {
   /** The CSS property as the user sees it, e.g. "font-size". */
@@ -15,6 +16,8 @@ interface FieldProps {
   error?: string | null;
   /** The unit a bare number means here, printed inside the control. */
   unit?: string;
+  /** Makes the property name a scrub handle; called with whole steps dragged. */
+  onScrub?: (steps: number) => void;
   children: ReactNode;
 }
 
@@ -35,6 +38,7 @@ export function Field({
   stacked,
   error,
   unit,
+  onScrub,
   children,
 }: FieldProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
@@ -48,7 +52,17 @@ export function Field({
           property={property}
           companions={companions}
         />
-        <span className={modified ? 'pgve-prop pgve-prop--modified' : 'pgve-prop'} title={name}>
+        <span
+          className={[
+            'pgve-prop',
+            modified ? 'pgve-prop--modified' : '',
+            onScrub ? 'pgve-prop--scrub' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          title={onScrub ? t('tip_scrub', [name]) : name}
+          onPointerDown={onScrub ? (e) => startScrub(e, onScrub) : undefined}
+        >
           {name}
         </span>
       </span>
@@ -67,4 +81,31 @@ export function Field({
       )}
     </div>
   );
+}
+
+/** Pixels of travel per step — loose enough to be controllable on a trackpad. */
+const SCRUB_PIXELS = 4;
+
+/**
+ * Drag the property name to change its value.
+ *
+ * This replaces the native spinner, which only appeared on hover, sat on top of the
+ * unit label, and gave no way to move quickly through a range.
+ */
+function startScrub(e: ReactPointerEvent<HTMLElement>, onScrub: (steps: number) => void): void {
+  e.preventDefault();
+  const startX = e.clientX;
+  let applied = 0;
+  const move = (ev: PointerEvent) => {
+    const steps = Math.trunc((ev.clientX - startX) / SCRUB_PIXELS);
+    if (steps === applied) return;
+    onScrub(steps - applied);
+    applied = steps;
+  };
+  const stop = () => {
+    document.removeEventListener('pointermove', move);
+    document.removeEventListener('pointerup', stop);
+  };
+  document.addEventListener('pointermove', move);
+  document.addEventListener('pointerup', stop);
 }

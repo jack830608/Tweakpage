@@ -479,5 +479,8 @@
   },
   "aria_choose_bg_image": {
     "message": "Choose background image file"
+  },
+  "tip_scrub": {
+    "message": "Drag to change $1"
   }
 }
