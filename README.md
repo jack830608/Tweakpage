@@ -52,12 +52,14 @@ Every edit is recorded as a structured diff (selector + property + old → new),
    Hand off with **Copy** (Markdown summary), **CSS** (a pasteable stylesheet) or **Snap**
    (one image with the original and the edited page side by side); send with **Copy JSON**
    or **Export JSON**.
-6. Footer **Review** opens the change list (delete individual edits, revert all, **Import JSON**
+6. **Proposals**: save the current edits under a name, then switch between them to compare
+   two directions without rebuilding either. They travel with the export.
+7. Footer **Review** opens the change list (delete individual edits, revert all, **Import JSON**
    from a teammate — edits for other pages are stored and apply when you open them).
-7. `⌘Z` / `⇧⌘Z` (or `Ctrl+Z`) undo and redo, or the arrows in the header. Each change in
+8. `⌘Z` / `⇧⌘Z` (or `Ctrl+Z`) undo and redo, or the arrows in the header. Each change in
    Review can be toggled, hovered (highlights the element) or selected (scrolls the page to
    it). `⌥` + arrow keys move the selection through the page without a mouse.
-8. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere,
+9. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere,
    drag its left edge to resize, or minimize it to a corner pill — all remembered. The theme
    follows your system unless you pick Light or Dark in the header. The UI ships in English
    and Traditional Chinese. Edits survive reloads and follow client-side navigation.

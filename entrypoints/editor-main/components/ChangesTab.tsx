@@ -129,6 +129,9 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
               <div className="pgve-change-diff">
                 <s>{shorten(record.oldValue)}</s> → <b>{shorten(record.newValue)}</b>
               </div>
+              {record.viewport !== undefined && farFromNow(record.viewport) && (
+                <div className="pgve-change-viewport">{t('made_at_width', [record.viewport])}</div>
+              )}
               {controller.getStatus(record.id) === 'not-found' && (
                 <div className="pgve-change-warning">{t('couldnt_apply')}</div>
               )}
@@ -151,6 +154,11 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
       )}
     </div>
   );
+}
+
+/** Far enough apart that a responsive layout has probably changed underneath the edit. */
+function farFromNow(width: number): boolean {
+  return Math.abs(width - window.innerWidth) > 200;
 }
 
 /** Several edits to one element belong together — a flat list buried that. */

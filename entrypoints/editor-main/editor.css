@@ -46,7 +46,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-outline-label { position: absolute; top: -26px; left: 0; display: inline-flex; align-items: center; background: var(--dark); color: #fff; font: 500 11px/1.5 var(--sans); padding: 3px 8px; border-radius: 5px; white-space: nowrap; box-shadow: var(--shadow-lift); }
 
 /* ---------- panel shell ---------- */
-.pgve-panel { position: fixed; top: 12px; right: 12px; width: 320px; min-width: 280px; max-width: 560px; height: auto; max-height: calc(100vh - 24px); z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); color: var(--ink); opacity: 0.6; transition: opacity 0.18s ease; font: 400 12.5px/1.5 var(--sans); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
+.pgve-panel { position: fixed; top: 12px; right: 12px; width: 320px; min-width: min(280px, calc(100vw - 24px)); max-width: min(560px, calc(100vw - 24px)); height: auto; max-height: calc(100vh - 24px); z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); color: var(--ink); opacity: 0.6; transition: opacity 0.18s ease; font: 400 12.5px/1.5 var(--sans); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
 /* Fading the whole panel is what makes it see-through everywhere: the header, the
    footer and every input carry their own opaque fills, so tinting one layer could
    never do it. Text legibility is handled by going solid the moment you reach for
@@ -74,6 +74,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-resize { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; touch-action: none; }
 .pgve-resize:hover { background: var(--accent-soft); }
 .pgve-theme { max-width: 84px; padding: 2px 4px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11px; }
+.pgve-viewport { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); padding: 0 4px; white-space: nowrap; }
 .pgve-header-divider { width: 1px; height: 14px; margin: 0 3px; background: var(--border); }
 .pgve-pill { position: fixed; right: 16px; bottom: 16px; z-index: 2147483647; display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border: none; border-radius: 999px; background: var(--surface); color: var(--ink); font: 600 12.5px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ui-sans-serif, system-ui, sans-serif; cursor: pointer; box-shadow: 0 0 0 1px rgba(24, 24, 27, 0.09), 0 8px 24px rgba(24, 24, 27, 0.22); }
 .pgve-pill svg { color: var(--ink-3); }
@@ -86,6 +87,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-segment-active, .pgve-segment-active:hover { background: var(--surface); color: var(--accent-ink); font-weight: 600; box-shadow: var(--shadow-lift); }
 
 /* ---------- share row ---------- */
+.pgve-variants { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-top: 1px solid var(--border); }
+.pgve-variant-list { display: flex; flex-wrap: wrap; gap: 5px; }
+.pgve-variant { display: inline-flex; align-items: stretch; border: 1px solid var(--border); border-radius: var(--r-control); overflow: hidden; }
+.pgve-variant button { padding: 3px 8px; border: none; background: var(--surface); color: var(--ink-2); font-size: 11.5px; cursor: pointer; }
+.pgve-variant button:hover { color: var(--ink); background: var(--sunken); }
+.pgve-variant-remove { border-left: 1px solid var(--border) !important; color: var(--ink-3) !important; padding: 3px 6px !important; }
+.pgve-variant-add { align-self: flex-start; padding: 3px 9px; border: 1px dashed var(--border-strong); border-radius: var(--r-control); background: none; color: var(--ink-2); font-size: 11.5px; cursor: pointer; }
+.pgve-variant-add:hover { color: var(--accent-ink); border-color: var(--accent); }
+.pgve-variant-naming { display: flex; gap: 6px; }
+.pgve-variant-naming input { flex: 1; min-width: 0; padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink); font-size: 12px; }
+.pgve-variant-naming button { padding: 3px 10px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11.5px; cursor: pointer; }
 .pgve-share { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .pgve-share-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
 .pgve-share-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -230,6 +242,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-change-diff { overflow-wrap: break-word; font-size: 12px; color: var(--ink-2); line-height: 1.5; }
 .pgve-change-diff s { color: var(--ink-3); }
 .pgve-change-diff b { color: var(--ink); font-weight: 600; }
+.pgve-change-viewport { font-size: 11px; color: var(--ink-3); }
 .pgve-change-warning { color: var(--warn-ink); font-size: 11px; }
 .pgve-changes-filter { width: calc(100% - 24px); margin: 0 12px 8px; padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink); font-size: 12px; }
 .pgve-change:focus-visible { outline: none; box-shadow: var(--ring); }

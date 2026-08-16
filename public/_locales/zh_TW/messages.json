@@ -509,5 +509,38 @@
   },
   "err_href": {
     "message": "可填 https://…、/路徑、#區塊 或 mailto:"
+  },
+  "tip_viewport": {
+    "message": "目前的視窗寬度。每筆改動都會記下當時的寬度 — 調整視窗大小,或用瀏覽器的裝置模式,就能在別的寬度下編輯。"
+  },
+  "made_at_width": {
+    "message": "在 $1px 寬度下記錄"
+  },
+  "variants": {
+    "message": "提案"
+  },
+  "variant_new": {
+    "message": "+ 存成提案"
+  },
+  "variant_save": {
+    "message": "儲存"
+  },
+  "variant_default_name": {
+    "message": "方案 $1"
+  },
+  "aria_new_variant": {
+    "message": "把目前的改動存成提案"
+  },
+  "aria_save_variant": {
+    "message": "儲存提案"
+  },
+  "aria_variant_name": {
+    "message": "提案名稱"
+  },
+  "aria_load_variant": {
+    "message": "切換到 $1"
+  },
+  "aria_delete_variant": {
+    "message": "刪除 $1"
   }
 }
