@@ -3,6 +3,7 @@ import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
 import { Field } from '../Field';
+import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
   element: Element;
@@ -75,14 +76,14 @@ export function AppearanceSection({ element, controller }: SectionProps) {
             type="range"
             min={0}
             max={64}
-            aria-label="Corner radius"
+            aria-label={t('aria_radius')} data-testid="corner-radius"
             value={clamp(radius.value, 0, 64)}
             onChange={(e) => setRadius(e.target.value)}
           />
           <input
             type="number"
             min={0}
-            aria-label="Corner radius value"
+            aria-label={t('aria_radius_value')} data-testid="corner-radius-value"
             value={radius.value}
             onChange={(e) => setRadius(e.target.value)}
           />
@@ -94,7 +95,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
             type="range"
             min={0}
             max={100}
-            aria-label="Opacity"
+            aria-label={t('aria_opacity')} data-testid="opacity"
             value={clamp(opacity.value, 0, 100)}
             onChange={(e) => setOpacity(e.target.value)}
           />
@@ -102,7 +103,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
             type="number"
             min={0}
             max={100}
-            aria-label="Opacity value"
+            aria-label={t('aria_opacity_value')} data-testid="opacity-value"
             value={opacity.value}
             onChange={(e) => setOpacity(e.target.value)}
           />
@@ -118,7 +119,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         <input
           type="number"
           min={0}
-          aria-label="Border width"
+          aria-label={t('aria_border_width')} data-testid="border-width"
           value={borderWidth.value}
           onChange={(e) => setBorderWidth(e.target.value)}
         />
@@ -128,7 +129,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         property="borderColor"
         controller={controller}
         element={element}
-        ariaLabel="Border color"
+        ariaLabel={t('aria_border_color')}
         value={borderColor.value === '' ? null : borderColor.value}
         onChange={(hex) =>
           controller.recordEdit(element, 'style', 'borderColor', borderColor.original, hex)

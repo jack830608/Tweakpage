@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { alphaPercent, hexWithoutAlpha, withAlphaPercent } from '../../../lib/css-values';
 import { addRecentColor, getRecentColors } from '../../../lib/recent-colors';
+import { t } from '../../../lib/i18n';
 import type { EditsController } from '../controller';
 import { Field } from './Field';
 import { EyedropperIcon } from './icons';
@@ -61,23 +63,29 @@ export function ColorField({
           <input
             type="color"
             aria-label={aria}
-            value={value ?? '#ffffff'}
-            onChange={(e) => commit(e.target.value)}
+            data-testid={`${property}-swatch`}
+            value={hexWithoutAlpha(value ?? '#ffffff')}
+            onChange={(e) => commit(withAlphaPercent(e.target.value, alphaPercent(value ?? '#ffffff')))}
           />
           <input
             type="text"
             aria-label={`${aria} hex`}
+            data-testid={`${property}-hex`}
             placeholder={value === null ? 'none' : undefined}
             value={draft}
             onChange={(e) => {
               setDraft(e.target.value);
-              if (/^#[0-9a-f]{6}$/i.test(e.target.value)) commit(e.target.value.toLowerCase());
+              // 8 digits carry the alpha; the picker widget only speaks 6.
+              if (/^#([0-9a-f]{6}|[0-9a-f]{8})$/i.test(e.target.value)) {
+                commit(e.target.value.toLowerCase());
+              }
             }}
           />
           {eyeDropperCtor && (
             <button
               type="button"
               aria-label={`${aria} eyedropper`}
+              data-testid={`${property}-eyedropper`}
               title="Pick a color from the page"
               onClick={() => void onPick()}
             >
@@ -86,6 +94,23 @@ export function ColorField({
           )}
         </span>
       </Field>
+      {value !== null && (
+        <div className="pgve-field pgve-alpha-row">
+          <span aria-hidden="true" />
+          <span className="pgve-slider-pair">
+            <input
+              type="range"
+              min={0}
+              max={100}
+              aria-label={`${aria} opacity`}
+              data-testid={`${property}-alpha`}
+              value={alphaPercent(value)}
+              onChange={(e) => commit(withAlphaPercent(value, Number(e.target.value)))}
+            />
+            <span className="pgve-alpha-value">{alphaPercent(value)}%</span>
+          </span>
+        </div>
+      )}
       {recent.length > 0 && (
         // Same grid as a field row, so the swatches line up under the color inputs
         // instead of being nudged into place with a hard-coded offset.

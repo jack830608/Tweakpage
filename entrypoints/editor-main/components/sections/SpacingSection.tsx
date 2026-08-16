@@ -48,7 +48,7 @@ export function SpacingSection({ element, controller }: SectionProps) {
         <button
           type="button"
           className="pgve-spacing-reset"
-          aria-label="Reset spacing"
+          aria-label={t('aria_reset_spacing')} data-testid="reset-spacing"
           onClick={() => controller.resetProperties(element, ALL_PROPERTIES)}
         >
           ↺ {t('reset_spacing')}
@@ -73,7 +73,8 @@ function BoxInput({ kind, side, element, controller }: BoxInputProps) {
   return (
     <input
       type="number"
-      aria-label={`${kind} ${side}`}
+      aria-label={t(`aria_${kind}`, [t(`side_${side}`)])}
+      data-testid={`${kind}-${side}`}
       className={`pgve-box-input--${side}${edited ? ' pgve-box-input--edited' : ''}`}
       value={field.value}
       onChange={(e) => {

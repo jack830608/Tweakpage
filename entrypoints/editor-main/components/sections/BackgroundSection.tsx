@@ -3,6 +3,7 @@ import type { EditsController } from '../../controller';
 import { useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
 import { Field } from '../Field';
+import { ImagePicker } from '../ImagePicker';
 import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
@@ -28,10 +29,16 @@ export function BackgroundSection({ element, controller }: SectionProps) {
     urlFromBackgroundImage,
   );
 
+  const setImage = (url: string) =>
+    controller.recordEdit(element, 'style', 'backgroundImage', image.original, `url("${url}")`);
+
   const onApplyImage = () => {
     const url = image.value.trim().replace(/["\\]/g, '');
-    if (!/^(https?:\/\/|data:image\/)/.test(url)) return;
-    controller.recordEdit(element, 'style', 'backgroundImage', image.original, `url("${url}")`);
+    if (!/^(https?:\/\/|data:image\/)/.test(url)) {
+      image.reject(t('err_image_url'));
+      return;
+    }
+    setImage(url);
   };
 
   return (
@@ -41,7 +48,7 @@ export function BackgroundSection({ element, controller }: SectionProps) {
         property="backgroundColor"
         controller={controller}
         element={element}
-        ariaLabel="Background color"
+        ariaLabel={t('aria_bg_color')}
         value={color.value === '' ? null : color.value}
         onChange={(hex) =>
           controller.recordEdit(element, 'style', 'backgroundColor', color.original, hex)
@@ -52,17 +59,21 @@ export function BackgroundSection({ element, controller }: SectionProps) {
         property="backgroundImage"
         controller={controller}
         element={element}
+        error={image.error}
       >
         <input
           type="text"
-          aria-label="Background image URL"
+          aria-label={t('aria_bg_image_url')} data-testid="background-image-url"
           value={image.value}
           onChange={(e) => image.setDraft(e.target.value)}
         />
       </Field>
-      <button type="button" aria-label="Apply background image" onClick={onApplyImage}>
-        {t('apply')}
-      </button>
+      <div className="pgve-field-actions">
+        <button type="button" aria-label={t('aria_apply_bg_image')} data-testid="apply-background-image" onClick={onApplyImage}>
+          {t('apply')}
+        </button>
+        <ImagePicker ariaLabel="Choose background image file" onPicked={setImage} />
+      </div>
     </section>
   );
 }

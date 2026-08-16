@@ -21,13 +21,13 @@ then cheap wins, then the product-level holes. Checked items are shipped on `mai
 
 ## 2. Cheap and valuable
 
-- [ ] Copy as CSS, and put the selector in the Markdown export
-- [ ] Copy JSON to clipboard (sharing shouldn't require a file round-trip)
-- [ ] Pick a local image file → data URL, for both image and background image
-- [ ] Colours keep their alpha (`rgba(0,0,0,.5)` currently reads as opaque black)
-- [ ] Undo/redo buttons — `canUndo()` / `canRedo()` exist and nothing uses them
-- [ ] Localise `aria-label` and `title`; move E2E anchors to `data-testid`
-- [ ] Stop the UI misreporting state: `justify`/`start` shown as `left`, weight `350` as `400`
+- [x] Copy as CSS, and put the selector in the Markdown export
+- [x] Copy JSON to clipboard (sharing shouldn't require a file round-trip)
+- [x] Pick a local image file → data URL, for both image and background image
+- [x] Colours keep their alpha (`rgba(0,0,0,.5)` currently reads as opaque black)
+- [x] Undo/redo buttons — `canUndo()` / `canRedo()` exist and nothing uses them
+- [x] Localise `aria-label` and `title`; move E2E anchors to `data-testid`
+- [x] Stop the UI misreporting state: `justify`/`start` shown as `left`, weight `350` as `400`
 - [ ] Unit hints on number fields, and a consistent Apply (image/background are the odd ones out)
 
 ## 3. Product-level holes

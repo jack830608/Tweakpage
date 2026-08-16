@@ -107,7 +107,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         <button
           type="button"
           className="pgve-pill"
-          aria-label="Expand Tweakpage"
+          aria-label={t('aria_expand')} data-testid="expand-tweakpage"
           onClick={() => setMinimized(false)}
         >
           <GripIcon /> Tweakpage

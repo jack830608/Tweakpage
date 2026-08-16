@@ -224,5 +224,206 @@
   },
   "err_image_url": {
     "message": "Needs to start with https:// — or pick a file"
+  },
+  "share_hand_off": {
+    "message": "Hand off"
+  },
+  "share_send": {
+    "message": "Send"
+  },
+  "share_css": {
+    "message": "CSS"
+  },
+  "share_copy_json": {
+    "message": "Copy JSON"
+  },
+  "toast_copied_css": {
+    "message": "CSS copied to clipboard"
+  },
+  "toast_copied_json": {
+    "message": "JSON copied — paste it to a teammate"
+  },
+  "tip_copy_summary": {
+    "message": "Copy a Markdown summary for engineers"
+  },
+  "tip_copy_css": {
+    "message": "Copy the changes as a stylesheet"
+  },
+  "tip_snap": {
+    "message": "Save before & after screenshots"
+  },
+  "tip_copy_json": {
+    "message": "Copy the edits so a teammate can import them"
+  },
+  "tip_export": {
+    "message": "Download the edits as JSON"
+  },
+  "choose_file": {
+    "message": "Choose file…"
+  },
+  "err_not_image": {
+    "message": "That file isn't an image"
+  },
+  "err_image_too_large": {
+    "message": "Image is too large to store — try one under 1.5 MB"
+  },
+  "err_image_unreadable": {
+    "message": "Couldn't read that file"
+  },
+  "tip_undo": {
+    "message": "Undo (⌘Z)"
+  },
+  "tip_redo": {
+    "message": "Redo (⇧⌘Z)"
+  },
+  "tip_minimize": {
+    "message": "Minimize to a corner pill"
+  },
+  "tip_close": {
+    "message": "Close the editor"
+  },
+  "aria_apply_bg_image": {
+    "message": "Apply background image"
+  },
+  "aria_apply_image": {
+    "message": "Apply image"
+  },
+  "aria_back_to_editing": {
+    "message": "Back to editing"
+  },
+  "aria_bg_image_url": {
+    "message": "Background image URL"
+  },
+  "aria_border_width": {
+    "message": "Border width"
+  },
+  "aria_browsing": {
+    "message": "Browsing — switch to edit"
+  },
+  "aria_close": {
+    "message": "Close"
+  },
+  "aria_copy_css": {
+    "message": "Copy CSS"
+  },
+  "aria_copy_json": {
+    "message": "Copy JSON"
+  },
+  "aria_copy_summary": {
+    "message": "Copy summary"
+  },
+  "aria_radius_value": {
+    "message": "Corner radius value"
+  },
+  "aria_radius": {
+    "message": "Corner radius"
+  },
+  "aria_expand": {
+    "message": "Expand Tweakpage"
+  },
+  "aria_export_json": {
+    "message": "Export JSON"
+  },
+  "aria_font_family": {
+    "message": "Font family"
+  },
+  "aria_font_size": {
+    "message": "Font size"
+  },
+  "aria_font_weight": {
+    "message": "Font weight"
+  },
+  "aria_image_url": {
+    "message": "Image URL"
+  },
+  "aria_import_json": {
+    "message": "Import JSON file"
+  },
+  "aria_letter_spacing": {
+    "message": "Letter spacing"
+  },
+  "aria_line_height": {
+    "message": "Line height"
+  },
+  "aria_minimize": {
+    "message": "Minimize"
+  },
+  "aria_opacity_value": {
+    "message": "Opacity value"
+  },
+  "aria_opacity": {
+    "message": "Opacity"
+  },
+  "aria_redo": {
+    "message": "Redo"
+  },
+  "aria_reload_page": {
+    "message": "Reload page"
+  },
+  "aria_reset_spacing": {
+    "message": "Reset spacing"
+  },
+  "aria_review_changes": {
+    "message": "Review changes"
+  },
+  "aria_review_unmatched": {
+    "message": "Review unmatched edits"
+  },
+  "aria_snapshot": {
+    "message": "Snapshot before and after"
+  },
+  "aria_text_align": {
+    "message": "Text align"
+  },
+  "aria_text_transform": {
+    "message": "Text transform"
+  },
+  "aria_text": {
+    "message": "Text"
+  },
+  "aria_undo": {
+    "message": "Undo"
+  },
+  "aria_viewing_original": {
+    "message": "Viewing original — back to edited"
+  },
+  "aria_reset": {
+    "message": "Reset $1"
+  },
+  "tip_reset": {
+    "message": "Reset to original"
+  },
+  "aria_interaction_mode": {
+    "message": "Interaction mode"
+  },
+  "aria_compare": {
+    "message": "Compare"
+  },
+  "aria_padding": {
+    "message": "padding $1"
+  },
+  "aria_margin": {
+    "message": "margin $1"
+  },
+  "side_top": {
+    "message": "top"
+  },
+  "side_right": {
+    "message": "right"
+  },
+  "side_bottom": {
+    "message": "bottom"
+  },
+  "side_left": {
+    "message": "left"
+  },
+  "aria_color": {
+    "message": "Color"
+  },
+  "aria_bg_color": {
+    "message": "Background color"
+  },
+  "aria_border_color": {
+    "message": "Border color"
   }
 }
