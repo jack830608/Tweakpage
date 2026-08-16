@@ -159,7 +159,7 @@ test('swapping a responsive image actually changes what the browser shows', asyn
   expect(before).toContain('ff0000');
 
   await page.locator('[data-testid="image-url"]').fill(green);
-  await page.locator('[data-testid="apply-image"]').click();
+  await page.locator('[data-testid="image-url"]').press('Enter');
 
   // src alone is invisible while srcset holds candidates — this is the whole point.
   await expect

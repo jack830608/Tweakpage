@@ -32,9 +32,11 @@ export function BackgroundSection({ element, controller }: SectionProps) {
   const setImage = (url: string) =>
     controller.recordEdit(element, 'style', 'backgroundImage', image.original, `url("${url}")`);
 
-  const onApplyImage = () => {
+  /** Same rule as the image field: commit when you are done typing, not per keystroke. */
+  const commit = () => {
     const url = image.value.trim().replace(/["\\]/g, '');
-    if (!/^(https?:\/\/|data:image\/)/.test(url)) {
+    if (url === '' || `url("${url}")` === cs.backgroundImage) return;
+    if (!/^(https?:\/\/|data:image\/|\/)/.test(url)) {
       image.reject(t('err_image_url'));
       return;
     }
@@ -64,17 +66,21 @@ export function BackgroundSection({ element, controller }: SectionProps) {
         <input
           type="text"
           aria-label={t('aria_bg_image_url')} data-testid="background-image-url"
+          placeholder={t('image_url_placeholder')}
           value={image.value}
           onChange={(e) => image.setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            commit();
+          }}
         />
       </Field>
       <div className="pgve-field pgve-field--actions">
         <span aria-hidden="true" />
         <div className="pgve-field-actions">
-        <button type="button" aria-label={t('aria_apply_bg_image')} data-testid="apply-background-image" onClick={onApplyImage}>
-          {t('apply')}
-        </button>
-        <ImagePicker ariaLabel="Choose background image file" onPicked={setImage} />
+        <ImagePicker ariaLabel={t('aria_choose_bg_image')} onPicked={setImage} />
         </div>
       </div>
     </section>

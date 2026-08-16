@@ -145,15 +145,17 @@ describe.each(CASES)('$label', ({ section, label, property, recordType, input, v
   });
 });
 
-describe('apply-style fields', () => {
-  test('background image applies, records and resets', () => {
+describe('url fields commit when you finish with them', () => {
+  test('background image applies on blur, records and resets', () => {
     const controller = setup();
     openSection('background');
     const before = (control('Background image URL') as HTMLInputElement).value;
     fireEvent.change(control('Background image URL'), {
       target: { value: 'https://example.com/bg.png' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Apply background image' }));
+    // Typing alone must not record: a half-typed URL is not a value worth keeping.
+    expect(controller.getPage().records).toHaveLength(0);
+    fireEvent.blur(control('Background image URL'));
 
     const record = controller.getPage().records.find((r) => r.property === 'backgroundImage')!;
     expect(record.newValue).toBe('url("https://example.com/bg.png")');
@@ -164,12 +166,13 @@ describe('apply-style fields', () => {
     expect(control('Background image URL').value).toBe(before);
   });
 
-  test('image src applies, records and resets', () => {
+  test('image src applies on Enter, records and resets', () => {
     document.body.innerHTML = '<img id="target" src="/original.png" alt="hero">';
     const controller = setup(document.getElementById('target'));
     openSection('image');
     fireEvent.change(control('Image URL'), { target: { value: 'https://example.com/new.png' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Apply image' }));
+    expect(controller.getPage().records).toHaveLength(0);
+    fireEvent.keyDown(control('Image URL'), { key: 'Enter' });
 
     const record = controller.getPage().records.find((r) => r.property === 'src')!;
     expect(record.type).toBe('attr');
@@ -181,6 +184,16 @@ describe('apply-style fields', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Reset src' }));
     expect(controller.getPage().records).toHaveLength(0);
     expect(control('Image URL').value).toBe('/original.png');
+  });
+
+  test('a URL that cannot be an image is refused with a reason', () => {
+    document.body.innerHTML = '<img id="target" src="/original.png" alt="hero">';
+    const controller = setup(document.getElementById('target'));
+    openSection('image');
+    fireEvent.change(control('Image URL'), { target: { value: 'not-a-url' } });
+    fireEvent.blur(control('Image URL'));
+    expect(screen.getByRole('alert').textContent).toMatch(/https:\/\//);
+    expect(controller.getPage().records).toHaveLength(0);
   });
 });
 

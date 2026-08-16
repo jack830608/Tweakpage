@@ -25,12 +25,12 @@ test('background color records a backgroundColor edit', () => {
   expect(record.newValue).toBe('#112233');
 });
 
-test('image url + apply records an attr src edit', () => {
+test('image url records an attr src edit once you leave the field', () => {
   document.body.innerHTML = '<img id="pic" src="/a.png">';
   const controller = new EditsController(null, document, NOW);
   render(<ImageSection element={document.getElementById('pic')!} controller={controller} />);
   fireEvent.change(screen.getByLabelText('Image URL'), { target: { value: '/b.png' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Apply image' }));
+  fireEvent.blur(screen.getByLabelText('Image URL'));
   const record = controller.getPage().records.find((r) => r.property === 'src')!;
   expect(record.type).toBe('attr');
   expect(record.oldValue).toBe('/a.png');
@@ -109,16 +109,16 @@ test('appearance records border radius and opacity', () => {
   expect(records.find((r) => r.property === 'opacity')!.newValue).toBe('0.5');
 });
 
-test('background image url applies as a css url value; invalid urls are ignored', () => {
+test('background image url applies as a css url value; invalid urls are refused', () => {
   document.body.innerHTML = '<div id="box">x</div>';
   const controller = new EditsController(null, document, NOW);
   render(<BackgroundSection element={document.getElementById('box')!} controller={controller} />);
   const input = screen.getByLabelText('Background image URL');
   fireEvent.change(input, { target: { value: 'javascript:alert(1)' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Apply background image' }));
+  fireEvent.blur(screen.getByLabelText('Background image URL'));
   expect(controller.getPage().records).toHaveLength(0);
   fireEvent.change(input, { target: { value: 'https://example.com/a.png' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Apply background image' }));
+  fireEvent.blur(screen.getByLabelText('Background image URL'));
   expect(controller.getPage().records.find((r) => r.property === 'backgroundImage')!.newValue).toBe(
     'url("https://example.com/a.png")',
   );
