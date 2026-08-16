@@ -10,6 +10,17 @@ const EDGE_MARGIN = 24;
  */
 export function revealElement(el: Element, view: Window = window): void {
   if (typeof el.scrollIntoView !== 'function') return;
+  // Clicking the control that triggers this focuses it, and the browser's own
+  // scroll-focus-into-view runs after the handler and cancels a smooth scroll started
+  // inside it. Waiting a frame lets ours be the one that survives.
+  if (typeof view.requestAnimationFrame === 'function') {
+    view.requestAnimationFrame(() => scrollTo(el, view));
+    return;
+  }
+  scrollTo(el, view);
+}
+
+function scrollTo(el: Element, view: Window): void {
   const rect = el.getBoundingClientRect();
   const height = view.innerHeight || 0;
   const onScreen = rect.top >= EDGE_MARGIN && rect.bottom <= height - EDGE_MARGIN;

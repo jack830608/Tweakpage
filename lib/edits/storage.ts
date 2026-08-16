@@ -3,7 +3,10 @@ import type { PageEdits } from './types';
 
 export function normalizePageUrl(url: string): string {
   const u = new URL(url);
-  return u.origin + u.pathname;
+  // A hash router's "#/products/2" is a different page; "#features" is a link within one.
+  // Ignoring both meant every route of a hash-routed app shared a single bucket of edits.
+  const route = u.hash.startsWith('#/') ? u.hash : '';
+  return u.origin + u.pathname + route;
 }
 
 export function pageKey(url: string): string {

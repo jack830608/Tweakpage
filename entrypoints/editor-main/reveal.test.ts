@@ -19,6 +19,11 @@ function viewport(reducedMotion = false): Window {
   return {
     innerHeight: 800,
     matchMedia: () => ({ matches: reducedMotion }),
+    // Run the deferred scroll straight away so the tests stay synchronous.
+    requestAnimationFrame: (fn: FrameRequestCallback) => {
+      fn(0);
+      return 0;
+    },
   } as unknown as Window;
 }
 

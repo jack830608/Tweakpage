@@ -40,10 +40,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
    backgrounds alike. box-shadow does the halo because outline can't stack. */
 .pgve-outline--hover { outline: 2px dashed var(--outline); outline-offset: 1px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: color-mix(in srgb, var(--outline) 8%, transparent); }
 .pgve-outline--selected { outline: 3px solid var(--outline); outline-offset: 1px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95), 0 0 0 6px color-mix(in srgb, var(--outline) 30%, transparent), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: color-mix(in srgb, var(--outline) 12%, transparent); }
+.pgve-edited-mark { position: fixed; pointer-events: none; z-index: 2147483645; outline: 1px dashed color-mix(in srgb, var(--outline) 55%, transparent); outline-offset: 1px; background: color-mix(in srgb, var(--outline) 5%, transparent); }
+.pgve-marks-toggle { display: flex; align-items: center; gap: 6px; margin: 0 12px 8px; font-size: 11.5px; color: var(--ink-3); cursor: pointer; }
+.pgve-marks-toggle input { accent-color: var(--accent); }
 .pgve-outline-label { position: absolute; top: -26px; left: 0; display: inline-flex; align-items: center; background: var(--dark); color: #fff; font: 500 11px/1.5 var(--sans); padding: 3px 8px; border-radius: 5px; white-space: nowrap; box-shadow: var(--shadow-lift); }
 
 /* ---------- panel shell ---------- */
-.pgve-panel { position: fixed; top: 12px; right: 12px; width: 320px; height: auto; max-height: calc(100vh - 24px); z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); color: var(--ink); opacity: 0.6; transition: opacity 0.18s ease; font: 400 12.5px/1.5 var(--sans); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
+.pgve-panel { position: fixed; top: 12px; right: 12px; width: 320px; min-width: 280px; max-width: 560px; height: auto; max-height: calc(100vh - 24px); z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); color: var(--ink); opacity: 0.6; transition: opacity 0.18s ease; font: 400 12.5px/1.5 var(--sans); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
 /* Fading the whole panel is what makes it see-through everywhere: the header, the
    footer and every input carry their own opaque fills, so tinting one layer could
    never do it. Text legibility is handled by going solid the moment you reach for
@@ -68,6 +71,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-header-buttons { display: inline-flex; align-items: center; gap: 2px; }
 .pgve-header button:disabled { opacity: 0.35; cursor: default; }
 .pgve-header button:disabled:hover { background: none; color: var(--ink-3); }
+.pgve-resize { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; touch-action: none; }
+.pgve-resize:hover { background: var(--accent-soft); }
+.pgve-theme { max-width: 96px; padding: 2px 4px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11px; }
 .pgve-header-divider { width: 1px; height: 14px; margin: 0 3px; background: var(--border); }
 .pgve-pill { position: fixed; right: 16px; bottom: 16px; z-index: 2147483647; display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border: none; border-radius: 999px; background: var(--surface); color: var(--ink); font: 600 12.5px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ui-sans-serif, system-ui, sans-serif; cursor: pointer; box-shadow: 0 0 0 1px rgba(24, 24, 27, 0.09), 0 8px 24px rgba(24, 24, 27, 0.22); }
 .pgve-pill svg { color: var(--ink-3); }
@@ -196,11 +202,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-change-off { opacity: 0.55; }
 .pgve-change-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .pgve-change-switch { accent-color: var(--accent); cursor: pointer; flex: none; margin-top: 2px; }
+.pgve-change button.pgve-change-target { flex: 1; min-width: 0; align-self: stretch; padding: 0; border: none; background: none; text-align: left; cursor: pointer; }
 .pgve-change-target { font-weight: 600; font-size: 11.5px; font-family: var(--mono); color: var(--ink); word-break: break-all; }
 .pgve-change-diff { word-break: break-all; font-size: 12px; color: var(--ink-2); }
 .pgve-change-diff s { color: var(--ink-3); }
 .pgve-change-diff b { color: var(--ink); font-weight: 600; }
 .pgve-change-warning { color: var(--warn-ink); font-size: 11px; }
+.pgve-changes-filter { width: calc(100% - 24px); margin: 0 12px 8px; padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink); font-size: 12px; }
+.pgve-change:focus-visible { outline: none; box-shadow: var(--ring); }
 .pgve-change button { align-self: flex-start; padding: 2px 8px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); cursor: pointer; font-size: 11px; color: var(--ink-2); }
 .pgve-change button:hover { border-color: var(--border-strong); color: var(--ink); }
 
@@ -215,9 +224,31 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-toast button { border: none; background: none; color: #a5b4fc; font-weight: 700; cursor: pointer; }
 .pgve-toast button:hover { color: #c7d2fe; }
 
+/* An explicit choice in the panel header beats the OS setting, both ways. */
+.pgve-panel[data-theme="dark"] {
+    --surface: #212126;
+    --sunken: #2b2b31;
+    --border: #3a3a41;
+    --border-strong: #4a4a52;
+    --ink: #f4f4f5;
+    --ink-2: #b0b0b8;
+    --ink-3: #7c7c85;
+    --accent: #34d399;
+    --accent-ink: #6ee7b7;
+    --accent-soft: rgba(16, 185, 129, 0.2);
+    --warn-ink: #fbbf24;
+    --warn-bg: rgba(180, 83, 9, 0.2);
+    --dark: #0b0b0d;
+    --shadow-panel: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 16px 40px rgba(0, 0, 0, 0.55);
+    --shadow-pop: 0 6px 20px rgba(0, 0, 0, 0.6);
+    --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --ring: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.pgve-panel[data-theme="light"] { color-scheme: light; }
+
 /* ---------- dark mode ---------- */
 @media (prefers-color-scheme: dark) {
-  :host {
+  :host, .pgve-panel:not([data-theme="light"]) {
     --surface: #212126;
     --sunken: #2b2b31;
     --border: #3a3a41;

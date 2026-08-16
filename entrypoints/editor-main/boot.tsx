@@ -19,12 +19,12 @@ export function boot(): void {
   document.documentElement.appendChild(host);
   let lastPage = normalizePageUrl(location.href);
   watchUrlChanges(window, (url) => {
-    // Hash/query-only changes keep the same storage key — anchors and hash-tab
-    // navigation must not kill the editor session.
+    // Anchors and query changes keep the same storage key. A real route change used to
+    // close the editor, which meant reopening it from the toolbar after every link.
     const nextPage = normalizePageUrl(url);
     if (nextPage === lastPage) return;
     lastPage = nextPage;
-    document.dispatchEvent(new CustomEvent('pg-editor:deactivate'));
+    document.dispatchEvent(new CustomEvent('pg-editor:navigated', { detail: { url } }));
   });
   void loadPageEdits(location.href)
     .catch(() => null)

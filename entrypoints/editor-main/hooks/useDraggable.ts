@@ -54,7 +54,7 @@ export function useDraggable(
 
   const onPointerDown = useCallback(
     (e: ReactPointerEvent<HTMLElement>) => {
-      if ((e.target as Element).closest('button')) return;
+      if ((e.target as Element).closest('button, select, input')) return;
       const rect = targetRef.current?.getBoundingClientRect();
       if (!rect) return;
       grabOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };

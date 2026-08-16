@@ -1,6 +1,6 @@
 import { fakeBrowser } from 'wxt/testing';
 import { beforeEach, expect, test, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ChangesTab } from './ChangesTab';
 import { EditsController } from '../controller';
 import { emptyPageEdits, type PageEdits } from '../../../lib/edits/types';
@@ -112,14 +112,20 @@ test('hovering a change highlights its element; clicking selects it; the switch 
   expect(onHighlight).toHaveBeenCalledWith(el);
   fireEvent.mouseLeave(item);
   expect(onHighlight).toHaveBeenLastCalledWith(null);
-  fireEvent.click(item);
+  // Selecting is its own button now, so it can be reached without a mouse.
+  const select = screen.getByRole('button', { name: /Select h1#title/ });
+  fireEvent.click(select);
   expect(onSelectRecord).toHaveBeenCalledWith(el);
+
+  onHighlight.mockClear();
+  fireEvent.focus(select);
+  expect(onHighlight).toHaveBeenCalledWith(el);
   fireEvent.click(screen.getByRole('checkbox', { name: /Toggle text change/ }));
   expect(controller.getPage().records[0].enabled).toBe(false);
   expect(el.textContent).toBe('Original');
 });
 
-test('clicking a change brings its element into view before selecting it', () => {
+test('clicking a change brings its element into view before selecting it', async () => {
   const controller = new EditsController(null, document, NOW);
   const title = document.getElementById('title')!;
   controller.recordEdit(title, 'text', 'textContent', 'Original', 'Changed');
@@ -135,9 +141,12 @@ test('clicking a change brings its element into view before selecting it', () =>
 
   const onSelectRecord = vi.fn();
   render(<ChangesTab controller={controller} onToast={vi.fn()} onHighlight={vi.fn()} onSelectRecord={onSelectRecord} />);
-  fireEvent.click(screen.getByText(/h1#title/));
+  fireEvent.click(screen.getByRole('button', { name: /Select h1#title/ }));
 
-  expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ block: 'center' }));
+  // The scroll waits a frame so the browser's own scroll-focus-into-view can't cancel it.
+  await waitFor(() =>
+    expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ block: 'center' })),
+  );
   expect(onSelectRecord).toHaveBeenCalledWith(title);
   vi.restoreAllMocks();
 });

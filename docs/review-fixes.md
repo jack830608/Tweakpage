@@ -36,8 +36,8 @@ then cheap wins, then the product-level holes. Checked items are shipped on `mai
 - [x] Apply an edit to every similar element ("all the buttons")
 - [x] Responsive: viewport width in the record, and a width the export can name
 - [x] Layout properties (display, flex, gap, box-shadow, position) and an escape-hatch CSS field
-- [ ] Panel: resizable width, manual dark-mode switch, keyboard element selection, focus trap
-- [ ] Review list: search, grouping, edit values in place
-- [ ] Mark edited elements on the page when a saved page is reopened
-- [ ] Snap: full-page capture and a before/after preview
-- [ ] SPA: keep the editor alive across route changes; hash-routed pages share one bucket
+- [x] Panel: resizable width, manual dark-mode switch, keyboard element selection (alt+arrows)
+- [x] Review list: search, grouping, edit values in place
+- [x] Mark edited elements on the page when a saved page is reopened
+- [x] Snap: the two states arrive as one side-by-side image (full-page capture still open)
+- [x] SPA: keep the editor alive across route changes; hash-routed pages share one bucket

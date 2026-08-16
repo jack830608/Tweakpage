@@ -4,9 +4,11 @@ import { buildElementLabel } from '../../../lib/selector/generate';
 interface OverlayProps {
   hovered: Element | null;
   selected: Element | null;
+  /** Elements carrying edits, outlined faintly so a reopened page shows its history. */
+  edited?: Element[];
 }
 
-export function Overlay({ hovered, selected }: OverlayProps) {
+export function Overlay({ hovered, selected, edited = [] }: OverlayProps) {
   const [, setTick] = useState(0);
   useEffect(() => {
     const update = () => setTick((t) => t + 1);
@@ -19,10 +21,26 @@ export function Overlay({ hovered, selected }: OverlayProps) {
   }, []);
   return (
     <>
+      {edited.map((el, i) =>
+        el === selected || el === hovered ? null : (
+          <div
+            key={i}
+            className="pgve-edited-mark"
+            style={boxOf(el)}
+            data-testid="edited-mark"
+            aria-hidden="true"
+          />
+        ),
+      )}
       {hovered && hovered !== selected && <OutlineBox el={hovered} kind="hover" />}
       {selected && <OutlineBox el={selected} kind="selected" />}
     </>
   );
+}
+
+function boxOf(el: Element) {
+  const r = el.getBoundingClientRect();
+  return { top: r.top, left: r.left, width: r.width, height: r.height };
 }
 
 function OutlineBox({ el, kind }: { el: Element; kind: 'hover' | 'selected' }) {

@@ -26,6 +26,23 @@ export default defineBackground(() => {
             console.warn('[tweakpage] capture failed', error);
           });
       }
+      // Hands the pixels back instead of downloading them, so the editor can put the
+      // two captures side by side before anything reaches the downloads folder.
+      if (message?.type === 'pg:grab' && sender.tab?.windowId != null) {
+        return browser.tabs
+          .captureVisibleTab(sender.tab.windowId, { format: 'png' })
+          .catch((error: unknown) => {
+            console.warn('[tweakpage] capture failed', error);
+            return undefined;
+          });
+      }
+      if (message?.type === 'pg:save-png' && typeof message.url === 'string' && typeof message.filename === 'string') {
+        if (!message.url.startsWith('data:image/png;base64,')) return;
+        if (!/^tweakpage-[\w.-]+\.png$/.test(message.filename)) return;
+        browser.downloads.download({ url: message.url, filename: message.filename }).catch((error: unknown) => {
+          console.warn('[tweakpage] download failed', error);
+        });
+      }
       if (message?.type === 'pg:download' && typeof message.url === 'string' && typeof message.filename === 'string') {
         if (!message.url.startsWith('data:application/json;base64,')) return;
         if (!/^tweakpage-[\w.-]+\.json$/.test(message.filename)) return;
