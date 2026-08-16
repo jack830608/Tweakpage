@@ -75,7 +75,17 @@ test('fields show the edited value and snap back on reset', async ({ context }) 
 
 // The unit sweep runs against happy-dom, which has no real cascade — this is the same
 // pass in a browser that actually applies our injected stylesheet.
-const FIELDS = [
+interface FieldRow {
+  section: string;
+  testid: string;
+  kind: 'fill' | 'select';
+  value: string;
+  /** When the field keeps its unit in the value, what it shows differs from what was typed. */
+  shown?: string;
+  property: string;
+}
+
+const FIELDS: FieldRow[] = [
   { section: 'text', testid: 'text', kind: 'fill', value: 'Swept headline', property: 'textContent' },
   { section: 'typography', testid: 'font-family', kind: 'fill', value: 'Verdana', property: 'fontFamily' },
   { section: 'typography', testid: 'font-size', kind: 'fill', value: '41', property: 'fontSize' },
@@ -100,7 +110,7 @@ const FIELDS = [
   { section: 'spacing', testid: 'margin-right', kind: 'fill', value: '12', property: 'marginRight' },
   { section: 'spacing', testid: 'margin-bottom', kind: 'fill', value: '13', property: 'marginBottom' },
   { section: 'spacing', testid: 'margin-left', kind: 'fill', value: '14', property: 'marginLeft' },
-] as const;
+];
 
 test('every field records what was typed and resets back to the original', async ({ context }) => {
   const page = await context.newPage();

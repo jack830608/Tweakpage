@@ -82,23 +82,14 @@ export function AppearanceSection({ element, controller }: SectionProps) {
           setRadius(String(scrubbedValue(controller, element, 'borderRadius', radius.original, steps, { min: 0 })))
         }
       >
-        <span className="pgve-slider-pair">
-          <input
-            type="range"
-            min={0}
-            max={64}
-            aria-label={t('aria_radius')} data-testid="corner-radius"
-            value={clamp(radius.value, 0, 64)}
-            onChange={(e) => setRadius(e.target.value)}
-          />
-          <input
-            type="number"
-            min={0}
-            aria-label={t('aria_radius_value')} data-testid="corner-radius-value"
-            value={radius.value}
-            onChange={(e) => setRadius(e.target.value)}
-          />
-        </span>
+        <input
+          type="number"
+          min={0}
+          aria-label={t('aria_radius_value')}
+          data-testid="corner-radius-value"
+          value={radius.value}
+          onChange={(e) => setRadius(e.target.value)}
+        />
       </Field>
       <Field
         name="opacity"

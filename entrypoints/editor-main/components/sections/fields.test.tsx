@@ -197,7 +197,7 @@ describe('url fields commit when you finish with them', () => {
   });
 });
 
-describe('slider and number pairs stay in step', () => {
+describe('bounded values keep a slider', () => {
   test('typing a number moves the slider', () => {
     setup();
     openSection('appearance');
@@ -205,11 +205,11 @@ describe('slider and number pairs stay in step', () => {
     expect((control('Opacity') as HTMLInputElement).value).toBe('40');
   });
 
-  test('moving the slider updates the number', () => {
+  test('opacity keeps its slider and its number in step both ways', () => {
     setup();
     openSection('appearance');
-    fireEvent.change(control('Corner radius'), { target: { value: '20' } });
-    expect((control('Corner radius value') as HTMLInputElement).value).toBe('20');
+    fireEvent.change(control('Opacity'), { target: { value: '30' } });
+    expect((control('Opacity value') as HTMLInputElement).value).toBe('30');
   });
 });
 
