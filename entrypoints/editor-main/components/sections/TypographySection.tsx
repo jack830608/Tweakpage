@@ -72,7 +72,7 @@ export function TypographySection({ element, controller }: SectionProps) {
         <option value="sans-serif" />
         <option value="monospace" />
       </datalist>
-      <Field name="font-size" property="fontSize" controller={controller} element={element} error={fontSize.error}>
+      <Field name="font-size" property="fontSize" controller={controller} element={element} unit="px" error={fontSize.error}>
         <input
           type="number"
           min={1}
@@ -140,7 +140,7 @@ export function TypographySection({ element, controller }: SectionProps) {
           ))}
         </select>
       </Field>
-      <Field name="letter-spacing" property="letterSpacing" controller={controller} element={element} error={letterSpacing.error}>
+      <Field name="letter-spacing" property="letterSpacing" controller={controller} element={element} unit="px" error={letterSpacing.error}>
         <input
           type="number"
           step={0.1}

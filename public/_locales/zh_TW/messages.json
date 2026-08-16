@@ -451,7 +451,7 @@
     "message": "這個值含有 CSS 會視為規則結束的字元"
   },
   "theme_system": {
-    "message": "跟隨系統"
+    "message": "系統"
   },
   "theme_light": {
     "message": "淺色"
@@ -476,5 +476,8 @@
   },
   "aria_select_change": {
     "message": "選取 $1"
+  },
+  "size_placeholder": {
+    "message": "auto、50%、320"
   }
 }

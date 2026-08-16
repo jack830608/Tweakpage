@@ -22,7 +22,9 @@ export function ImageSection({ element, controller }: SectionProps) {
           onChange={(e) => src.setDraft(e.target.value)}
         />
       </Field>
-      <div className="pgve-field-actions">
+      <div className="pgve-field pgve-field--actions">
+        <span aria-hidden="true" />
+        <div className="pgve-field-actions">
         <button
           type="button"
           aria-label={t('aria_apply_image')} data-testid="apply-image"
@@ -34,6 +36,7 @@ export function ImageSection({ element, controller }: SectionProps) {
           ariaLabel="Choose image file"
           onPicked={(dataUrl) => controller.recordEdit(element, 'attr', 'src', src.original, dataUrl)}
         />
+        </div>
       </div>
     </section>
   );

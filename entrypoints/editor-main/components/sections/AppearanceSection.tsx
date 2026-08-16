@@ -70,7 +70,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
 
   return (
     <section className="pgve-section">
-      <Field name="border-radius" property="borderRadius" controller={controller} element={element}>
+      <Field name="border-radius" property="borderRadius" controller={controller} element={element} unit="px">
         <span className="pgve-slider-pair">
           <input
             type="range"
@@ -89,7 +89,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
           />
         </span>
       </Field>
-      <Field name="opacity" property="opacity" controller={controller} element={element}>
+      <Field name="opacity" property="opacity" controller={controller} element={element} unit="%">
         <span className="pgve-slider-pair">
           <input
             type="range"
@@ -115,6 +115,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         controller={controller}
         element={element}
         companions={['borderStyle']}
+        unit="px"
       >
         <input
           type="number"
