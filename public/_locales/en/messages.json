@@ -14,14 +14,8 @@
   "share": {
     "message": "Share"
   },
-  "share_copy": {
-    "message": "Copy"
-  },
-  "share_export": {
-    "message": "Export"
-  },
   "share_snap": {
-    "message": "Snap"
+    "message": "Screenshot"
   },
   "hide": {
     "message": "Hide"
@@ -219,17 +213,8 @@
   "err_image_url": {
     "message": "Needs to start with https:// — or pick a file"
   },
-  "share_hand_off": {
-    "message": "Hand off"
-  },
-  "share_send": {
-    "message": "Send"
-  },
   "share_css": {
-    "message": "CSS"
-  },
-  "share_copy_json": {
-    "message": "Copy JSON"
+    "message": "Copy CSS"
   },
   "toast_copied_css": {
     "message": "CSS copied to clipboard"
@@ -485,5 +470,14 @@
   },
   "size_hint": {
     "message": "Also takes auto, a percentage, or fit-content."
+  },
+  "share_summary": {
+    "message": "Copy summary"
+  },
+  "share_json": {
+    "message": "Copy JSON"
+  },
+  "share_download": {
+    "message": "Download JSON"
   }
 }

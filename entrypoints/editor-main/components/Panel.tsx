@@ -209,7 +209,6 @@ export function Panel(props: PanelProps) {
         value={previewing ? 'original' : 'edited'}
         onChange={(value) => controller.setPreviewOriginal(value === 'original')}
       />
-      <ShareRow controller={controller} onToast={props.onToast} onSnapshot={props.onSnapshot} />
       {view === 'edit' && count > 0 && props.onToggleMarks && (
         <label className="pgve-marks-toggle">
           <input
@@ -222,6 +221,7 @@ export function Panel(props: PanelProps) {
           {t('show_marks')}
         </label>
       )}
+      <ShareRow controller={controller} onToast={props.onToast} onSnapshot={props.onSnapshot} />
       {stale > 0 && view === 'edit' && (
         <button
           type="button"

@@ -14,12 +14,6 @@
   "share": {
     "message": "分享"
   },
-  "share_copy": {
-    "message": "複製"
-  },
-  "share_export": {
-    "message": "匯出"
-  },
   "share_snap": {
     "message": "截圖"
   },
@@ -219,17 +213,8 @@
   "err_image_url": {
     "message": "需要以 https:// 開頭 — 或直接選檔案"
   },
-  "share_hand_off": {
-    "message": "交付"
-  },
-  "share_send": {
-    "message": "傳送"
-  },
   "share_css": {
-    "message": "CSS"
-  },
-  "share_copy_json": {
-    "message": "複製 JSON"
+    "message": "複製 CSS"
   },
   "toast_copied_css": {
     "message": "CSS 已複製到剪貼簿"
@@ -485,5 +470,14 @@
   },
   "size_hint": {
     "message": "也可以填 auto、百分比或 fit-content。"
+  },
+  "share_summary": {
+    "message": "複製摘要"
+  },
+  "share_json": {
+    "message": "複製 JSON"
+  },
+  "share_download": {
+    "message": "下載 JSON"
   }
 }
