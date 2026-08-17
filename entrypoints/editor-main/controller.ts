@@ -45,6 +45,21 @@ export class EditsController {
     if (this.page.records.length > 0) {
       this.statuses = applyAll(this.page.records, this.doc);
     }
+    // The applier retires stale baselines when the site rewrites an edited value; the
+    // panel's copy of the records has to follow, or its reset buttons write history.
+    doc.addEventListener('pg-editor:baseline', (e) => {
+      const updates = (e as CustomEvent<{ updates?: Array<{ id: string; oldValue: string }> }>)
+        .detail?.updates;
+      if (!updates?.length) return;
+      const byId = new Map(updates.map((u) => [u.id, u.oldValue]));
+      this.page = {
+        ...this.page,
+        records: this.page.records.map((r) =>
+          byId.has(r.id) ? { ...r, oldValue: byId.get(r.id)!, absent: undefined } : r,
+        ),
+      };
+      this.listeners.forEach((fn) => fn());
+    });
   }
 
   getPage = (): PageEdits => this.page;
@@ -133,10 +148,14 @@ export class EditsController {
       return;
     }
     if (!existing && newValue === oldValue) return;
+    // Only meaningful on the first record: a later coalesced edit sees the attribute we
+    // ourselves set, and upsertRecord keeps the original absent flag with the original
+    // oldValue.
+    const absent = type === 'attr' && !el.hasAttribute(property) ? true : undefined;
     this.setRecords(
       upsertRecord(
         this.page.records,
-        { ...gen, type, property, oldValue, newValue, viewport: this.viewportWidth() },
+        { ...gen, type, property, oldValue, newValue, absent, viewport: this.viewportWidth() },
         this.now(),
       ),
       { mergeSnapshot: target === this.lastEditTarget },

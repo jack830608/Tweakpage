@@ -90,3 +90,22 @@ test('the e2e suite never asserts on translated text', () => {
     .filter((value) => /[A-Za-z]{3}/.test(value));
   expect(wording, 'assert on ids and structure, not on wording').toEqual([]);
 });
+
+test('accessible names are never hard-coded English', () => {
+  // The panel spoke Chinese while the screen reader said "Hide element" — the visible
+  // string went through t() and the aria-label didn't (review 2026-08-17, finding 6).
+  // CSS property names ("box-shadow") are deliberately English and stay allowed.
+  const offenders: string[] = [];
+  for (const file of sourceFiles().filter((f) => f.endsWith('.tsx'))) {
+    const source = fs.readFileSync(file, 'utf8');
+    for (const [i, line] of source.split('\n').entries()) {
+      for (const m of line.matchAll(/(aria-label|ariaLabel|title)=(?:"([^"]*)"|\{'([^']*)'\}|\{`([^`]*)`\})/g)) {
+        const literal = (m[2] ?? m[3] ?? m[4] ?? '').replace(/\$\{[^}]*\}/g, '');
+        if (!/[A-Za-z]{3,}/.test(literal)) continue;
+        if (/^[a-z-]+$/.test(literal.trim())) continue; // a CSS property name is the label
+        offenders.push(`${file}:${i + 1} ${m[0]}`);
+      }
+    }
+  }
+  expect(offenders, 'route these through t() so both locales carry them').toEqual([]);
+});

@@ -72,3 +72,20 @@ test('the panel is never told a preview is saved', async () => {
   c.keepShared();
   await vi.waitFor(() => expect(c.getSaveState().state).toBe('saved'));
 });
+
+test("the panel's reset also honours a baseline the applier retired", async () => {
+  document.body.innerHTML = '<h1>Original</h1>';
+  const c = new EditsController(null, document, NOW);
+  c.recordEdit(document.querySelector('h1')!, 'text', 'textContent', 'Original', 'Edited');
+  const id = c.getPage().records[0].id;
+
+  // The applier saw the site rewrite this value and announced the new baseline.
+  document.dispatchEvent(
+    new CustomEvent('pg-editor:baseline', { detail: { updates: [{ id, oldValue: 'Live price' }] } }),
+  );
+
+  c.deleteRecord(id);
+  expect(document.querySelector('h1')!.textContent, 'reset must not write history').toBe(
+    'Live price',
+  );
+});

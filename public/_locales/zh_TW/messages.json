@@ -671,5 +671,50 @@
   },
   "toast_policy_copied": {
     "message": "已複製政策"
+  },
+  "aria_hide_element": {
+    "message": "隱藏元素"
+  },
+  "aria_unhide_element": {
+    "message": "取消隱藏元素"
+  },
+  "aria_revert_all": {
+    "message": "全部還原"
+  },
+  "aria_toggle_change": {
+    "message": "開關 $1 改動"
+  },
+  "aria_delete_change": {
+    "message": "刪除 $1 改動"
+  },
+  "aria_file_input": {
+    "message": "$1(檔案)"
+  },
+  "aria_hex": {
+    "message": "$1 — hex 色碼"
+  },
+  "aria_eyedropper": {
+    "message": "$1 — 滴管"
+  },
+  "aria_opacity_slider": {
+    "message": "$1 — 透明度"
+  },
+  "aria_use_color": {
+    "message": "使用 $1"
+  },
+  "tip_eyedropper": {
+    "message": "從頁面上吸取顏色"
+  },
+  "aria_confirm_suffix": {
+    "message": "$1 — 再按一次確認"
+  },
+  "aria_edit_page": {
+    "message": "編輯 $1"
+  },
+  "aria_open_page": {
+    "message": "開啟 $1"
+  },
+  "aria_clear_page": {
+    "message": "清除 $1 的改動"
   }
 }

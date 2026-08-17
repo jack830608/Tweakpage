@@ -46,7 +46,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-outline-label { position: absolute; top: -26px; left: 0; display: inline-flex; align-items: center; background: var(--dark); color: #fff; font: 500 11px/1.5 var(--sans); padding: 3px 8px; border-radius: 5px; white-space: nowrap; box-shadow: var(--shadow-lift); }
 
 /* ---------- panel shell ---------- */
-.pgve-panel { position: fixed; top: 12px; right: 12px; width: 320px; min-width: min(280px, calc(100vw - 24px)); max-width: min(560px, calc(100vw - 24px)); height: auto; max-height: calc(100vh - 24px); z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); color: var(--ink); opacity: 0.6; transition: opacity 0.18s ease; font: 400 12.5px/1.5 var(--sans); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
+.pgve-panel { position: fixed; top: 12px; right: 12px; width: 320px; min-width: min(280px, calc(100vw - 24px)); max-width: min(560px, calc(100vw - 24px)); height: auto; max-height: calc(100vh - 24px); z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); color: var(--ink); opacity: 0.85; transition: opacity 0.18s ease; font: 400 12.5px/1.5 var(--sans); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
 /* Fading the whole panel is what makes it see-through everywhere: the header, the
    footer and every input carry their own opaque fills, so tinting one layer could
    never do it. Text legibility is handled by going solid the moment you reach for
@@ -82,6 +82,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-header button:disabled:hover { background: none; color: var(--ink-3); }
 .pgve-resize { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; touch-action: none; }
 .pgve-resize:hover { background: var(--accent-soft); }
+/* Reachable by keyboard, so focus has to be visible — a 6px strip needs a hard colour. */
+.pgve-resize:focus-visible { outline: none; background: var(--accent); }
 .pgve-theme { max-width: 84px; padding: 2px 4px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11px; }
 .pgve-viewport { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }
 .pgve-header-divider { width: 1px; height: 14px; margin: 0 3px; background: var(--border); }
@@ -170,7 +172,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-section button:hover { border-color: var(--border-strong); color: var(--ink); }
 /* Fields are named by the CSS property they write, set in mono so they read as code
    and match what lands in the exported change list. */
-.pgve-prop { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pgve-prop { font-family: var(--mono); font-size: 11px; color: var(--ink-2); letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pgve-prop--modified { color: var(--accent-ink); }
 .pgve-section button.pgve-reset { padding: 0; border: none; background: none; color: var(--accent); font-size: 12px; width: 16px; height: 16px; flex: none; justify-content: center; border-radius: 4px; }
 .pgve-section button.pgve-reset:hover { color: var(--accent-ink); }

@@ -1,4 +1,5 @@
 import { fakeBrowser } from 'wxt/testing';
+import { t } from '../../../../lib/i18n';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { Panel } from '../Panel';
@@ -93,12 +94,12 @@ const CASES = [
   { section: 'typography', label: 'Text align', property: 'textAlign', recordType: 'style', input: 'center', value: 'center', display: 'center' },
   { section: 'typography', label: 'Letter spacing', property: 'letterSpacing', recordType: 'style', input: '0.5', value: '0.5px', display: '0.5' },
   { section: 'typography', label: 'Text transform', property: 'textTransform', recordType: 'style', input: 'uppercase', value: 'uppercase', display: 'uppercase' },
-  { section: 'typography', label: 'Color hex', property: 'color', recordType: 'style', input: '#ff0000', value: '#ff0000', display: '#ff0000' },
-  { section: 'background', label: 'Background color hex', property: 'backgroundColor', recordType: 'style', input: '#00ff00', value: '#00ff00', display: '#00ff00' },
+  { section: 'typography', label: t('aria_hex', ['Color']), property: 'color', recordType: 'style', input: '#ff0000', value: '#ff0000', display: '#ff0000' },
+  { section: 'background', label: t('aria_hex', ['Background color']), property: 'backgroundColor', recordType: 'style', input: '#00ff00', value: '#00ff00', display: '#00ff00' },
   { section: 'appearance', label: 'Corner radius value', property: 'borderRadius', recordType: 'style', input: '12', value: '12px', display: '12' },
   { section: 'appearance', label: 'Opacity value', property: 'opacity', recordType: 'style', input: '50', value: '0.5', display: '50' },
   { section: 'appearance', label: 'Border width', property: 'borderWidth', recordType: 'style', input: '3', value: '3px', display: '3' },
-  { section: 'appearance', label: 'Border color hex', property: 'borderColor', recordType: 'style', input: '#0000ff', value: '#0000ff', display: '#0000ff' },
+  { section: 'appearance', label: t('aria_hex', ['Border color']), property: 'borderColor', recordType: 'style', input: '#0000ff', value: '#0000ff', display: '#0000ff' },
   { section: 'size', label: 'Width', property: 'width', recordType: 'style', input: '250', value: '250px', display: '250px' },
   { section: 'size', label: 'Height', property: 'height', recordType: 'style', input: '80', value: '80px', display: '80px' },
   { section: 'spacing', label: 'padding top', property: 'paddingTop', recordType: 'style', input: '24', value: '24px', display: '24' },

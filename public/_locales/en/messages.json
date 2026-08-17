@@ -671,5 +671,50 @@
   },
   "toast_policy_copied": {
     "message": "Policy copied"
+  },
+  "aria_hide_element": {
+    "message": "Hide element"
+  },
+  "aria_unhide_element": {
+    "message": "Unhide element"
+  },
+  "aria_revert_all": {
+    "message": "Revert all"
+  },
+  "aria_toggle_change": {
+    "message": "Toggle $1 change"
+  },
+  "aria_delete_change": {
+    "message": "Delete $1 change"
+  },
+  "aria_file_input": {
+    "message": "$1 (file)"
+  },
+  "aria_hex": {
+    "message": "$1 — hex"
+  },
+  "aria_eyedropper": {
+    "message": "$1 — eyedropper"
+  },
+  "aria_opacity_slider": {
+    "message": "$1 — opacity"
+  },
+  "aria_use_color": {
+    "message": "Use $1"
+  },
+  "tip_eyedropper": {
+    "message": "Pick a color from the page"
+  },
+  "aria_confirm_suffix": {
+    "message": "$1 — confirm"
+  },
+  "aria_edit_page": {
+    "message": "Edit $1"
+  },
+  "aria_open_page": {
+    "message": "Open $1"
+  },
+  "aria_clear_page": {
+    "message": "Clear edits for $1"
   }
 }

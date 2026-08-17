@@ -7,7 +7,8 @@
     "dev": "wxt",
     "build": "wxt build",
     "postinstall": "wxt prepare",
-    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit && vitest run",
     "test:watch": "vitest",
     "e2e": "wxt build && playwright test"
   },
@@ -24,10 +25,13 @@
     "@wxt-dev/module-react": "^1.1.0",
     "happy-dom": "^17.0.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0",
+    "vitest": "^4.1.10",
     "wxt": "^0.20.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "spawn-sync"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "spawn-sync"
+    ]
   }
 }

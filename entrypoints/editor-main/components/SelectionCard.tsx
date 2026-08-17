@@ -31,7 +31,7 @@ export function SelectionCard({ element, controller, onSelect }: SelectionCardPr
         <div className="pgve-selection-label">{buildElementLabel(element)}</div>
         <button
           type="button"
-          aria-label={hidden ? 'Unhide element' : 'Hide element'}
+          aria-label={hidden ? t('aria_unhide_element') : t('aria_hide_element')}
           title={hidden ? 'Show the element again' : 'Hide the selected element'}
           onClick={onToggleHide}
         >

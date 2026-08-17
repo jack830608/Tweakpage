@@ -198,3 +198,29 @@ test('clearing a page puts it back without a reload', async () => {
   expect(document.querySelector('style[data-pg-editor]'), 'and the styles taken back out').toBeNull();
   expect(document.getElementById('tweakpage-marker')).toBeNull();
 });
+
+test("a site rewrite becomes the new baseline, so clearing restores the site's value", async () => {
+  const url = 'https://example.com/live';
+  // Its own element and selector: engines from earlier tests keep observing this
+  // document, and sharing .title with them lets their reapply race this test's.
+  document.body.innerHTML = '<h1 class="live">Original</h1>';
+  await seed(url, [record({ selector: '.live', oldValue: 'Original', newValue: 'Edited headline' })]);
+  const engine = new ApplierEngine(document);
+  await engine.start(url);
+  expect(document.querySelector('.live')!.textContent).toBe('Edited headline');
+
+  // The site updates the same text — a price, a stock count. We reapply on top of it,
+  // but what the user would get back on reset must be this, not the stale snapshot
+  // (review 2026-08-17, finding 3).
+  document.querySelector('.live')!.textContent = 'Live price update';
+  await wait(80);
+  expect(document.querySelector('.live')!.textContent, 'the edit stays applied').toBe(
+    'Edited headline',
+  );
+
+  await fakeBrowser.storage.local.remove(pageKey(url));
+  await wait(10);
+  expect(document.querySelector('.live')!.textContent, "reset restores the site's latest").toBe(
+    'Live price update',
+  );
+});

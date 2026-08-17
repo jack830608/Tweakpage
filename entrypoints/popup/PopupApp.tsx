@@ -132,7 +132,7 @@ export function PopupApp() {
                 {current ? (
                   <button
                     type="button"
-                    aria-label={`Edit ${page.url}`}
+                    aria-label={t('aria_edit_page', [page.url])}
                     onClick={() => void onEditThisPage()}
                   >
                     {t('pop_edit')}
@@ -140,7 +140,7 @@ export function PopupApp() {
                 ) : (
                   <button
                     type="button"
-                    aria-label={`Open ${page.url}`}
+                    aria-label={t('aria_open_page', [page.url])}
                     onClick={() => void onOpen(page.url)}
                   >
                     {t('pop_open')}
@@ -149,7 +149,7 @@ export function PopupApp() {
                 <ConfirmButton
                   testId="clear-page"
                   label={t('pop_clear')}
-                  ariaLabel={`Clear edits for ${page.url}`}
+                  ariaLabel={t('aria_clear_page', [page.url])}
                   onConfirm={() => void onClear(key)}
                 />
               </li>

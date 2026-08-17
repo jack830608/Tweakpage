@@ -36,7 +36,7 @@ export function ConfirmButton({ label, ariaLabel, onConfirm, className, testId }
       type="button"
       data-testid={testId}
       className={armed ? `${className ?? ''} is-armed`.trim() : className}
-      aria-label={armed ? `${ariaLabel} — confirm` : ariaLabel}
+      aria-label={armed ? t('aria_confirm_suffix', [ariaLabel]) : ariaLabel}
       onClick={() => {
         if (armed) {
           disarm();
