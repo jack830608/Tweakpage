@@ -390,10 +390,8 @@ test('a shared link works for someone who has set nothing up', async ({ context 
   await expect(readerPage.locator('h1'), 'the edits arrive without any setup').toHaveText(
     'Headline from a colleague',
   );
-  await expect(
-    readerPage.locator('#tweakpage-marker button'),
-    'and the page says it is not what the site serves',
-  ).toBeVisible();
+  // While the panel is open, the banner speaks and the corner marker stays out of it.
+  await expect(readerPage.locator('#tweakpage-marker')).toHaveCount(0);
   // The reader's own copy of the page must be untouched: following a link is looking.
   const plain = await reader.context.newPage();
   await plain.goto('http://localhost:4173/');
@@ -407,6 +405,16 @@ test('a shared link works for someone who has set nothing up', async ({ context 
     readerPage.locator('[data-testid="shared-preview"]'),
     'and says the edits came from someone else',
   ).toBeVisible();
+
+  // Closing the panel mid-preview hands the story to the marker: the page still shows
+  // someone else's edits and still has to say so.
+  await readerPage.locator('[data-testid="close"]').click();
+  await expect(readerPage.locator('#tweakpage-marker button')).toBeVisible();
+
+  // And the marker is the way back in.
+  await readerPage.locator('#tweakpage-marker button').click();
+  await expect(readerPage.locator('[data-testid="shared-preview"]')).toBeVisible();
+  await expect(readerPage.locator('#tweakpage-marker'), 'the panel is back — the marker yields').toHaveCount(0);
 
   // Keeping is the decision that makes them yours, and only then do they persist.
   await readerPage.locator('[data-testid="keep-shared"]').click();
@@ -940,4 +948,25 @@ test('reordering siblings persists, undoes, and leaves other edits on the right 
     page.locator('[data-testid="move-down"]').evaluate((el) => getComputedStyle(el).opacity),
   ]);
   expect(Number(disabledOpacity), 'a dead arrow has to look dead').toBeLessThan(Number(enabledOpacity));
+});
+
+test('one corner speaks at a time: panel, pill, or marker', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited headline');
+
+  // Panel open: its footer carries the count, the corner marker stays away.
+  await expect(page.locator('#tweakpage-marker')).toHaveCount(0);
+
+  // Minimized: the pill says "1" bottom-right; a marker bottom-left would repeat it.
+  await page.locator('[data-testid="minimize"]').click();
+  await expect(page.locator('[data-testid="expand-tweakpage"]')).toBeVisible();
+  await expect(page.locator('#tweakpage-marker')).toHaveCount(0);
+
+  // Closed: now the marker is the only voice, so it speaks.
+  await page.locator('[data-testid="expand-tweakpage"]').click();
+  await page.locator('[data-testid="close"]').click();
+  await expect(page.locator('#tweakpage-marker button')).toBeVisible();
 });

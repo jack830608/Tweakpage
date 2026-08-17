@@ -224,3 +224,19 @@ test("a site rewrite becomes the new baseline, so clearing restores the site's v
     'Live price update',
   );
 });
+
+test('the marker yields while the editor UI is on screen and returns when it closes', async () => {
+  const url = 'https://example.com/marker';
+  document.body.innerHTML = '<h1 class="mk">Original</h1>';
+  await seed(url, [record({ selector: '.mk' })]);
+  const engine = new ApplierEngine(document);
+  await engine.start(url);
+  expect(document.getElementById('tweakpage-marker'), 'alone, the applier says it').toBeTruthy();
+
+  // The panel opens: its footer and pill already carry the count.
+  document.dispatchEvent(new CustomEvent('pg-editor:ui', { detail: { visible: true } }));
+  expect(document.getElementById('tweakpage-marker'), 'two corners, same sentence').toBeNull();
+
+  document.dispatchEvent(new CustomEvent('pg-editor:ui', { detail: { visible: false } }));
+  expect(document.getElementById('tweakpage-marker')).toBeTruthy();
+});
