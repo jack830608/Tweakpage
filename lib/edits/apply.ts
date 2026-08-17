@@ -85,6 +85,25 @@ function syncMarks(doc: Document, marks: Map<Element, string[]>): void {
   }
 }
 
+/**
+ * Undoes the edits that were applied and are not in the new set.
+ *
+ * Style edits need no help — the injected stylesheet is rewritten wholesale — but text
+ * and attribute edits changed the page itself, so dropping them from the set leaves the
+ * old change sitting on screen until something reloads the page.
+ */
+export function revertRemoved(previous: EditRecord[], next: EditRecord[], doc: Document): void {
+  for (const record of previous) {
+    if (record.type === 'style' || !record.enabled) continue;
+    const survives = next.some(
+      (r) => r.selector === record.selector && r.property === record.property && r.enabled,
+    );
+    if (survives) continue;
+    const el = resolveRecord(record, doc);
+    if (el) revertDomEdit(el, record);
+  }
+}
+
 export function revertAll(records: EditRecord[], doc: Document): void {
   doc.querySelector(STYLE_TAG_SELECTOR)?.remove();
   for (const el of Array.from(doc.querySelectorAll(MARKED_SELECTOR))) {

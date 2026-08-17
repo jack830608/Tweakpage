@@ -6,6 +6,7 @@ interface ConfirmButtonProps {
   ariaLabel: string;
   onConfirm: () => void;
   className?: string;
+  testId?: string;
 }
 
 const RESET_MS = 4000;
@@ -16,7 +17,7 @@ const RESET_MS = 4000;
  * A second click rather than a dialog: the click is already in the right place, and a
  * dialog inside a page we don't own would have to fight that page's styles and focus.
  */
-export function ConfirmButton({ label, ariaLabel, onConfirm, className }: ConfirmButtonProps) {
+export function ConfirmButton({ label, ariaLabel, onConfirm, className, testId }: ConfirmButtonProps) {
   const [armed, setArmed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -33,6 +34,7 @@ export function ConfirmButton({ label, ariaLabel, onConfirm, className }: Confir
   return (
     <button
       type="button"
+      data-testid={testId}
       className={armed ? `${className ?? ''} is-armed`.trim() : className}
       aria-label={armed ? `${ariaLabel} — confirm` : ariaLabel}
       onClick={() => {

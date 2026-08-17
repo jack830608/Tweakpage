@@ -1,4 +1,4 @@
-import { applyAll, revertAll, type ApplyStatus } from '../../lib/edits/apply';
+import { applyAll, revertAll, revertRemoved, type ApplyStatus } from '../../lib/edits/apply';
 
 export type SaveState = 'idle' | 'saving' | 'saved' | 'failed' | 'preview';
 import { findRecord, upsertRecord } from '../../lib/edits/coalesce';
@@ -342,16 +342,7 @@ export class EditsController {
       console.warn('[tweakpage] ignoring edit for stale URL', this.page.url);
       return;
     }
-    for (const record of this.page.records) {
-      if (record.type === 'style' || !record.enabled) continue;
-      const survives = records.some(
-        (r) => r.selector === record.selector && r.property === record.property && r.enabled,
-      );
-      if (!survives) {
-        const el = resolveRecord(record, this.doc);
-        if (el) revertDomEdit(el, record);
-      }
-    }
+    revertRemoved(this.page.records, records, this.doc);
     this.page = { ...this.page, records, title: this.doc.title, updatedAt: this.now() };
     this.statuses = applyAll(records, this.doc);
     this.persist();

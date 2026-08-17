@@ -24,14 +24,17 @@ export const EMPTY_SETTINGS: ShareSettings = {
  */
 export const SHARE_FIELDS: ReadonlyArray<{
   key: keyof ShareSettings;
+  /** What AWS's own console calls it. */
   label: string;
+  /** The environment variable of the same value, for matching against an existing .env. */
+  env: string;
   secret?: boolean;
   hint?: string;
 }> = [
-  { key: 'bucket', label: 'AWS_S3_BUCKET' },
-  { key: 'region', label: 'AWS_REGION', hint: 'ap-northeast-1' },
-  { key: 'accessKeyId', label: 'AWS_ACCESS_KEY_ID' },
-  { key: 'secretAccessKey', label: 'AWS_SECRET_ACCESS_KEY', secret: true },
+  { key: 'bucket', label: 'Bucket', env: 'AWS_S3_BUCKET', hint: 'my-bucket' },
+  { key: 'region', label: 'Region', env: 'AWS_REGION', hint: 'ap-northeast-1' },
+  { key: 'accessKeyId', label: 'Access key ID', env: 'AWS_ACCESS_KEY_ID', hint: 'AKIA…' },
+  { key: 'secretAccessKey', label: 'Secret access key', env: 'AWS_SECRET_ACCESS_KEY', secret: true },
 ];
 
 /** Sharing is offered only when a whole set is present — a partial one just fails at S3. */

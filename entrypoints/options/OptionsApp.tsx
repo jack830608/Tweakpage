@@ -38,9 +38,11 @@ export function OptionsApp() {
           });
         }}
       >
-        {SHARE_FIELDS.map(({ key, label, secret, hint }) => (
+        {SHARE_FIELDS.map(({ key, label, env, secret, hint }) => (
           <label key={key}>
-            <span>{label}</span>
+            <span>
+              {label} <code>{env}</code>
+            </span>
             <input
               type={secret ? 'password' : 'text'}
               aria-label={label}
