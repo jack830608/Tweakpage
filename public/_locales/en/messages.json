@@ -599,5 +599,11 @@
   },
   "tip_share_unset": {
     "message": "Set up a bucket first: right-click the toolbar icon → Options"
+  },
+  "pop_settings": {
+    "message": "Share settings"
+  },
+  "aria_open_settings": {
+    "message": "Open share settings"
   }
 }

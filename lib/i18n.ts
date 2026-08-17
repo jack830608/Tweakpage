@@ -178,6 +178,8 @@ export const MESSAGES: Record<string, string> = {
   pop_pages: 'Pages with edits',
   pop_empty: 'No saved edits yet. Open any page and start tweaking.',
   pop_open: 'Open',
+  pop_settings: "Share settings",
+  aria_open_settings: "Open share settings",
   pop_clear: 'Clear',
   confirm_again: "Sure?",
   toast_save_failed: "Couldn't save \u2014 your edits are only on screen. Check storage space.",
