@@ -79,3 +79,14 @@ test('a count of one never reads as a plural', () => {
     expect(plural(3, one, many), many).toContain('3');
   }
 });
+
+test('the e2e suite never asserts on translated text', () => {
+  // Twice now a test has failed only because this machine runs in Chinese. The suite
+  // anchors on data-testid; user-visible strings belong in unit tests with the fallback.
+  const spec = fs.readFileSync('tests/e2e/editor.spec.ts', 'utf8');
+  // Digits are the same in every language; words are not.
+  const wording = [...spec.matchAll(/toContainText\(\s*(\/[^/]+\/i?|'[^']+')/g)]
+    .map((m) => m[1])
+    .filter((value) => /[A-Za-z]{3}/.test(value));
+  expect(wording, 'assert on ids and structure, not on wording').toEqual([]);
+});

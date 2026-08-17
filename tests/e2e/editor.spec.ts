@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { expect } from '@playwright/test';
-import { activateEditor, test } from './fixtures';
+import { activateEditor, chromiumWithExtension, test } from './fixtures';
 
 /** Opens a section if it is closed. Only Text is open by default. */
 async function openSection(page: import('@playwright/test').Page, id: string): Promise<void> {
@@ -290,6 +290,81 @@ test('two proposals can be saved and switched between', async ({ context }) => {
   await expect(page.locator('h1')).toHaveText('Option A headline');
   await activateEditor(context);
   await expect(page.locator('.pgve-variant')).toHaveCount(1);
+});
+
+test('the share button is dead until a bucket is configured', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  const button = page.locator('[data-testid="share-link"]');
+  await expect(button, 'a button that can only fail should not invite a click').toBeDisabled();
+  // The tooltip is translated, so assert that it says something rather than what.
+  const explained = await button.getAttribute('title');
+  expect(explained?.length ?? 0, 'a disabled button must say why').toBeGreaterThan(10);
+});
+
+test('a shared link works for someone who has set nothing up', async ({ context }) => {
+  // Stand in for S3: the PUT keeps the body, the GET hands it back.
+  const stored = new Map<string, string>();
+  await context.route('https://**.amazonaws.com/**', async (route) => {
+    const request = route.request();
+    if (request.method() === 'PUT') {
+      stored.set(new URL(request.url()).pathname, request.postData() ?? '');
+      return route.fulfill({ status: 200, body: '' });
+    }
+    const body = stored.get(new URL(request.url()).pathname);
+    return body === undefined
+      ? route.fulfill({ status: 404, body: '' })
+      : route.fulfill({ status: 200, contentType: 'application/json', body });
+  });
+
+  const sender = await context.newPage();
+  await sender.goto('http://localhost:4173/');
+
+  // The worker only exists once something has woken it, so open the page first.
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  await worker.evaluate(async () => {
+    await (globalThis as any).chrome.storage.local.set({
+      'tweakpage:share-settings': {
+        bucket: 'demo-bucket',
+        region: 'ap-northeast-1',
+        accessKeyId: 'AKIAIOSFODNN7EXAMPLE',
+        secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      },
+    });
+  });
+  await activateEditor(context);
+  await sender.locator('h1').click();
+  await sender.locator('[data-testid="text"]').fill('Headline from a colleague');
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await sender.locator('[data-testid="share-link"]').click();
+  await expect(sender.locator('.pgve-toast')).toBeVisible();
+
+  const link: string = await sender.evaluate(() => navigator.clipboard.readText());
+  expect(link, 'the link points at the page, carrying a reference').toContain('?tweakpage=');
+
+  // A second profile: no bucket, no keys, nothing configured.
+  const reader = await chromiumWithExtension();
+  await reader.context.route('https://**.amazonaws.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: stored.get(new URL(route.request().url()).pathname) ?? '',
+    }),
+  );
+  const readerPage = await reader.context.newPage();
+  await readerPage.goto(link);
+
+  await expect(readerPage.locator('h1'), 'the edits arrive without any setup').toHaveText(
+    'Headline from a colleague',
+  );
+  await expect(
+    readerPage.locator('#tweakpage-marker button'),
+    'and the page says it is not what the site serves',
+  ).toBeVisible();
+  await reader.context.close();
 });
 
 test('an edited page says so, even with the editor closed', async ({ context }) => {

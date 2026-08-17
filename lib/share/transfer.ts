@@ -1,8 +1,9 @@
-import { getShareSettings, isConfigured, objectUrl, type ShareSettings } from './settings';
+import { objectUrl, type ShareRef } from './link';
+import { getShareSettings, isConfigured } from './settings';
 import { signRequest } from './sigv4';
 
 export type TransferResult =
-  | { ok: true; body: string }
+  | { ok: true; body: string; ref?: ShareRef }
   | { ok: false; reason: 'not-configured' | 'not-found' | 'rejected' | 'offline' };
 
 /**
@@ -15,46 +16,43 @@ export type TransferResult =
 export async function putShared(id: string, body: string): Promise<TransferResult> {
   const settings = await getShareSettings();
   if (!isConfigured(settings)) return { ok: false, reason: 'not-configured' };
-  return send('PUT', settings, id, body);
-}
 
-export async function getShared(id: string): Promise<TransferResult> {
-  const settings = await getShareSettings();
-  if (!isConfigured(settings)) return { ok: false, reason: 'not-configured' };
-  return send('GET', settings, id, '');
-}
-
-async function send(
-  method: 'PUT' | 'GET',
-  settings: ShareSettings,
-  id: string,
-  body: string,
-): Promise<TransferResult> {
-  const url = objectUrl(settings, id);
+  const ref = { id, bucket: settings.bucket, region: settings.region };
+  const url = objectUrl(ref);
   const { headers } = await signRequest({
-    method,
+    method: 'PUT',
     url,
     region: settings.region,
     accessKeyId: settings.accessKeyId,
     secretAccessKey: settings.secretAccessKey,
     body,
-    headers: method === 'PUT' ? { 'content-type': 'application/json' } : {},
+    headers: { 'content-type': 'application/json' },
   });
 
-  let response: Response;
   try {
-    response = await fetch(url.toString(), {
-      method,
-      headers,
-      body: method === 'PUT' ? body : undefined,
-    });
+    const response = await fetch(url.toString(), { method: 'PUT', headers, body });
+    return response.ok ? { ok: true, body: '', ref } : { ok: false, reason: 'rejected' };
   } catch {
     return { ok: false, reason: 'offline' };
   }
-  if (response.status === 404 || response.status === 403) {
-    // S3 answers 403 for a missing object when the caller cannot list the bucket.
-    return { ok: false, reason: method === 'GET' ? 'not-found' : 'rejected' };
+}
+
+/**
+ * Reading needs nothing configured.
+ *
+ * The point of a link is that the person you send it to can open it — asking them to set
+ * up AWS first would defeat it. The objects are world-readable under an unguessable name,
+ * so the link itself is the permission.
+ */
+export async function getShared(ref: ShareRef): Promise<TransferResult> {
+  try {
+    const response = await fetch(objectUrl(ref).toString());
+    if (response.status === 403 || response.status === 404) {
+      return { ok: false, reason: 'not-found' };
+    }
+    if (!response.ok) return { ok: false, reason: 'rejected' };
+    return { ok: true, body: await response.text() };
+  } catch {
+    return { ok: false, reason: 'offline' };
   }
-  if (!response.ok) return { ok: false, reason: 'rejected' };
-  return { ok: true, body: method === 'GET' ? await response.text() : '' };
 }

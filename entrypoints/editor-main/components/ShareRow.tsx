@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { safeSendMessage } from '../../../lib/extension-context';
 import { makeShareId, shareLink } from '../../../lib/share/link';
+import { getShareSettings, isConfigured } from '../../../lib/share/settings';
 import { toCss } from '../../../lib/export/css';
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
@@ -17,6 +19,11 @@ interface ShareRowProps {
 
 export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
   const today = () => new Date().toISOString().slice(0, 10);
+  // Offering a button that can only fail is worse than not offering it.
+  const [canShare, setCanShare] = useState(false);
+  useEffect(() => {
+    void getShareSettings().then((settings) => setCanShare(isConfigured(settings)));
+  }, []);
 
   const copy = async (text: string, message: string) => {
     try {
@@ -32,13 +39,13 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
     const id = makeShareId();
     const result = (await browser.runtime
       .sendMessage({ type: 'pg:share-put', id, body: toJson(page) })
-      .catch(() => null)) as { ok?: boolean; reason?: string } | null;
+      .catch(() => null)) as { ok?: boolean; ref?: Parameters<typeof shareLink>[1] } | null;
 
-    if (!result?.ok) {
-      onToast({ message: t(result?.reason === 'not-configured' ? 'toast_share_unset' : 'toast_share_failed') });
+    if (!result?.ok || !result.ref) {
+      onToast({ message: t('toast_share_failed') });
       return;
     }
-    await copy(shareLink(page.url, id), t('toast_share_copied'));
+    await copy(shareLink(page.url, result.ref), t('toast_share_copied'));
   };
 
   const onJsonFile = () => {
@@ -91,7 +98,8 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           type="button"
           aria-label={t('aria_share_link')}
           data-testid="share-link"
-          title={t('tip_share_link')}
+          disabled={!canShare}
+          title={canShare ? t('tip_share_link') : t('tip_share_unset')}
           onClick={() => void onShareLink()}
         >
           <LinkIcon /> {t('share_link')}

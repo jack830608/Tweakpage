@@ -69,28 +69,40 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 
 ## Share links (optional)
 
-Upload a page's edits to **your own** S3 bucket and share a link. Whoever opens it needs
-Tweakpage and the same bucket configured; the edits apply on arrival.
+Upload a page's edits to **your own** S3 bucket and share the link. Whoever opens it needs
+Tweakpage and nothing else — no AWS account, no setup — and the edits apply on arrival.
 
 Right-click the toolbar icon → **Options** and fill in bucket, region, key id and secret.
-Nothing is shared until all four are set, and this repo ships no defaults.
+Until all four are set the Share link button stays disabled, and this repo ships no
+defaults.
 
-The link carries only a random id — never a URL — so it can only ever resolve against the
-bucket the reader configured themselves. What arrives is validated exactly like an
-imported file.
-
-**About the key.** Extension storage is not a vault: anyone with access to that browser
-profile can read it, and this extension is open source. Use a key that can do nothing
-except read and write one prefix, and rotate it like any other credential:
+Two bucket rules make that work. The key you paste only needs to write:
 
 ```json
-{ "Effect": "Allow",
-  "Action": ["s3:PutObject", "s3:GetObject"],
+{ "Effect": "Allow", "Action": "s3:PutObject",
   "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
 ```
 
-The secret itself never leaves the machine — requests carry a signature derived from it.
-Set a lifecycle rule on that prefix to expire old shares.
+and the shares are world-readable, which is what lets a link work for someone with no
+credentials of their own:
+
+```json
+{ "Effect": "Allow", "Principal": "*", "Action": "s3:GetObject",
+  "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
+```
+
+The object name is 113 bits of randomness, so the link is the permission — but the file is
+public, so don't share pages whose content is confidential. Set a lifecycle rule on the
+prefix to expire old shares.
+
+A link carries an id, a bucket and a region as separate, validated parts — never a URL — so
+it can only ever resolve to an address Tweakpage builds itself, and what arrives is checked
+exactly like an imported file.
+
+**About the key.** Extension storage is not a vault: anyone with access to that browser
+profile can read it, and this extension is open source. Use a key that can do nothing
+except write that one prefix, and rotate it like any other credential. The secret itself
+never leaves the machine — requests carry a signature derived from it.
 
 ## Development
 

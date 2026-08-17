@@ -1,7 +1,7 @@
 import { browser } from 'wxt/browser';
 import { ApplierEngine } from '../lib/applier/engine';
 import { watchUrlChanges } from '../lib/applier/navigation';
-import { shareIdFrom } from '../lib/share/link';
+import { shareRefFrom } from '../lib/share/link';
 
 export default defineContentScript({
   matches: ['http://*/*', 'https://*/*'],
@@ -25,7 +25,7 @@ export default defineContentScript({
 
     // A shared link opens the editor so the offer can be shown and refused. It never
     // applies anything on its own.
-    if (shareIdFrom(location.href)) {
+    if (shareRefFrom(location.href)) {
       void import(/* @vite-ignore */ browser.runtime.getURL('/editor-main.js'));
     }
 
