@@ -952,3 +952,29 @@ test('one chip, one home: it hides with the panel and holds its spot otherwise',
   expect(closedBox.x).toBe(minimizedBox.x);
   expect(closedBox.y).toBe(minimizedBox.y);
 });
+
+test('moving an element keeps it on screen', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  // Tall rows: one step down moves the element a full viewport-height away.
+  await page.addStyleTag({ content: '#perks li { height: 70vh; }' });
+  await activateEditor(context);
+
+  await page.locator('#perk-a').click();
+  const down = page.locator('[data-testid="move-down"]');
+  await down.click();
+  await down.click();
+
+  // Two steps put perk-a ~140vh from the top; without following it, the user is left
+  // staring at the hole it used to fill.
+  await expect
+    .poll(
+      () =>
+        page.locator('#perk-a').evaluate((el) => {
+          const rect = el.getBoundingClientRect();
+          return rect.top >= -10 && rect.top < window.innerHeight;
+        }),
+      { timeout: 3000 },
+    )
+    .toBe(true);
+});

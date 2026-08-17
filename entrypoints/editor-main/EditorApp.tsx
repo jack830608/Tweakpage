@@ -11,6 +11,7 @@ import { useExtensionAlive } from './hooks/useExtensionAlive';
 import { captureBeforeAfter } from './snapshot';
 import { parseImport } from '../../lib/edits/import';
 import { shareRefFrom } from '../../lib/share/link';
+import { revealElement } from './reveal';
 import { safeStorageSet } from '../../lib/extension-context';
 import { plural, t } from '../../lib/i18n';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
@@ -154,7 +155,12 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         selected={mode === 'edit' && alive ? activeSelected : null}
         edited={mode === 'edit' && showMarks ? Array.from(document.querySelectorAll('[data-tweakpage]')) : []}
         canMove={(el, direction) => controller.canMove(el, direction)}
-        onMove={(el, direction) => controller.moveElement(el, direction)}
+        onMove={(el, direction) => {
+          controller.moveElement(el, direction);
+          // Follow the element: a step past a tall sibling leaves the user staring at
+          // the hole it used to fill. Already-visible elements are left alone.
+          revealElement(el);
+        }}
       />
       <StatusBadge
         previewing={previewing}
