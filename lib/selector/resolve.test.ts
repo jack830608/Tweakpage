@@ -1,4 +1,4 @@
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { resolveRecord } from './resolve';
 
 beforeEach(() => {
@@ -60,4 +60,63 @@ test('fingerprint scan is restricted to the same tag (derived from fallbacks)', 
 test('skips the fingerprint scan when no tag can be derived', () => {
   document.body.innerHTML = '<p>Gamma</p>';
   expect(resolveRecord(rec('.gone', ['[data-x="y"]'], 'Gamma'), document)).toBeNull();
+});
+
+describe('identity guard: a unique selector hit still has to be the remembered element', () => {
+  const record = (overrides = {}) => ({
+    selector: 'p:nth-of-type(2)',
+    fallbackSelectors: [],
+    textFingerprint: 'Target offer',
+    type: 'text' as const,
+    property: 'textContent',
+    oldValue: 'Target offer',
+    newValue: 'Edited target',
+    ...overrides,
+  });
+
+  test('a sibling inserted above the target relocates the record instead of hitting the neighbour', () => {
+    // The reviewer's repro: the selector is structural, the site rerendered, and
+    // p:nth-of-type(2) now names an element the user never picked.
+    document.body.innerHTML = '<div><p>Inserted offer</p><p>First offer</p><p>Target offer</p></div>';
+    const el = resolveRecord(record(), document);
+    expect(el?.textContent).toBe('Target offer');
+  });
+
+  test('the applied state counts as identity too', () => {
+    // After we apply, the element shows newValue, not the fingerprint. That must not
+    // read as drift.
+    document.body.innerHTML = '<div><p>First offer</p><p>Edited target</p></div>';
+    const el = resolveRecord(record(), document);
+    expect(el?.textContent).toBe('Edited target');
+  });
+
+  test('drift is caught even while the edit is applied', () => {
+    // The sibling arrived without the site discarding our applied edit.
+    document.body.innerHTML =
+      '<div><p>Inserted offer</p><p>First offer</p><p>Edited target</p></div>';
+    const el = resolveRecord(record(), document);
+    expect(el?.textContent).toBe('Edited target');
+  });
+
+  test('a site rewriting the text in place is not drift — the hit is trusted', () => {
+    // Dynamic content: the price element is still the same element, its text just moved
+    // on. Refusing the hit here would stop edits from replaying on any live page.
+    document.body.innerHTML = '<div><p>First offer</p><p>Live price update</p></div>';
+    const el = resolveRecord(record(), document);
+    expect(el?.textContent).toBe('Live price update');
+  });
+
+  test('with no fingerprint the selector is all there is, as before', () => {
+    document.body.innerHTML = '<div><p>One</p><p>Two</p></div>';
+    const el = resolveRecord(record({ textFingerprint: undefined }), document);
+    expect(el?.textContent).toBe('Two');
+  });
+
+  test('an ambiguous relocation falls back to the selector hit', () => {
+    // Two elements carry the remembered text; picking either would be a guess.
+    document.body.innerHTML =
+      '<div><p>Inserted</p><p>Other</p><p>Target offer</p><p>Target offer</p></div>';
+    const el = resolveRecord(record(), document);
+    expect(el?.textContent).toBe('Other');
+  });
 });
