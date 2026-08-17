@@ -852,3 +852,43 @@ test('the panel can be resized without a pointer', async ({ context }) => {
   const now = await handle.getAttribute('aria-valuenow');
   expect(Number(now), 'the separator announces its value').toBe(280);
 });
+
+test('the idle panel stays readable, measured, in both themes', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  // Park the pointer on the page so the panel is genuinely idle.
+  await page.mouse.move(10, 10);
+  await page.waitForTimeout(300);
+
+  // Idle translucency is a feature; text falling to 2.9:1 was the bug (review finding 4).
+  // Measured the way a screen shows it: text and panel blended toward the page by the
+  // panel's own opacity, then WCAG contrast between the two results.
+  const contrastOf = () =>
+    page.evaluate(() => {
+      const host = document.getElementById('tweakpage-host')!.shadowRoot!;
+      const panel = host.querySelector('.pgve-panel') as HTMLElement;
+      const sample = host.querySelector('.pgve-prop') as HTMLElement; // ink-2 secondary text
+      const o = Number(getComputedStyle(panel).opacity);
+      const rgb = (s: string) => s.match(/\d+(\.\d+)?/g)!.slice(0, 3).map(Number);
+      const behind = [255, 255, 255]; // the fixture page is white
+      const blend = (c: number[]) => c.map((v, i) => o * v + (1 - o) * behind[i]);
+      const lum = (c: number[]) => {
+        const [r, g, b] = c.map((v) => {
+          const s = v / 255;
+          return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+      const text = lum(blend(rgb(getComputedStyle(sample).color)));
+      const bg = lum(blend(rgb(getComputedStyle(panel).backgroundColor)));
+      return (Math.max(text, bg) + 0.05) / (Math.min(text, bg) + 0.05);
+    });
+
+  for (const scheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.waitForTimeout(200);
+    expect(await contrastOf(), `secondary text on an idle ${scheme} panel`).toBeGreaterThanOrEqual(4.5);
+  }
+});
