@@ -3,7 +3,6 @@ import { browser } from 'wxt/browser';
 import type { EditsController } from './controller';
 import { Overlay } from './components/Overlay';
 import { Panel, type InteractionMode } from './components/Panel';
-import { GripIcon } from './components/icons';
 import { StatusBadge } from './components/StatusBadge';
 import { Toast, type ToastContent } from './components/Toast';
 import { useElementPicker } from './hooks/useElementPicker';
@@ -36,6 +35,21 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   const [showMarks, setShowMarks] = useState(true);
   const [toast, setToast] = useState<ToastContent | null>(null);
   const alive = useExtensionAlive();
+  const enabledCount = controller.getPage().records.filter((r) => r.enabled).length;
+
+  useEffect(() => {
+    document.dispatchEvent(
+      new CustomEvent('pg-editor:ui', {
+        detail: { state: minimized ? 'minimized' : 'open', shared: sharedPreview, count: enabledCount },
+      }),
+    );
+  }, [minimized, sharedPreview, enabledCount]);
+
+  useEffect(() => {
+    const onOpen = () => setMinimized(false);
+    document.addEventListener('pg-editor:open', onOpen);
+    return () => document.removeEventListener('pg-editor:open', onOpen);
+  }, []);
 
   useEffect(() => {
     try {
@@ -149,19 +163,9 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         onExitBrowse={() => setMode('edit')}
       />
       {toast && <Toast {...toast} onDismiss={() => setToast(null)} />}
-      {minimized ? (
-        <button
-          type="button"
-          className="pgve-pill"
-          aria-label={t('aria_expand')} data-testid="expand-tweakpage"
-          onClick={() => setMinimized(false)}
-        >
-          <GripIcon /> Tweakpage
-          {controller.getPage().records.length > 0 && (
-            <span className="pgve-pill-count">{controller.getPage().records.length}</span>
-          )}
-        </button>
-      ) : (
+      {/* Minimized shows no UI of its own: the applier's corner chip is the way back,
+          so the count lives in one place with one look, open editor or not. */}
+      {!minimized && (
       <Panel
         controller={controller}
         selected={activeSelected}

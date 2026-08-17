@@ -291,9 +291,6 @@
   "aria_radius": {
     "message": "Corner radius"
   },
-  "aria_expand": {
-    "message": "Expand Tweakpage"
-  },
   "aria_export_json": {
     "message": "Export JSON"
   },
@@ -728,5 +725,8 @@
   },
   "tip_move_down": {
     "message": "Move down"
+  },
+  "marker_title_min": {
+    "message": "Tweakpage is minimized. Click to reopen the editor."
   }
 }

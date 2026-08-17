@@ -149,7 +149,7 @@ export const MESSAGES: Record<string, string> = {
   aria_copy_css: "Copy CSS",
   aria_copy_json: "Copy JSON",
   aria_copy_summary: "Copy summary",
-  aria_expand: "Expand Tweakpage",
+  marker_title_min: "Tweakpage is minimized. Click to reopen the editor.",
   aria_export_json: "Export JSON",
   aria_font_family: "Font family",
   aria_font_size: "Font size",
