@@ -18,7 +18,7 @@ export function Toast({ message, actionLabel, onAction, onDismiss }: ToastProps)
     return () => clearTimeout(timer);
   }, [onDismiss]);
   return (
-    <div className="pgve-toast">
+    <div className="twk-toast">
       <span>{message}</span>
       {actionLabel && onAction && (
         <button

@@ -189,8 +189,8 @@ pnpm typecheck   # tsc --noEmit alone
 pnpm e2e         # builds, then drives the real extension in Chromium (Playwright)
 ```
 
-Design notes live in [`docs/`](docs/), including the
-[release QA checklist](docs/qa-checklist.md). Issues and PRs welcome — please keep both
+The [release QA checklist](docs/qa-checklist.md) runs before each release. Issues and
+PRs welcome — please keep both
 locales in step (tests enforce it) and anchor E2E assertions on `data-testid`, never on
 translated text.
 

@@ -28,18 +28,18 @@ export function SpacingSection({ element, controller }: SectionProps) {
   // and each edited side carries its own accent to show what changed.
   const edited = ALL_PROPERTIES.some((property) => controller.recordFor(element, property));
   return (
-    <section className="pgve-section">
-      <div className="pgve-box pgve-box--margin">
-        <span className="pgve-box-label">margin</span>
+    <section className="twk-section">
+      <div className="twk-box twk-box--margin">
+        <span className="twk-box-label">margin</span>
         {SIDES.map((side) => (
           <BoxInput key={side} kind="margin" side={side} element={element} controller={controller} />
         ))}
-        <div className="pgve-box pgve-box--padding">
-          <span className="pgve-box-label">padding</span>
+        <div className="twk-box twk-box--padding">
+          <span className="twk-box-label">padding</span>
           {SIDES.map((side) => (
             <BoxInput key={side} kind="padding" side={side} element={element} controller={controller} />
           ))}
-          <div className="pgve-box-center">
+          <div className="twk-box-center">
             {Math.round(rect.width)}×{Math.round(rect.height)}
           </div>
         </div>
@@ -47,7 +47,7 @@ export function SpacingSection({ element, controller }: SectionProps) {
       {edited && (
         <button
           type="button"
-          className="pgve-spacing-reset"
+          className="twk-spacing-reset"
           aria-label={t('aria_reset_spacing')} data-testid="reset-spacing"
           onClick={() => controller.resetProperties(element, ALL_PROPERTIES)}
         >
@@ -75,7 +75,7 @@ function BoxInput({ kind, side, element, controller }: BoxInputProps) {
       type="number"
       aria-label={t(`aria_${kind}`, [t(`side_${side}`)])}
       data-testid={`${kind}-${side}`}
-      className={`pgve-box-input--${side}${edited ? ' pgve-box-input--edited' : ''}`}
+      className={`twk-box-input--${side}${edited ? ' twk-box-input--edited' : ''}`}
       value={field.value}
       onChange={(e) => {
         const raw = e.target.value;

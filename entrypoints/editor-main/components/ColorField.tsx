@@ -69,7 +69,7 @@ export function ColorField({
   return (
     <>
       <Field name={name} property={property} controller={controller} element={element}>
-        <span className="pgve-color-field">
+        <span className="twk-color-field">
           <input
             type="color"
             aria-label={aria}
@@ -109,9 +109,9 @@ export function ColorField({
         </span>
       </Field>
       {value !== null && (
-        <div className="pgve-field pgve-alpha-row">
+        <div className="twk-field twk-alpha-row">
           <span aria-hidden="true" />
-          <span className="pgve-slider-pair">
+          <span className="twk-slider-pair">
             <input
               type="range"
               min={0}
@@ -122,16 +122,16 @@ export function ColorField({
               // Adjusting transparency is not choosing a colour.
               onChange={(e) => apply(withAlphaPercent(value, Number(e.target.value)))}
             />
-            <span className="pgve-alpha-value">{alphaPercent(value)}%</span>
+            <span className="twk-alpha-value">{alphaPercent(value)}%</span>
           </span>
         </div>
       )}
       {recent.length > 0 && (
         // Same grid as a field row, so the swatches line up under the color inputs
         // instead of being nudged into place with a hard-coded offset.
-        <div className="pgve-field pgve-swatches-row">
+        <div className="twk-field twk-swatches-row">
           <span aria-hidden="true" />
-          <div className="pgve-swatches">
+          <div className="twk-swatches">
             {recent.map((color) => (
               <button
                 key={color}

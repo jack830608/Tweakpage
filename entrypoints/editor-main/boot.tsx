@@ -24,7 +24,7 @@ export function boot(): void {
     const nextPage = normalizePageUrl(url);
     if (nextPage === lastPage) return;
     lastPage = nextPage;
-    document.dispatchEvent(new CustomEvent('pg-editor:navigated', { detail: { url } }));
+    document.dispatchEvent(new CustomEvent('tweakpage:navigated', { detail: { url } }));
   });
   void loadPageEdits(location.href)
     .catch(() => null)

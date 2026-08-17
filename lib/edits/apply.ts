@@ -4,7 +4,7 @@ import type { EditRecord as Record } from './types';
 import type { EditRecord } from './types';
 import { resolveRecord } from '../selector/resolve';
 
-const STYLE_TAG_SELECTOR = 'style[data-pg-editor]';
+const STYLE_TAG_SELECTOR = 'style[data-tweakpage-style]';
 const MARKED_SELECTOR = `[${MARK_ATTRIBUTE}]`;
 
 export type ApplyStatus = 'applied' | 'not-found' | 'disabled';
@@ -13,7 +13,7 @@ export function ensureStyleTag(doc: Document): HTMLStyleElement {
   let tag = doc.querySelector<HTMLStyleElement>(STYLE_TAG_SELECTOR);
   if (!tag) {
     tag = doc.createElement('style');
-    tag.setAttribute('data-pg-editor', '');
+    tag.setAttribute('data-tweakpage-style', '');
     (doc.head ?? doc.documentElement).appendChild(tag);
   }
   return tag;

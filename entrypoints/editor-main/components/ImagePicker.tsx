@@ -51,7 +51,7 @@ export function ImagePicker({ ariaLabel, testId, onPicked }: ImagePickerProps) {
         }}
       />
       {error && (
-        <p className="pgve-hint" role="alert">
+        <p className="twk-hint" role="alert">
           {error}
         </p>
       )}

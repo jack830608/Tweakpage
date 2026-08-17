@@ -97,12 +97,12 @@ function control(testid: string): HTMLInputElement {
 }
 
 function row(testid: string): Element {
-  const el = control(testid).closest('.pgve-field');
+  const el = control(testid).closest('.twk-field');
   if (!el) throw new Error(`"${testid}" is not in a field row`);
   return el;
 }
 
-const unitOf = (testid: string) => row(testid).querySelector('.pgve-unit')?.textContent ?? null;
+const unitOf = (testid: string) => row(testid).querySelector('.twk-unit')?.textContent ?? null;
 const sliderIn = (testid: string) => row(testid).querySelector('input[type="range"]');
 
 describe.each(FIELDS)('$testid ($kind)', (field) => {
@@ -131,7 +131,7 @@ describe.each(FIELDS)('$testid ($kind)', (field) => {
     setup();
     const el = control(field.testid);
     expect(el.getAttribute('aria-label')).toBeTruthy();
-    expect(row(field.testid).querySelector('.pgve-prop')).toBeTruthy();
+    expect(row(field.testid).querySelector('.twk-prop')).toBeTruthy();
   });
 });
 

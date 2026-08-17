@@ -15,7 +15,7 @@ interface ModeSwitchProps<T extends string> {
 
 export function ModeSwitch<T extends string>({ ariaLabel, options, value, onChange }: ModeSwitchProps<T>) {
   return (
-    <div className="pgve-segmented" role="group" aria-label={ariaLabel}>
+    <div className="twk-segmented" role="group" aria-label={ariaLabel}>
       {options.map((option) => (
         <button
           key={option.value}
@@ -23,7 +23,7 @@ export function ModeSwitch<T extends string>({ ariaLabel, options, value, onChan
           aria-label={option.ariaLabel}
           data-testid={`mode-${option.value}`}
           aria-pressed={value === option.value}
-          className={value === option.value ? 'pgve-segment pgve-segment-active' : 'pgve-segment'}
+          className={value === option.value ? 'twk-segment twk-segment-active' : 'twk-segment'}
           onClick={() => {
             if (value !== option.value) onChange(option.value);
           }}

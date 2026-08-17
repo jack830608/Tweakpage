@@ -15,25 +15,25 @@ export function EditorHost({ controller, host }: EditorHostProps) {
     const onToggle = () => setActive((a) => !a);
     const onOpen = () => setActive(true);
     const onDeactivate = () => setActive(false);
-    document.addEventListener('pg-editor:toggle', onToggle);
-    document.addEventListener('pg-editor:open', onOpen);
-    document.addEventListener('pg-editor:deactivate', onDeactivate);
+    document.addEventListener('tweakpage:toggle', onToggle);
+    document.addEventListener('tweakpage:open', onOpen);
+    document.addEventListener('tweakpage:deactivate', onDeactivate);
     return () => {
-      document.removeEventListener('pg-editor:toggle', onToggle);
-      document.removeEventListener('pg-editor:open', onOpen);
-      document.removeEventListener('pg-editor:deactivate', onDeactivate);
+      document.removeEventListener('tweakpage:toggle', onToggle);
+      document.removeEventListener('tweakpage:open', onOpen);
+      document.removeEventListener('tweakpage:deactivate', onDeactivate);
     };
   }, []);
 
   useEffect(() => {
-    safeSendMessage({ type: 'pg:state', active });
+    safeSendMessage({ type: 'tweakpage:state', active });
     // The applier owns the corner chip; the editor only reports its state. While
     // active, EditorApp reports open/minimized itself — 'closed' is reported here,
     // carrying the preview's count because a preview exists nowhere the applier can
     // count it.
     if (!active) {
       document.dispatchEvent(
-        new CustomEvent('pg-editor:ui', {
+        new CustomEvent('tweakpage:ui', {
           detail: {
             state: 'closed',
             shared: controller.isPreviewingShared(),

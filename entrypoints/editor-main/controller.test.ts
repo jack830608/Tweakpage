@@ -21,7 +21,7 @@ test('recordEdit creates a record, applies it, and persists', async () => {
   const el = document.getElementById('title')!;
   c.recordEdit(el, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
   expect(c.getPage().records).toHaveLength(1);
-  expect(document.querySelector('style[data-pg-editor]')!.textContent).toContain('#ff0000');
+  expect(document.querySelector('style[data-tweakpage-style]')!.textContent).toContain('#ff0000');
   const stored = await loadPageEdits(location.href);
   expect(stored?.records).toHaveLength(1);
   expect(c.getStatus(c.getPage().records[0].id)).toBe('applied');
@@ -69,7 +69,7 @@ test('revertAllEdits clears everything', async () => {
   c.recordEdit(el, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
   c.recordEdit(el, 'text', 'textContent', 'Original', 'Changed');
   c.revertAllEdits();
-  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]')).toBeNull();
   expect(el.textContent).toBe('Original');
   expect(await loadPageEdits(location.href)).toBeNull();
 });
@@ -110,7 +110,7 @@ test('preview original reverts edits without touching storage, restores on exit'
   c.setPreviewOriginal(true);
   expect(c.isPreviewingOriginal()).toBe(true);
   expect(el.textContent).toBe('Original');
-  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]')).toBeNull();
   expect(c.getPage().records).toHaveLength(1);
   expect((await loadPageEdits(location.href))?.records).toHaveLength(1);
   c.setPreviewOriginal(false);
@@ -126,7 +126,7 @@ test('editing while previewing exits preview first', () => {
   c.recordEdit(el, 'text', 'textContent', 'Original', 'Changed');
   expect(c.isPreviewingOriginal()).toBe(false);
   expect(el.textContent).toBe('Changed');
-  expect(document.querySelector('style[data-pg-editor]')!.textContent).toContain('#ff0000');
+  expect(document.querySelector('style[data-tweakpage-style]')!.textContent).toContain('#ff0000');
 });
 
 test('undo restores the previous state including dom values', () => {
@@ -137,7 +137,7 @@ test('undo restores the previous state including dom values', () => {
   expect(c.canUndo()).toBe(true);
   c.undo();
   expect(c.getPage().records).toHaveLength(1);
-  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]')).toBeNull();
   c.undo();
   expect(c.getPage().records).toHaveLength(0);
   expect(el.textContent).toBe('Original');
@@ -201,7 +201,7 @@ test('toggling a style record off removes its css rule', () => {
   c.recordEdit(el, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
   const id = c.getPage().records[0].id;
   c.toggleRecord(id);
-  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]')).toBeNull();
   c.toggleRecord(id);
-  expect(document.querySelector('style[data-pg-editor]')!.textContent).toContain('#ff0000');
+  expect(document.querySelector('style[data-tweakpage-style]')!.textContent).toContain('#ff0000');
 });

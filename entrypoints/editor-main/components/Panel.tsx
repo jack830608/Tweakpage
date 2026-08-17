@@ -164,12 +164,12 @@ export function Panel(props: PanelProps) {
   };
 
   return (
-    <aside className="pgve-panel" ref={panelRef} style={{ ...style, width: prefs.width }}>
+    <aside className="twk-panel" ref={panelRef} style={{ ...style, width: prefs.width }}>
       {/* The separator pattern: focusable, announcing its value, driven by arrows —
           resizing existed only for pointers before (review 2026-08-17, finding 5).
           The panel is anchored right, so ArrowLeft moves its left edge left: wider. */}
       <span
-        className="pgve-resize"
+        className="twk-resize"
         role="separator"
         tabIndex={0}
         aria-label={t('aria_resize')}
@@ -192,9 +192,9 @@ export function Panel(props: PanelProps) {
           updatePrefs({ ...prefs, width: clampWidth(next) });
         }}
       />
-      <header className="pgve-header" {...handleProps}>
+      <header className="twk-header" {...handleProps}>
         <strong><GripIcon /> Tweakpage</strong>
-        <span className="pgve-header-buttons">
+        <span className="twk-header-buttons">
           <button
             type="button"
             onClick={() => controller.undo()}
@@ -225,7 +225,7 @@ export function Panel(props: PanelProps) {
           >
             <GearIcon />
           </button>
-          <span className="pgve-header-divider" aria-hidden="true" />
+          <span className="twk-header-divider" aria-hidden="true" />
           <button type="button" onClick={props.onMinimize} aria-label={t('aria_minimize')} data-testid="minimize" title={t('tip_minimize')}><MinusIcon /></button>
           <button type="button" onClick={onClose} aria-label={t('aria_close')} data-testid="close" title={t('tip_close')}>
             <CloseIcon />
@@ -233,7 +233,7 @@ export function Panel(props: PanelProps) {
         </span>
       </header>
       {sharedPreview && (
-        <div className="pgve-shared" role="status" data-testid="shared-preview">
+        <div className="twk-shared" role="status" data-testid="shared-preview">
           <div>
             <strong>{t('shared_preview_title')}</strong>
             <p>{t('shared_preview_body')}</p>
@@ -252,7 +252,7 @@ export function Panel(props: PanelProps) {
         </div>
       )}
       {props.stale ? (
-        <div className="pgve-stale" role="alert">
+        <div className="twk-stale" role="alert">
           <p>{STALE_NOTE}</p>
           <button type="button" aria-label={t('aria_reload_page')} data-testid="reload-page" onClick={() => location.reload()}>
             {STALE_RELOAD}
@@ -277,7 +277,7 @@ export function Panel(props: PanelProps) {
         onChange={(value) => controller.setPreviewOriginal(value === 'original')}
       />
       {view === 'edit' && count > 0 && props.onToggleMarks && (
-        <label className="pgve-marks-toggle">
+        <label className="twk-marks-toggle">
           <input
             type="checkbox"
             aria-label={t('aria_show_marks')}
@@ -286,7 +286,7 @@ export function Panel(props: PanelProps) {
             onChange={(e) => props.onToggleMarks?.(e.target.checked)}
           />
           {t('show_marks')}
-          <span className="pgve-viewport" data-testid="viewport-width" title={t('tip_viewport')}>
+          <span className="twk-viewport" data-testid="viewport-width" title={t('tip_viewport')}>
             {viewport}px
           </span>
         </label>
@@ -298,7 +298,7 @@ export function Panel(props: PanelProps) {
       {stale > 0 && view === 'edit' && (
         <button
           type="button"
-          className="pgve-stale-edits"
+          className="twk-stale-edits"
           aria-label={t('aria_review_unmatched')} data-testid="review-unmatched-edits"
           onClick={() => setView('changes')}
         >
@@ -309,7 +309,7 @@ export function Panel(props: PanelProps) {
         <div>
           <button
             type="button"
-            className="pgve-back-row"
+            className="twk-back-row"
             aria-label={t('aria_back_to_editing')} data-testid="back-from-settings"
             onClick={() => setView('edit')}
           >
@@ -321,7 +321,7 @@ export function Panel(props: PanelProps) {
         <div>
           <button
             type="button"
-            className="pgve-back-row"
+            className="twk-back-row"
             aria-label={t('aria_back_to_editing')} data-testid="back-to-editing"
             onClick={() => setView('edit')}
           >
@@ -358,13 +358,13 @@ export function Panel(props: PanelProps) {
           />
           <button
             type="button"
-            className={count > 0 ? 'pgve-footer pgve-footer-active' : 'pgve-footer'}
+            className={count > 0 ? 'twk-footer twk-footer-active' : 'twk-footer'}
             aria-label={t('aria_review_changes')} data-testid="review-changes"
             onClick={() => setView('changes')}
           >
             {plural(count, 'footer_changes_one', 'footer_changes')}
             {count > 0 && (
-              <span className="pgve-saved" data-testid="save-state">
+              <span className="twk-saved" data-testid="save-state">
                 {saveState.state === 'failed'
                   ? t('toast_save_failed')
                   : saveState.state === 'preview'
@@ -409,26 +409,26 @@ function EditView({
   }
   if (previewing) {
     return (
-      <p className="pgve-preview-note">{t('preview_note')}</p>
+      <p className="twk-preview-note">{t('preview_note')}</p>
     );
   }
   if (!selected) {
     return (
       <div>
-        <p className="pgve-empty">{t('empty_select')}</p>
-        <p className="pgve-empty">{t('empty_hint')}</p>
+        <p className="twk-empty">{t('empty_select')}</p>
+        <p className="twk-empty">{t('empty_hint')}</p>
       </div>
     );
   }
   if (selected.tagName === 'IFRAME') {
-    return <p className="pgve-empty">{t('iframe_note')}</p>;
+    return <p className="twk-empty">{t('iframe_note')}</p>;
   }
   const hidden = controller.recordFor(selected, 'display')?.newValue === 'none';
   return (
-    <div className="pgve-sections">
+    <div className="twk-sections">
       <SelectionCard element={selected} controller={controller} onSelect={onSelect} />
       {hidden ? (
-        <p className="pgve-preview-note">{t('hidden_note')}</p>
+        <p className="twk-preview-note">{t('hidden_note')}</p>
       ) : (
         SECTION_DEFS.filter(({ applies }) => !applies || applies(selected)).map(({ id, render }) => (
           <CollapsibleSection

@@ -29,7 +29,7 @@ test('export json sends the exported page as a data-url download message', async
   fireEvent.click(screen.getByRole('button', { name: /Export JSON/ }));
   await Promise.resolve();
   expect(received).toHaveLength(1);
-  expect(received[0].type).toBe('pg:download');
+  expect(received[0].type).toBe('tweakpage:download');
   expect(received[0].filename).toMatch(/^tweakpage-localhost-\d{8}\.json$/);
   const base64 = received[0].url!.split(',')[1]!;
   const decoded = JSON.parse(Buffer.from(base64, 'base64').toString('utf8'));

@@ -38,7 +38,7 @@ export function ImageSection({ element, controller }: SectionProps) {
   };
 
   return (
-    <section className="pgve-section">
+    <section className="twk-section">
       <Field name="src" property="src" controller={controller} element={element} error={src.error}>
         <input
           type="text"
@@ -55,9 +55,9 @@ export function ImageSection({ element, controller }: SectionProps) {
           }}
         />
       </Field>
-      <div className="pgve-field pgve-field--actions">
+      <div className="twk-field twk-field--actions">
         <span aria-hidden="true" />
-        <div className="pgve-field-actions">
+        <div className="twk-field-actions">
           <ImagePicker ariaLabel={t('aria_choose_image')} testId="image-file" onPicked={applySrc} />
         </div>
       </div>

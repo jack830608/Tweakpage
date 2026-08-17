@@ -47,21 +47,21 @@ function openSettings() {
   // Groups collapse, and one of them is nested — a child header does not exist until its
   // parent is open — so keep opening until there is nothing left closed.
   for (let pass = 0; pass < 5; pass++) {
-    const closed = [...document.querySelectorAll<HTMLButtonElement>('.pgve-settings [data-section]')]
+    const closed = [...document.querySelectorAll<HTMLButtonElement>('.twk-settings [data-section]')]
       .filter((header) => header.getAttribute('aria-expanded') !== 'true');
     if (closed.length === 0) break;
     closed.forEach((header) => fireEvent.click(header));
   }
 }
 
-const groups = () => [...document.querySelectorAll('.pgve-settings .pgve-disclosure')];
+const groups = () => [...document.querySelectorAll('.twk-settings .twk-disclosure')];
 
-const rows = () => [...document.querySelectorAll('.pgve-setting')];
+const rows = () => [...document.querySelectorAll('.twk-setting')];
 
 describe('the settings view', () => {
   test('is reached from the panel, not from a menu outside it', () => {
     openSettings();
-    expect(document.querySelector('.pgve-settings')).toBeTruthy();
+    expect(document.querySelector('.twk-settings')).toBeTruthy();
     expect(screen.getByTestId('back-from-settings')).toBeTruthy();
   });
 
@@ -77,7 +77,7 @@ describe('the settings view', () => {
     // Closed and opened again one at a time: closing a group unmounts anything nested
     // inside it, so leaving one shut would take the next group off the screen with it.
     for (let i = 0; i < groups().length; i++) {
-      const header = groups()[i].querySelector('.pgve-disclosure-header')!;
+      const header = groups()[i].querySelector('.twk-disclosure-header')!;
       const name = header.textContent ?? '';
       expect(header.getAttribute('aria-expanded'), name).toBe('true');
       fireEvent.click(header);
@@ -90,7 +90,7 @@ describe('the settings view', () => {
   test('every row has a visible label and exactly one control', () => {
     openSettings();
     for (const row of rows()) {
-      const label = row.querySelector('.pgve-setting-label')?.textContent ?? '';
+      const label = row.querySelector('.twk-setting-label')?.textContent ?? '';
       expect(label.trim(), 'a row without a label is a control nobody can name').not.toBe('');
       const controls = row.querySelectorAll('input, select, [role="group"]');
       expect(controls, `"${label}" should own one control`).toHaveLength(1);
@@ -109,14 +109,14 @@ describe('the settings view', () => {
     openSettings();
     expect(groups().length).toBeGreaterThan(1);
     for (const group of groups()) {
-      expect(group.querySelector('.pgve-disclosure-header')?.textContent?.trim()).toBeTruthy();
+      expect(group.querySelector('.twk-disclosure-header')?.textContent?.trim()).toBeTruthy();
     }
   });
 
   test('the permissions a bucket needs are here, not a page away', () => {
     openSettings();
     expect(screen.getByTestId('copy-policy')).toBeTruthy();
-    expect(document.querySelector('.pgve-policy')?.textContent).toContain('s3:GetObject');
+    expect(document.querySelector('.twk-policy')?.textContent).toContain('s3:GetObject');
   });
 });
 

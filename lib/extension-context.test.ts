@@ -25,13 +25,13 @@ describe('safeSendMessage', () => {
     vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockImplementation(() => {
       throw new Error('Extension context invalidated.');
     });
-    expect(() => safeSendMessage({ type: 'pg:count', count: 1 })).not.toThrow();
+    expect(() => safeSendMessage({ type: 'tweakpage:count', count: 1 })).not.toThrow();
   });
 
   it('delivers the message while the context is alive', () => {
     const spy = vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockResolvedValue(undefined);
-    safeSendMessage({ type: 'pg:state', active: true });
-    expect(spy).toHaveBeenCalledWith({ type: 'pg:state', active: true });
+    safeSendMessage({ type: 'tweakpage:state', active: true });
+    expect(spy).toHaveBeenCalledWith({ type: 'tweakpage:state', active: true });
   });
 });
 

@@ -44,7 +44,7 @@ export function readDomValue(el: Element, record: EditRecord): string | null {
 
 // Our own nodes live in the page too; counting them would make the same index mean
 // different positions with the editor open and closed.
-const OUR_NODES = '#tweakpage-host, #tweakpage-marker, style[data-pg-editor]';
+const OUR_NODES = '#tweakpage-host, #tweakpage-marker, style[data-tweakpage-style]';
 
 /** True for tweakpage's own UI — never pickable, never a sibling, never editable. */
 export function isTweakpageNode(el: Element): boolean {

@@ -40,7 +40,7 @@ test('start applies stored edits for the url', async () => {
 test('start stays idle when the url has no edits', async () => {
   const engine = new ApplierEngine(document);
   await engine.start('https://a.com/other');
-  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]')).toBeNull();
 });
 
 test('re-applies after a mutation replaces the node', async () => {
@@ -98,12 +98,12 @@ test('pauses reapply while the editor previews the original', async () => {
   await engine.start('https://a.com/page');
   expect(document.querySelector('.title')!.textContent).toBe('Changed');
 
-  document.dispatchEvent(new CustomEvent('pg-editor:preview', { detail: { on: true } }));
+  document.dispatchEvent(new CustomEvent('tweakpage:preview', { detail: { on: true } }));
   document.querySelector('.title')!.textContent = 'Original';
   await wait(120);
   expect(document.querySelector('.title')!.textContent).toBe('Original');
 
-  document.dispatchEvent(new CustomEvent('pg-editor:preview', { detail: { on: false } }));
+  document.dispatchEvent(new CustomEvent('tweakpage:preview', { detail: { on: false } }));
   await wait(120);
   expect(document.querySelector('.title')!.textContent).toBe('Changed');
 });
@@ -133,7 +133,7 @@ test('reports the edit count for the badge whenever edits change', async () => {
   const counts: number[] = [];
   fakeBrowser.runtime.onMessage.addListener((message: unknown) => {
     const m = message as { type?: string; count?: number };
-    if (m.type === 'pg:count') counts.push(m.count ?? -1);
+    if (m.type === 'tweakpage:count') counts.push(m.count ?? -1);
   });
   await seed('https://a.com/page', [record({})]);
   const engine = new ApplierEngine(document);
@@ -186,7 +186,7 @@ test('clearing a page puts it back without a reload', async () => {
   const engine = new ApplierEngine(document);
   await engine.start(url);
   expect(document.querySelector('.title')!.textContent).toBe('Changed');
-  expect(document.querySelector('style[data-pg-editor]')).toBeTruthy();
+  expect(document.querySelector('style[data-tweakpage-style]')).toBeTruthy();
 
   // What the popup's Clear does. The page is already open; nothing will reload it.
   await fakeBrowser.storage.local.remove(pageKey(url));
@@ -195,7 +195,7 @@ test('clearing a page puts it back without a reload', async () => {
   expect(document.querySelector('.title')!.textContent, 'the text edit should be undone').toBe(
     'Original',
   );
-  expect(document.querySelector('style[data-pg-editor]'), 'and the styles taken back out').toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]'), 'and the styles taken back out').toBeNull();
   expect(document.getElementById('tweakpage-marker')).toBeNull();
 });
 
@@ -234,13 +234,13 @@ test('the marker yields while the editor UI is on screen and returns when it clo
   expect(document.getElementById('tweakpage-marker'), 'alone, the applier says it').toBeTruthy();
 
   // The panel opens: its footer already carries the count.
-  document.dispatchEvent(new CustomEvent('pg-editor:ui', { detail: { state: 'open', shared: false, count: 1 } }));
+  document.dispatchEvent(new CustomEvent('tweakpage:ui', { detail: { state: 'open', shared: false, count: 1 } }));
   expect(document.getElementById('tweakpage-marker'), 'two voices, same sentence').toBeNull();
 
   // Minimized: the chip is the way back in, even before anything is edited.
-  document.dispatchEvent(new CustomEvent('pg-editor:ui', { detail: { state: 'minimized', shared: false, count: 0 } }));
+  document.dispatchEvent(new CustomEvent('tweakpage:ui', { detail: { state: 'minimized', shared: false, count: 0 } }));
   expect(document.getElementById('tweakpage-marker'), 'minimized keeps the chip').toBeTruthy();
 
-  document.dispatchEvent(new CustomEvent('pg-editor:ui', { detail: { state: 'closed', shared: false, count: 1 } }));
+  document.dispatchEvent(new CustomEvent('tweakpage:ui', { detail: { state: 'closed', shared: false, count: 1 } }));
   expect(document.getElementById('tweakpage-marker')).toBeTruthy();
 });

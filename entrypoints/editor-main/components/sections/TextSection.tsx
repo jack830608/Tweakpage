@@ -23,7 +23,7 @@ export function TextSection({ element, controller }: SectionProps) {
   // Writing the whole element back is only safe when there is no markup to lose.
   if (hasInlineMarkup(element)) {
     return (
-      <section className="pgve-section">
+      <section className="twk-section">
         {textRuns(element).map((run) => {
           const property = textNodeProperty(run.index);
           const record = controller.recordFor(element, property);
@@ -49,7 +49,7 @@ export function TextSection({ element, controller }: SectionProps) {
             </Field>
           );
         })}
-        <p className="pgve-hint">{t('runs_hint')}</p>
+        <p className="twk-hint">{t('runs_hint')}</p>
       </section>
     );
   }
@@ -57,7 +57,7 @@ export function TextSection({ element, controller }: SectionProps) {
   const record = controller.recordFor(element, 'textContent');
   const original = record?.oldValue ?? element.textContent ?? '';
   return (
-    <section className="pgve-section">
+    <section className="twk-section">
       <Field name="text" property="textContent" controller={controller} element={element} stacked>
         <textarea
           aria-label={t('aria_text')}

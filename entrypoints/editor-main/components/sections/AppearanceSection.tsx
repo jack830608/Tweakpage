@@ -69,7 +69,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
   };
 
   return (
-    <section className="pgve-section">
+    <section className="twk-section">
       <Field
         name="border-radius"
         property="borderRadius"
@@ -95,7 +95,7 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         unit="%"
         value={opacity.value}
       >
-        <span className="pgve-slider-pair">
+        <span className="twk-slider-pair">
           <input
             type="range"
             min={0}

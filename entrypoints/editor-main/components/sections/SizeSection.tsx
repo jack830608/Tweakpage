@@ -35,7 +35,7 @@ function showSize(raw: string): string {
 
 export function SizeSection({ element, controller }: SectionProps) {
   return (
-    <section className="pgve-section">
+    <section className="twk-section">
       {FIELDS.map(({ ariaLabel, property }) => (
         <SizeField
           key={property}
@@ -45,8 +45,8 @@ export function SizeSection({ element, controller }: SectionProps) {
           controller={controller}
         />
       ))}
-      <p className="pgve-hint">{t('size_hint')}</p>
-      <datalist id="pgve-size-suggestions">
+      <p className="twk-hint">{t('size_hint')}</p>
+      <datalist id="twk-size-suggestions">
         <option value="auto" />
         <option value="100%" />
         <option value="50%" />
@@ -83,7 +83,7 @@ function SizeField({ ariaLabel, property, element, controller }: SizeFieldProps)
         aria-label={ariaLabel}
         data-testid={property}
         placeholder={t('size_placeholder')}
-        list="pgve-size-suggestions"
+        list="twk-size-suggestions"
         value={field.value}
         onChange={(e) => {
           const raw = e.target.value;

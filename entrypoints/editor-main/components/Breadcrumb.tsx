@@ -16,12 +16,12 @@ export function getBreadcrumb(el: Element): Element[] {
 
 export function Breadcrumb({ element, onSelect }: BreadcrumbProps) {
   return (
-    <div className="pgve-breadcrumb">
+    <div className="twk-breadcrumb">
       {getBreadcrumb(element).map((el, i) => (
         <button
           key={i}
           type="button"
-          className={el === element ? 'pgve-crumb-active' : ''}
+          className={el === element ? 'twk-crumb-active' : ''}
           onClick={() => onSelect(el)}
         >
           {el.tagName.toLowerCase()}
