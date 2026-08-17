@@ -10,8 +10,10 @@ import { useElementPicker } from './hooks/useElementPicker';
 import { useKeyboardPicker } from './hooks/useKeyboardPicker';
 import { useExtensionAlive } from './hooks/useExtensionAlive';
 import { captureBeforeAfter } from './snapshot';
+import { parseImport } from '../../lib/edits/import';
+import { shareIdFrom } from '../../lib/share/link';
 import { safeStorageSet } from '../../lib/extension-context';
-import { t } from '../../lib/i18n';
+import { plural, t } from '../../lib/i18n';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
 
 const ONBOARDED_KEY = 'tweakpage:onboarded';
@@ -46,6 +48,30 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
       // context invalidated — onboarding is pointless in a dead session
     }
   }, []);
+
+  useEffect(() => {
+    const id = shareIdFrom(location.href);
+    if (!id) return;
+    void browser.runtime
+      .sendMessage({ type: 'pg:share-get', id })
+      .then((result: unknown) => {
+        const transfer = result as { ok?: boolean; body?: string } | null;
+        if (!transfer?.ok || typeof transfer.body !== 'string') {
+          setToast({ message: t('shared_missing') });
+          return;
+        }
+        // Still validated like any imported file — a link is not a reason to trust what
+        // it points at — but opening the link is the decision, so it applies.
+        const parsed = parseImport(transfer.body);
+        if (!parsed.ok || parsed.page.records.length === 0) {
+          setToast({ message: t('shared_missing') });
+          return;
+        }
+        controller.importRecords(parsed.page.records);
+        setToast({ message: plural(parsed.page.records.length, 'toast_shared_applied_one', 'toast_shared_applied') });
+      })
+      .catch(() => setToast({ message: t('shared_missing') }));
+  }, [controller]);
 
   useEffect(() => {
     const onNavigated = (e: Event) => {

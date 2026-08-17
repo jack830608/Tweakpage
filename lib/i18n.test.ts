@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, test } from 'vitest';
-import { t } from './i18n';
+import { plural, t } from './i18n';
 
 const LOCALES = ['en', 'zh_TW'];
 const SOURCE_DIRS = ['entrypoints', 'lib'];
@@ -66,4 +66,16 @@ describe('translations', () => {
       expect(onlyInOther, `in ${locale} but not ${first[0]}`).toEqual([]);
     }
   });
+});
+
+test('a count of one never reads as a plural', () => {
+  // chrome.i18n has no plural rules, so "1 changes" is the default failure.
+  for (const [one, many] of [
+    ['marker_label_one', 'marker_label'],
+    ['footer_changes_one', 'footer_changes'],
+    ['toast_shared_applied_one', 'toast_shared_applied'],
+  ]) {
+    expect(plural(1, one, many), one).not.toMatch(/\b1 \w+s\b/);
+    expect(plural(3, one, many), many).toContain('3');
+  }
 });

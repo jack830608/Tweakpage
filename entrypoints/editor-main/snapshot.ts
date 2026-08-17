@@ -1,4 +1,5 @@
 import { browser } from 'wxt/browser';
+import { setMarkerHidden } from '../../lib/applier/marker';
 import type { EditsController } from './controller';
 
 const CAPTURE_GAP_MS = 600;
@@ -21,6 +22,7 @@ export async function captureBeforeAfter(
   const hostname = new URL(doc.location.href).hostname;
   const wasPreviewing = controller.isPreviewingOriginal();
   host.style.display = 'none';
+  setMarkerHidden(doc, true);
   let edited: string | undefined;
   let original: string | undefined;
   try {
@@ -34,6 +36,7 @@ export async function captureBeforeAfter(
   } finally {
     controller.setPreviewOriginal(wasPreviewing);
     host.style.display = '';
+    setMarkerHidden(doc, false);
   }
   if (!edited || !original) throw new Error('capture failed');
 

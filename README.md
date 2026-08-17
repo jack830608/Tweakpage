@@ -58,11 +58,39 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 8. `⌘Z` / `⇧⌘Z` (or `Ctrl+Z`) undo and redo, or the arrows in the header. Each change in
    Review can be toggled, hovered (highlights the element) or selected (scrolls the page to
    it). `⌥` + arrow keys move the selection through the page without a mouse.
-9. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere,
+9. A page showing edits says so: a small marker sits in the bottom-left corner whether or
+   not the editor is open, so an edited page is never mistaken for the real one. Click it
+   to open the editor.
+10. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere,
    drag its left edge to resize, or minimize it to a corner pill — all remembered. The theme
    follows your system unless you pick Light or Dark in the header. The UI ships in English
    and Traditional Chinese. Edits survive reloads and follow client-side navigation.
 
+
+## Share links (optional)
+
+Upload a page's edits to **your own** S3 bucket and share a link. Whoever opens it needs
+Tweakpage and the same bucket configured; the edits apply on arrival.
+
+Right-click the toolbar icon → **Options** and fill in bucket, region, key id and secret.
+Nothing is shared until all four are set, and this repo ships no defaults.
+
+The link carries only a random id — never a URL — so it can only ever resolve against the
+bucket the reader configured themselves. What arrives is validated exactly like an
+imported file.
+
+**About the key.** Extension storage is not a vault: anyone with access to that browser
+profile can read it, and this extension is open source. Use a key that can do nothing
+except read and write one prefix, and rotate it like any other credential:
+
+```json
+{ "Effect": "Allow",
+  "Action": ["s3:PutObject", "s3:GetObject"],
+  "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
+```
+
+The secret itself never leaves the machine — requests carry a signature derived from it.
+Set a lifecycle rule on that prefix to expire old shares.
 
 ## Development
 

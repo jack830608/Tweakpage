@@ -539,5 +539,65 @@
   },
   "aria_delete_variant": {
     "message": "Delete $1"
+  },
+  "opt_title": {
+    "message": "Share links"
+  },
+  "opt_intro": {
+    "message": "Upload a page of edits to your own S3 bucket and share the link. Whoever opens it needs Tweakpage and the same bucket configured."
+  },
+  "opt_risk_title": {
+    "message": "These keys are readable on this machine"
+  },
+  "opt_risk_body": {
+    "message": "Extension storage is not a vault: anyone with access to this profile can read what you paste here, and this extension is open source. Use a key that can do nothing but write and read this one prefix, and rotate it like any other credential. The secret itself is never sent — requests carry a signature derived from it."
+  },
+  "opt_save": {
+    "message": "Save"
+  },
+  "opt_clear": {
+    "message": "Clear"
+  },
+  "opt_incomplete": {
+    "message": "Sharing stays off until all four AWS fields are filled."
+  },
+  "share_link": {
+    "message": "Share link"
+  },
+  "aria_share_link": {
+    "message": "Upload and copy a share link"
+  },
+  "tip_share_link": {
+    "message": "Upload these edits and copy a link. Whoever opens it needs Tweakpage and the same bucket."
+  },
+  "toast_share_copied": {
+    "message": "Link copied — it opens this page with your edits"
+  },
+  "toast_share_unset": {
+    "message": "Set up a bucket first: right-click the toolbar icon → Options"
+  },
+  "toast_share_failed": {
+    "message": "Upload refused. Check the bucket, the region and the key's permissions."
+  },
+  "shared_missing": {
+    "message": "That link's edits are gone, or your bucket settings differ from the sender's."
+  },
+  "marker_label": {
+    "message": "Tweakpage · $1 changes"
+  },
+  "marker_title": {
+    "message": "This page is showing local edits made with Tweakpage, not what the site serves. Click to open the editor."
+  },
+  "toast_shared_applied": {
+    "message": "Applied $1 shared edits"
+  },
+  "marker_label_one": {
+    "message": "Tweakpage · 1 change"
+  },
+  "toast_shared_applied_one": {
+    "message": "Applied 1 shared edit"
+  },
+  "footer_changes_one": {
+    "message": "1 change · Review ›"
   }
 }

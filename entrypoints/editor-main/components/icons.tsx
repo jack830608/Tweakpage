@@ -136,3 +136,12 @@ export function CloseIcon() {
     </svg>
   );
 }
+
+export function LinkIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+      <path d="M6.5 9.5a2.8 2.8 0 0 0 4 0l2-2a2.83 2.83 0 0 0-4-4l-.6.6" />
+      <path d="M9.5 6.5a2.8 2.8 0 0 0-4 0l-2 2a2.83 2.83 0 0 0 4 4l.6-.6" />
+    </svg>
+  );
+}

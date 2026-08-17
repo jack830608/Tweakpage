@@ -292,6 +292,30 @@ test('two proposals can be saved and switched between', async ({ context }) => {
   await expect(page.locator('.pgve-variant')).toHaveCount(1);
 });
 
+test('an edited page says so, even with the editor closed', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited headline');
+  await page.locator('[data-testid="close"]').click();
+  await expect(page.locator('#tweakpage-host aside')).toHaveCount(0);
+
+  const marker = page.locator('#tweakpage-marker button');
+  await expect(marker, 'the page is not what the site serves — say so').toBeVisible();
+  await expect(marker).toContainText('1');
+
+  // The point of the marker is the visit where nobody opens the editor at all.
+  await page.reload();
+  await expect(page.locator('h1')).toHaveText('Edited headline');
+  await expect(page.locator('#tweakpage-host aside')).toHaveCount(0);
+  await expect(page.locator('#tweakpage-marker button')).toBeVisible();
+
+  // And clicking it is how you get to the editor from there.
+  await page.locator('#tweakpage-marker button').click();
+  await expect(page.locator('#tweakpage-host aside')).toBeVisible();
+});
+
 test('header and change count stay reachable when the panel scrolls', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
