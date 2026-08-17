@@ -1,4 +1,4 @@
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { applyAll, ensureStyleTag, revertAll } from './apply';
 import type { EditRecord } from './types';
 
@@ -123,4 +123,78 @@ test('two style edits on one element share a single mark', () => {
     document,
   );
   expect(document.querySelector('.title')!.getAttribute('data-tweakpage')).toBe('r1 r2');
+});
+
+describe('moves and the records around them', () => {
+  const base = {
+    fallbackSelectors: [] as string[], enabled: true, createdAt: 'n', updatedAt: 'n',
+  };
+
+  test('a move earlier in the list cannot poison a positional selector later in it', () => {
+    // Everything resolves against the page as loaded, then mutations run — otherwise
+    // the move shifts nth positions under the feet of the records after it. Images on
+    // purpose: no text means no fingerprint rescue, only ordering saves this.
+    document.body.innerHTML = '<div><img id="a"><img id="b"><img id="c"></div>';
+    const statuses = applyAll(
+      [
+        { ...base, id: 'mv1', selector: 'img:nth-of-type(1)', elementLabel: 'img',
+          type: 'move', property: 'domIndex', oldValue: '0', newValue: '2' },
+        { ...base, id: 'st1', selector: 'img:nth-of-type(3)', elementLabel: 'img',
+          type: 'style', property: 'opacity', oldValue: '1', newValue: '0.5' },
+      ],
+      document,
+    );
+    expect([...document.querySelectorAll('img')].map((el) => el.id)).toEqual(['b', 'c', 'a']);
+    expect(
+      document.getElementById('c')!.getAttribute('data-tweakpage'),
+      'the style mark belongs to the img that was third on load',
+    ).toContain('st1');
+    expect([...statuses.values()]).toEqual(['applied', 'applied']);
+  });
+
+  test('reapply follows the mark, not the selector the move made stale', () => {
+    // After the move, p:nth-of-type(2) names a different element. The first apply
+    // stamped the real one; every later apply has to keep moving that node.
+    document.body.innerHTML = '<div><img id="a"><img id="b"><img id="c"></div>';
+    const records: Parameters<typeof applyAll>[0] = [
+      { ...base, id: 'mv2', selector: 'img:nth-of-type(2)', elementLabel: 'img',
+        type: 'move', property: 'domIndex', oldValue: '1', newValue: '0' },
+    ];
+    applyAll(records, document);
+    const order = () => [...document.querySelectorAll('img')].map((el) => el.id).join('');
+    expect(order()).toBe('bac');
+
+    // No text to fingerprint on an image — only the mark can identify it now.
+    applyAll(records, document);
+    expect(order(), 'a second pass must not move whoever sits at position 2').toBe('bac');
+  });
+
+  test('revertAll finds a moved element while its mark still exists', () => {
+    // revertAll strips marks — but a moved image is only findable BY its mark, so the
+    // stripping has to come after the moves are undone, not before.
+    document.body.innerHTML = '<div><img id="a"><img id="b"><img id="c"></div>';
+    const records: Parameters<typeof applyAll>[0] = [
+      { ...base, id: 'mv3', selector: 'img:nth-of-type(1)', elementLabel: 'img',
+        type: 'move', property: 'domIndex', oldValue: '0', newValue: '2' },
+    ];
+    applyAll(records, document);
+    expect([...document.querySelectorAll('img')].map((el) => el.id)).toEqual(['b', 'c', 'a']);
+
+    revertAll(records, document);
+    expect([...document.querySelectorAll('img')].map((el) => el.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  test('reverting several moves in one parent restores the exact original order', () => {
+    document.body.innerHTML = '<div><p id="a">A</p><p id="b">B</p><p id="c">C</p><p id="d">D</p></div>';
+    const records: Parameters<typeof applyAll>[0] = [
+      { ...base, id: 'mvd', selector: '#d', elementLabel: 'p', type: 'move', property: 'domIndex', oldValue: '3', newValue: '0' },
+      { ...base, id: 'mva', selector: '#a', elementLabel: 'p', type: 'move', property: 'domIndex', oldValue: '0', newValue: '2' },
+    ];
+    applyAll(records, document);
+    const order = () => [...document.querySelectorAll('p')].map((el) => el.id).join('');
+    expect(order()).toBe('dbac');
+
+    revertAll(records, document);
+    expect(order()).toBe('abcd');
+  });
 });
