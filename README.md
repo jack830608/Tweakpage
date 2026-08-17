@@ -77,24 +77,27 @@ fill in bucket, region, key id and secret.
 Until all four are set the Share link button stays disabled, and this repo ships no
 defaults.
 
-Two bucket rules make that work. The key you paste only needs to write:
+The key you paste needs to write, and to be allowed to mark what it writes as readable:
 
 ```json
-{ "Effect": "Allow", "Action": "s3:PutObject",
+{ "Effect": "Allow", "Action": ["s3:PutObject", "s3:PutObjectAcl"],
   "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
 ```
 
-and the shares are world-readable, which is what lets a link work for someone with no
-credentials of their own:
+Then the bucket has to let a stranger read a share. Either give it a policy:
 
 ```json
 { "Effect": "Allow", "Principal": "*", "Action": "s3:GetObject",
   "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
 ```
 
+or leave ACLs enabled with Block Public Access off, and Tweakpage marks each file public as
+it uploads. Either way it checks: after writing, it reads the object back with no
+credentials, exactly as a recipient would, and refuses to hand you a link that would 403.
+
 The object name is 113 bits of randomness, so the link is the permission — but the file is
-public, so don't share pages whose content is confidential. Set a lifecycle rule on the
-prefix to expire old shares.
+readable by anyone holding it, so don't share pages whose content is confidential. Set a
+lifecycle rule on the prefix to expire old shares.
 
 A link carries an id, a bucket and a region as separate, validated parts — never a URL — so
 it can only ever resolve to an address Tweakpage builds itself, and what arrives is checked

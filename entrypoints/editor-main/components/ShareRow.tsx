@@ -39,10 +39,15 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
     const id = makeShareId();
     const result = (await browser.runtime
       .sendMessage({ type: 'pg:share-put', id, body: toJson(page) })
-      .catch(() => null)) as { ok?: boolean; ref?: Parameters<typeof shareLink>[1] } | null;
+      .catch(() => null)) as
+      | { ok?: boolean; reason?: string; ref?: Parameters<typeof shareLink>[1] }
+      | null;
 
     if (!result?.ok || !result.ref) {
-      onToast({ message: t('toast_share_failed') });
+      // A link nobody can open is the failure worth naming precisely.
+      onToast({
+        message: t(result?.reason === 'not-readable' ? 'toast_share_private' : 'toast_share_failed'),
+      });
       return;
     }
     await copy(shareLink(page.url, result.ref), t('toast_share_copied'));

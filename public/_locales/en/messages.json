@@ -550,7 +550,7 @@
     "message": "These keys are readable on this machine"
   },
   "opt_risk_body": {
-    "message": "Extension storage is not a vault: anyone with access to this profile can read what you paste here, and this extension is open source. Use a key that can do nothing but write this one prefix, and rotate it like any other credential. The secret itself is never sent — requests carry a signature derived from it. Shared files are world-readable under an unguessable name, so keep anything confidential out of the pages you share."
+    "message": "Extension storage is not a vault: anyone with access to this profile can read what you paste here, and this extension is open source. Use a key scoped to this one prefix and rotate it like any other credential. The secret itself is never sent — requests carry a signature derived from it. Shared files are readable by anyone holding the link, so keep confidential pages out of them."
   },
   "opt_save": {
     "message": "Save"
@@ -605,5 +605,8 @@
   },
   "aria_open_settings": {
     "message": "Open share settings"
+  },
+  "toast_share_private": {
+    "message": "Uploaded, but the file is not readable, so the link would not open. Give the bucket a public-read policy for tweakpage/*, or allow the key to set object ACLs."
   }
 }

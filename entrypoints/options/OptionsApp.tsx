@@ -81,10 +81,14 @@ export function OptionsApp() {
 }
 
 /** Shown so the bucket can be set up before a key is pasted, not after something fails. */
-const POLICY = `// The key you paste above only needs to write:
-{ "Effect": "Allow", "Action": "s3:PutObject",
+const POLICY = `// The key you paste above, on the bucket's own policy or its IAM user:
+{ "Effect": "Allow", "Action": ["s3:PutObject", "s3:PutObjectAcl"],
   "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
 
-// And the bucket lets anyone read a share, so a link works without an AWS account:
+// Plus one of these, so a link opens for someone with no AWS account —
+// either a public-read policy on the bucket:
 { "Effect": "Allow", "Principal": "*", "Action": "s3:GetObject",
-  "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }`;
+  "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
+
+// or leave ACLs enabled and Block Public Access off for this bucket, and
+// Tweakpage will mark each file public as it uploads.`;
