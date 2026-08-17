@@ -2,7 +2,6 @@ import { pxToDisplay } from '../../../../lib/css-values';
 import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { Field } from '../Field';
-import { scrubbedValue } from '../../scrub';
 import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
@@ -101,10 +100,6 @@ function Pixels({ name, property, computed, element, controller }: PixelsProps) 
       error={field.error}
       unit="px"
       value={field.value}
-      onScrub={(steps) => {
-        const next = scrubbedValue(controller, element, property, field.original, steps, { min: 0 });
-        controller.recordEdit(element, 'style', property, field.original, `${next}px`);
-      }}
     >
       <input
         type="number"

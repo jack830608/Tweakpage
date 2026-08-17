@@ -43,8 +43,7 @@ Every edit is recorded as a structured diff (selector + property + old → new),
    position, shadow), Spacing. Text with inline markup gets one box per run, so a heading
    keeps the link or coloured span inside it. Images can come from a local file or a URL (which applies
    when you leave the field or press Enter), and colours keep their transparency. Fields are named after
-   the CSS property they write; drag that name sideways to scrub the value, and an
-   edited one shows a ↺ beside it. Color fields have
+   the CSS property they write, and an edited one shows a ↺ beside it. Color fields have
    an eyedropper (pick from the page) and recent swatches. Use the breadcrumb to reach
    parents/children.
 5. Selection card: **Hide / Unhide** the selected element (editing locks while hidden), and

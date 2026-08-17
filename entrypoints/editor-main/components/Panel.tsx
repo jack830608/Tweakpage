@@ -177,7 +177,7 @@ export function Panel(props: PanelProps) {
             onClick={() => controller.undo()}
             disabled={!canUndo}
             aria-label={t('aria_undo')}
-            data-testid="undo" data-testid="undo"
+            data-testid="undo"
             title={t('tip_undo')}
           >
             <UndoIcon />
@@ -187,7 +187,7 @@ export function Panel(props: PanelProps) {
             onClick={() => controller.redo()}
             disabled={!canRedo}
             aria-label={t('aria_redo')}
-            data-testid="redo" data-testid="redo"
+            data-testid="redo"
             title={t('tip_redo')}
           >
             <RedoIcon />

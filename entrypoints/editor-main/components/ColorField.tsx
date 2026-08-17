@@ -37,9 +37,18 @@ export function ColorField({
     void getRecentColors().then(setRecent);
   }, []);
 
-  const commit = (hex: string) => {
-    onChange(hex);
-    void addRecentColor(hex).then(setRecent);
+  /**
+   * Applying and remembering are separate.
+   *
+   * Every path used to do both, so dragging the alpha slider filed one "recent colour"
+   * per step and the list filled with the same colour at forty transparencies. A recent
+   * colour is a choice someone made, which is only knowable once they stop adjusting.
+   */
+  const apply = (hex: string) => onChange(hex);
+
+  const remember = (hex: string) => {
+    // Transparency is a property of this use, not of the colour worth keeping.
+    void addRecentColor(hexWithoutAlpha(hex)).then(setRecent);
   };
 
   const eyeDropperCtor = (globalThis as { EyeDropper?: new () => { open: () => Promise<EyeDropperResult> } })
@@ -50,7 +59,8 @@ export function ColorField({
       const { sRGBHex } = await new eyeDropperCtor().open();
       const hex = sRGBHex.toLowerCase();
       setDraft(hex);
-      commit(hex);
+      apply(hex);
+      remember(hex);
     } catch {
       // user cancelled the eyedropper
     }
@@ -65,7 +75,8 @@ export function ColorField({
             aria-label={aria}
             data-testid={`${property}-swatch`}
             value={hexWithoutAlpha(value ?? '#ffffff')}
-            onChange={(e) => commit(withAlphaPercent(e.target.value, alphaPercent(value ?? '#ffffff')))}
+            onChange={(e) => apply(withAlphaPercent(e.target.value, alphaPercent(value ?? '#ffffff')))}
+            onBlur={(e) => remember(e.target.value)}
           />
           <input
             type="text"
@@ -73,11 +84,14 @@ export function ColorField({
             data-testid={`${property}-hex`}
             placeholder={value === null ? 'none' : undefined}
             value={draft}
+            onBlur={() => {
+              if (/^#([0-9a-f]{6}|[0-9a-f]{8})$/i.test(draft)) remember(draft.toLowerCase());
+            }}
             onChange={(e) => {
               setDraft(e.target.value);
               // 8 digits carry the alpha; the picker widget only speaks 6.
               if (/^#([0-9a-f]{6}|[0-9a-f]{8})$/i.test(e.target.value)) {
-                commit(e.target.value.toLowerCase());
+                apply(e.target.value.toLowerCase());
               }
             }}
           />
@@ -105,7 +119,8 @@ export function ColorField({
               aria-label={`${aria} opacity`}
               data-testid={`${property}-alpha`}
               value={alphaPercent(value)}
-              onChange={(e) => commit(withAlphaPercent(value, Number(e.target.value)))}
+              // Adjusting transparency is not choosing a colour.
+              onChange={(e) => apply(withAlphaPercent(value, Number(e.target.value)))}
             />
             <span className="pgve-alpha-value">{alphaPercent(value)}%</span>
           </span>
@@ -126,7 +141,8 @@ export function ColorField({
                 style={{ background: color }}
                 onClick={() => {
                   setDraft(color);
-                  commit(color);
+                  // Already in the list; re-recording it would only reshuffle it under the cursor.
+                  apply(color);
                 }}
               />
             ))}

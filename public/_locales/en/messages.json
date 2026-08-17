@@ -465,9 +465,6 @@
   "aria_choose_bg_image": {
     "message": "Choose background image file"
   },
-  "tip_scrub": {
-    "message": "Drag to change $1"
-  },
   "size_hint": {
     "message": "Also takes auto, a percentage, or fit-content."
   },
