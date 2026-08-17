@@ -544,13 +544,13 @@
     "message": "Share links"
   },
   "opt_intro": {
-    "message": "Upload a page of edits to your own S3 bucket and share the link. Whoever opens it needs Tweakpage and the same bucket configured."
+    "message": "Upload a page of edits to your own S3 bucket and share the link. Whoever opens it needs Tweakpage, and nothing else — no AWS account, no setup."
   },
   "opt_risk_title": {
     "message": "These keys are readable on this machine"
   },
   "opt_risk_body": {
-    "message": "Extension storage is not a vault: anyone with access to this profile can read what you paste here, and this extension is open source. Use a key that can do nothing but write and read this one prefix, and rotate it like any other credential. The secret itself is never sent — requests carry a signature derived from it."
+    "message": "Extension storage is not a vault: anyone with access to this profile can read what you paste here, and this extension is open source. Use a key that can do nothing but write this one prefix, and rotate it like any other credential. The secret itself is never sent — requests carry a signature derived from it. Shared files are world-readable under an unguessable name, so keep anything confidential out of the pages you share."
   },
   "opt_save": {
     "message": "Save"
@@ -572,9 +572,6 @@
   },
   "toast_share_copied": {
     "message": "Link copied — it opens this page with your edits"
-  },
-  "toast_share_unset": {
-    "message": "Set up a bucket first: right-click the toolbar icon → Options"
   },
   "toast_share_failed": {
     "message": "Upload refused. Check the bucket, the region and the key's permissions."
@@ -599,5 +596,8 @@
   },
   "footer_changes_one": {
     "message": "1 change · Review ›"
+  },
+  "tip_share_unset": {
+    "message": "Set up a bucket first: right-click the toolbar icon → Options"
   }
 }

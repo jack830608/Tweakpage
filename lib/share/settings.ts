@@ -7,8 +7,6 @@ export interface ShareSettings {
   region: string;
   accessKeyId: string;
   secretAccessKey: string;
-  /** Everything is written under this prefix, so the IAM policy can be scoped to it. */
-  prefix: string;
 }
 
 export const EMPTY_SETTINGS: ShareSettings = {
@@ -16,11 +14,11 @@ export const EMPTY_SETTINGS: ShareSettings = {
   region: '',
   accessKeyId: '',
   secretAccessKey: '',
-  prefix: 'tweakpage/',
 };
 
+/** Sharing is offered only when a whole set is present — a partial one just fails at S3. */
 export function isConfigured(settings: ShareSettings): boolean {
-  return Boolean(settings.bucket && settings.region && settings.accessKeyId && settings.secretAccessKey);
+  return Object.values(settings).every((value) => value !== '');
 }
 
 export async function getShareSettings(): Promise<ShareSettings> {
@@ -32,7 +30,6 @@ export async function getShareSettings(): Promise<ShareSettings> {
       region: str(value.region),
       accessKeyId: str(value.accessKeyId),
       secretAccessKey: str(value.secretAccessKey),
-      prefix: normalizePrefix(str(value.prefix) || EMPTY_SETTINGS.prefix),
     };
   } catch {
     return EMPTY_SETTINGS;
@@ -40,21 +37,9 @@ export async function getShareSettings(): Promise<ShareSettings> {
 }
 
 export async function saveShareSettings(settings: ShareSettings): Promise<void> {
-  await browser.storage.local.set({ [KEY]: { ...settings, prefix: normalizePrefix(settings.prefix) } });
-}
-
-/** Where one shared file lives. Both ends compute this, so a link carries only the id. */
-export function objectUrl(settings: ShareSettings, id: string): URL {
-  return new URL(
-    `https://${settings.bucket}.s3.${settings.region}.amazonaws.com/${settings.prefix}${id}.json`,
-  );
+  await browser.storage.local.set({ [KEY]: settings });
 }
 
 function str(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
-}
-
-function normalizePrefix(prefix: string): string {
-  const cleaned = prefix.replace(/^\/+/, '');
-  return cleaned === '' || cleaned.endsWith('/') ? cleaned : `${cleaned}/`;
 }

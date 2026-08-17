@@ -11,7 +11,7 @@ import { useKeyboardPicker } from './hooks/useKeyboardPicker';
 import { useExtensionAlive } from './hooks/useExtensionAlive';
 import { captureBeforeAfter } from './snapshot';
 import { parseImport } from '../../lib/edits/import';
-import { shareIdFrom } from '../../lib/share/link';
+import { shareRefFrom } from '../../lib/share/link';
 import { safeStorageSet } from '../../lib/extension-context';
 import { plural, t } from '../../lib/i18n';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
@@ -50,10 +50,10 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   }, []);
 
   useEffect(() => {
-    const id = shareIdFrom(location.href);
-    if (!id) return;
+    const ref = shareRefFrom(location.href);
+    if (!ref) return;
     void browser.runtime
-      .sendMessage({ type: 'pg:share-get', id })
+      .sendMessage({ type: 'pg:share-get', ref })
       .then((result: unknown) => {
         const transfer = result as { ok?: boolean; body?: string } | null;
         if (!transfer?.ok || typeof transfer.body !== 'string') {

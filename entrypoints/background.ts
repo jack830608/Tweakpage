@@ -12,6 +12,7 @@ export default defineBackground(() => {
         url?: string;
         id?: string;
         body?: string;
+        ref?: { id: string; bucket: string; region: string };
       },
       sender,
     ) => {
@@ -43,8 +44,8 @@ export default defineBackground(() => {
       if (message?.type === 'pg:share-put' && typeof message.id === 'string' && typeof message.body === 'string') {
         return putShared(message.id, message.body);
       }
-      if (message?.type === 'pg:share-get' && typeof message.id === 'string') {
-        return getShared(message.id);
+      if (message?.type === 'pg:share-get' && message.ref) {
+        return getShared(message.ref);
       }
       if (message?.type === 'pg:grab' && sender.tab?.windowId != null) {
         return browser.tabs

@@ -13,7 +13,6 @@ const FIELDS: Array<{ key: keyof ShareSettings; label: string; secret?: boolean;
   { key: 'region', label: 'AWS_REGION', hint: 'ap-northeast-1' },
   { key: 'accessKeyId', label: 'AWS_ACCESS_KEY_ID' },
   { key: 'secretAccessKey', label: 'AWS_SECRET_ACCESS_KEY', secret: true },
-  { key: 'prefix', label: 'PREFIX', hint: 'tweakpage/' },
 ];
 
 export function OptionsApp() {
@@ -81,12 +80,11 @@ export function OptionsApp() {
   );
 }
 
-/** Shown so the key can be scoped before it is pasted, not after something goes wrong. */
-const POLICY = `{
-  "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Action": ["s3:PutObject", "s3:GetObject"],
-    "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*"
-  }]
-}`;
+/** Shown so the bucket can be set up before a key is pasted, not after something fails. */
+const POLICY = `// The key you paste above only needs to write:
+{ "Effect": "Allow", "Action": "s3:PutObject",
+  "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
+
+// And the bucket lets anyone read a share, so a link works without an AWS account:
+{ "Effect": "Allow", "Principal": "*", "Action": "s3:GetObject",
+  "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }`;
