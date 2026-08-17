@@ -2,7 +2,9 @@ import { browser } from 'wxt/browser';
 import { isExtensionAlive, safeSendMessage } from '../extension-context';
 import { applyAll, revertAll, revertRemoved } from '../edits/apply';
 import { showMarker } from './marker';
-import { loadPageEdits, pageKey } from '../edits/storage';
+import { readDomValue } from '../edits/dom';
+import { loadPageEdits, pageKey, savePageEdits } from '../edits/storage';
+import { resolveRecord } from '../selector/resolve';
 import type { PageEdits } from '../edits/types';
 
 const REAPPLY_DELAY_MS = 50;
@@ -73,7 +75,38 @@ export class ApplierEngine {
   }
 
   private applyNow(): void {
-    if (!this.paused && this.edits) applyAll(this.edits.records, this.doc);
+    if (this.paused || !this.edits) return;
+    this.refreshBaselines();
+    applyAll(this.edits.records, this.doc);
+  }
+
+  /**
+   * When the site rewrites a value we edited — a price, a stock line, a lazy-loaded
+   * src — the record's oldValue is a stale snapshot of a page that no longer exists.
+   * Reapplying over the site's write is wanted; reverting to the snapshot is not, so
+   * the site's value becomes the new baseline before we write on top of it.
+   *
+   * Our own writes are excluded by value: after applyAll the page holds newValue, and a
+   * value equal to either side of the record is not news.
+   */
+  private refreshBaselines(): void {
+    if (!this.edits) return;
+    const updates: Array<{ id: string; oldValue: string }> = [];
+    const records = this.edits.records.map((record) => {
+      if (!record.enabled || (record.type !== 'text' && record.type !== 'attr')) return record;
+      const el = resolveRecord(record, this.doc);
+      const live = el ? readDomValue(el, record) : null;
+      if (live === null || live === record.newValue || live === record.oldValue) return record;
+      updates.push({ id: record.id, oldValue: live });
+      // The attribute exists on the page now, whoever put it there.
+      return { ...record, oldValue: live, absent: undefined };
+    });
+    if (updates.length === 0) return;
+    this.edits = { ...this.edits, records };
+    savePageEdits(this.edits).catch(() => {});
+    // The panel keeps its own copy of the records; without this, its reset buttons
+    // would still write the snapshot this method just retired.
+    this.doc.dispatchEvent(new CustomEvent('pg-editor:baseline', { detail: { updates } }));
   }
 
   private observe(): void {

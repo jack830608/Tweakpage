@@ -9,6 +9,7 @@ export interface NewEdit {
   property: string;
   oldValue: string;
   newValue: string;
+  absent?: boolean;
   viewport?: number;
 }
 

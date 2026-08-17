@@ -13,6 +13,12 @@ export interface EditRecord {
   property: string;
   oldValue: string;
   newValue: string;
+  /**
+   * The attribute did not exist before the edit. oldValue can't say so — '' is a legal
+   * attribute value — and without it, resetting an added href left href="" behind,
+   * turning an inert element into a link to the current page.
+   */
+  absent?: boolean;
   enabled: boolean;
   scope?: EditScope;
   /** Viewport width when the edit was made — an engineer needs it to place the change. */
