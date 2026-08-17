@@ -56,7 +56,7 @@ export function PopupApp() {
       return;
     }
     try {
-      if (tab.id != null) await browser.tabs.sendMessage(tab.id, { type: 'pg:toggle' });
+      if (tab.id != null) await browser.tabs.sendMessage(tab.id, { type: 'tweakpage:toggle' });
       window.close();
     } catch {
       // The page was open before the extension was installed or updated, so nothing is

@@ -13,12 +13,12 @@ interface CollapsibleSectionProps {
 
 export function CollapsibleSection({ title, sectionId, open, onToggle, aside, children }: CollapsibleSectionProps) {
   return (
-    <section className="pgve-disclosure">
-      <button type="button" className="pgve-disclosure-header" data-section={sectionId} aria-expanded={open} onClick={onToggle}>
+    <section className="twk-disclosure">
+      <button type="button" className="twk-disclosure-header" data-section={sectionId} aria-expanded={open} onClick={onToggle}>
         <ChevronIcon open={open} /> {title}
         {aside}
       </button>
-      {open && <div className="pgve-disclosure-body">{children}</div>}
+      {open && <div className="twk-disclosure-body">{children}</div>}
     </section>
   );
 }

@@ -37,11 +37,11 @@ export class ApplierEngine {
 
   async start(url: string): Promise<void> {
     this.url = url;
-    this.doc.addEventListener('pg-editor:preview', (e) => {
+    this.doc.addEventListener('tweakpage:preview', (e) => {
       this.paused = (e as CustomEvent<{ on?: boolean }>).detail?.on === true;
       if (!this.paused) this.applyNow();
     });
-    this.doc.addEventListener('pg-editor:ui', (e) => {
+    this.doc.addEventListener('tweakpage:ui', (e) => {
       const detail = (e as CustomEvent<Partial<typeof this.editorUi>>).detail;
       this.editorUi = {
         state: detail?.state ?? 'closed',
@@ -77,7 +77,7 @@ export class ApplierEngine {
   private setEdits(edits: PageEdits | null): void {
     const previous = this.edits?.records ?? [];
     this.edits = edits && edits.records.length > 0 ? edits : null;
-    safeSendMessage({ type: 'pg:count', count: this.edits?.records.length ?? 0 });
+    safeSendMessage({ type: 'tweakpage:count', count: this.edits?.records.length ?? 0 });
     if (this.edits) {
       revertRemoved(previous, this.edits.records, this.doc);
       this.applyNow();
@@ -139,7 +139,7 @@ export class ApplierEngine {
     savePageEdits(this.edits).catch(() => {});
     // The panel keeps its own copy of the records; without this, its reset buttons
     // would still write the snapshot this method just retired.
-    this.doc.dispatchEvent(new CustomEvent('pg-editor:baseline', { detail: { updates } }));
+    this.doc.dispatchEvent(new CustomEvent('tweakpage:baseline', { detail: { updates } }));
   }
 
   private observe(): void {

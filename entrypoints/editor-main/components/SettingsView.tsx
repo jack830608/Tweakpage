@@ -39,7 +39,7 @@ export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
   const [appearanceOpen, setAppearanceOpen] = useState(true);
 
   return (
-    <div className="pgve-settings">
+    <div className="twk-settings">
       <CollapsibleSection
         title={t('settings_appearance')}
         sectionId="set-appearance"
@@ -62,9 +62,9 @@ export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="pgve-setting">
-      <span className="pgve-setting-label">{label}</span>
-      <div className="pgve-setting-control">{children}</div>
+    <div className="twk-setting">
+      <span className="twk-setting-label">{label}</span>
+      <div className="twk-setting-control">{children}</div>
     </div>
   );
 }
@@ -97,14 +97,14 @@ function ShareGroup({ onToast }: { onToast: (toast: { message: string }) => void
       onToggle={() => setOpen((current) => !current)}
       aside={
         <span
-          className={ready ? 'pgve-chip pgve-chip-on' : 'pgve-chip'}
+          className={ready ? 'twk-chip twk-chip-on' : 'twk-chip'}
           data-testid="share-status"
         >
           {ready ? t('settings_share_on') : t('settings_share_off')}
         </span>
       }
     >
-      <p className="pgve-settings-note">{t('settings_sharing_hint')}</p>
+      <p className="twk-settings-note">{t('settings_sharing_hint')}</p>
       {SHARE_FIELDS.map(({ key, label, secret, hint }) => (
         <Row key={key} label={label}>
           <input
@@ -121,7 +121,7 @@ function ShareGroup({ onToast }: { onToast: (toast: { message: string }) => void
           />
         </Row>
       ))}
-      <div className="pgve-settings-actions">
+      <div className="twk-settings-actions">
         <button
           type="button"
           aria-label={t('opt_clear')}
@@ -171,9 +171,9 @@ function PermissionsHelp({
       open={open}
       onToggle={onToggle}
     >
-      <p className="pgve-settings-note">{t('settings_permissions_body')}</p>
-      <pre className="pgve-policy">{POLICY}</pre>
-      <div className="pgve-settings-actions">
+      <p className="twk-settings-note">{t('settings_permissions_body')}</p>
+      <pre className="twk-policy">{POLICY}</pre>
+      <div className="twk-settings-actions">
         <button type="button" aria-label={t('copy_policy')} data-testid="copy-policy" onClick={() => void copy()}>
           {t('copy_policy')}
         </button>

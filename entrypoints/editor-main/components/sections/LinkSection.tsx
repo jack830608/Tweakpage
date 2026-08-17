@@ -35,7 +35,7 @@ export function LinkSection({ element, controller }: SectionProps) {
   };
 
   return (
-    <section className="pgve-section">
+    <section className="twk-section">
       <Field name="href" property="href" controller={controller} element={element} error={href.error}>
         <input
           type="text"

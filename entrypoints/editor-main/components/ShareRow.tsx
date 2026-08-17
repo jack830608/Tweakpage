@@ -40,7 +40,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
     const page = controller.getPage();
     const id = makeShareId();
     const result = (await browser.runtime
-      .sendMessage({ type: 'pg:share-put', id, body: toJson(page) })
+      .sendMessage({ type: 'tweakpage:share-put', id, body: toJson(page) })
       .catch(() => null)) as
       | { ok?: boolean; reason?: string; ref?: Parameters<typeof shareLink>[1] }
       | null;
@@ -62,9 +62,9 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
   };
 
   return (
-    <div className="pgve-share">
-      <span className="pgve-share-label">{t('share')}</span>
-      <div className="pgve-share-buttons">
+    <div className="twk-share">
+      <span className="twk-share-label">{t('share')}</span>
+      <div className="twk-share-buttons">
         <button
           type="button"
           aria-label={t('aria_copy_summary')} data-testid="copy-summary"
@@ -121,7 +121,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
 // service worker (which has chrome.downloads access) as a data: URL instead.
 function downloadFile(filename: string, content: string): void {
   const url = `data:application/json;base64,${toBase64(content)}`;
-  safeSendMessage({ type: 'pg:download', filename, url });
+  safeSendMessage({ type: 'tweakpage:download', filename, url });
 }
 
 function toBase64(content: string): string {

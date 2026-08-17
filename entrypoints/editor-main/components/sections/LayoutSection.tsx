@@ -27,7 +27,7 @@ export function LayoutSection({ element, controller }: SectionProps) {
   const isFlex = display.value.includes('flex');
 
   return (
-    <section className="pgve-section">
+    <section className="twk-section">
       <Choice name="display" property="display" options={DISPLAYS} current={display.value}
         original={display.original} element={element} controller={controller} />
       {isFlex && (
@@ -46,7 +46,7 @@ export function LayoutSection({ element, controller }: SectionProps) {
       <Field name="box-shadow" property="boxShadow" controller={controller} element={element}>
         <BoxShadowInput element={element} controller={controller} />
       </Field>
-      <p className="pgve-hint">{t('layout_hint')}</p>
+      <p className="twk-hint">{t('layout_hint')}</p>
     </section>
   );
 }

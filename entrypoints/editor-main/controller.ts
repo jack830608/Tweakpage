@@ -48,7 +48,7 @@ export class EditsController {
     }
     // The applier retires stale baselines when the site rewrites an edited value; the
     // panel's copy of the records has to follow, or its reset buttons write history.
-    doc.addEventListener('pg-editor:baseline', (e) => {
+    doc.addEventListener('tweakpage:baseline', (e) => {
       const updates = (e as CustomEvent<{ updates?: Array<{ id: string; oldValue: string }> }>)
         .detail?.updates;
       if (!updates?.length) return;
@@ -128,7 +128,7 @@ export class EditsController {
   setPreviewOriginal(on: boolean): void {
     if (this.previewing === on) return;
     this.previewing = on;
-    this.doc.dispatchEvent(new CustomEvent('pg-editor:preview', { detail: { on } }));
+    this.doc.dispatchEvent(new CustomEvent('tweakpage:preview', { detail: { on } }));
     if (on) {
       revertAll(this.page.records, this.doc);
     } else {
@@ -352,7 +352,7 @@ export class EditsController {
         console.warn('[tweakpage] failed to save edits', error);
         this.saveState = 'failed';
         // Storage is the only copy. Silently losing it is worse than any other failure here.
-        this.doc.dispatchEvent(new CustomEvent('pg-editor:save-failed'));
+        this.doc.dispatchEvent(new CustomEvent('tweakpage:save-failed'));
       })
       .finally(() => this.listeners.forEach((fn) => fn()));
   }

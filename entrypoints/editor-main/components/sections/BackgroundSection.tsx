@@ -44,7 +44,7 @@ export function BackgroundSection({ element, controller }: SectionProps) {
   };
 
   return (
-    <section className="pgve-section">
+    <section className="twk-section">
       <ColorField
         name="background-color"
         property="backgroundColor"
@@ -77,9 +77,9 @@ export function BackgroundSection({ element, controller }: SectionProps) {
           }}
         />
       </Field>
-      <div className="pgve-field pgve-field--actions">
+      <div className="twk-field twk-field--actions">
         <span aria-hidden="true" />
-        <div className="pgve-field-actions">
+        <div className="twk-field-actions">
         <ImagePicker ariaLabel={t('aria_choose_bg_image')} testId="background-image-file" onPicked={setImage} />
         </div>
       </div>

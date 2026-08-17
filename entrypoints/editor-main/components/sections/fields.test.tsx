@@ -222,9 +222,9 @@ describe('spacing box model', () => {
 
     fireEvent.change(control('padding top'), { target: { value: '24' } });
     fireEvent.change(control('margin left'), { target: { value: '8' } });
-    expect(control('padding top').className).toContain('pgve-box-input--edited');
-    expect(control('margin left').className).toContain('pgve-box-input--edited');
-    expect(control('padding bottom').className).not.toContain('pgve-box-input--edited');
+    expect(control('padding top').className).toContain('twk-box-input--edited');
+    expect(control('margin left').className).toContain('twk-box-input--edited');
+    expect(control('padding bottom').className).not.toContain('twk-box-input--edited');
     expect(controller.getPage().records).toHaveLength(2);
 
     fireEvent.click(screen.getByRole('button', { name: 'Reset spacing' }));

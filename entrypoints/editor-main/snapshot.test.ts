@@ -62,11 +62,11 @@ test('captures both states with the tool hidden, then saves one side-by-side ima
   let saved: { filename?: string; url?: string } | null = null;
   vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockImplementation((async (message: unknown) => {
     const m = message as { type?: string; filename?: string; url?: string };
-    if (m.type === 'pg:grab') {
+    if (m.type === 'tweakpage:grab') {
       grabs.push({ hostHidden: host.style.display === 'none', title: el.textContent ?? '' });
       return PIXEL;
     }
-    if (m.type === 'pg:save-png') saved = { filename: m.filename, url: m.url };
+    if (m.type === 'tweakpage:save-png') saved = { filename: m.filename, url: m.url };
     return undefined;
   }) as never);
 

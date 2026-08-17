@@ -24,19 +24,19 @@ beforeEach(() => {
   document.body.innerHTML = '<h1 class="title">Original</h1><img class="hero" src="/a.png">';
 });
 
-test('applyAll writes style rules into a single data-pg-editor tag', () => {
+test('applyAll writes style rules into a single data-tweakpage-style tag', () => {
   applyAll([record({})], document);
-  const tags = document.querySelectorAll('style[data-pg-editor]');
+  const tags = document.querySelectorAll('style[data-tweakpage-style]');
   expect(tags).toHaveLength(1);
   expect(tags[0].textContent).toBe('[data-tweakpage~="r1"] { color: #ff0000 !important; }');
 });
 
 test('applyAll is idempotent: second run keeps one tag and identical css', () => {
   applyAll([record({})], document);
-  const tag = document.querySelector('style[data-pg-editor]')!;
+  const tag = document.querySelector('style[data-tweakpage-style]')!;
   applyAll([record({})], document);
-  expect(document.querySelectorAll('style[data-pg-editor]')).toHaveLength(1);
-  expect(document.querySelector('style[data-pg-editor]')).toBe(tag);
+  expect(document.querySelectorAll('style[data-tweakpage-style]')).toHaveLength(1);
+  expect(document.querySelector('style[data-tweakpage-style]')).toBe(tag);
 });
 
 test('applyAll applies text edits idempotently', () => {
@@ -69,7 +69,7 @@ test('revertAll removes the style tag and restores text and attrs', () => {
   const attr = record({ id: 'r3', selector: '.hero', type: 'attr', property: 'src', oldValue: '/a.png', newValue: '/b.png' });
   applyAll([record({}), text, attr], document);
   revertAll([record({}), text, attr], document);
-  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]')).toBeNull();
   expect(document.querySelector('.title')!.textContent).toBe('Original');
   expect(document.querySelector('.hero')!.getAttribute('src')).toBe('/a.png');
 });
@@ -82,11 +82,11 @@ test('ensureStyleTag reuses an existing tag', () => {
 
 test('applyAll removes the style tag when no enabled style records remain', () => {
   applyAll([record({})], document);
-  expect(document.querySelector('style[data-pg-editor]')).not.toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]')).not.toBeNull();
   applyAll([record({ enabled: false })], document);
-  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]')).toBeNull();
   applyAll([], document);
-  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]')).toBeNull();
 });
 
 test('a selector that now matches several elements styles none of them', () => {
@@ -96,7 +96,7 @@ test('a selector that now matches several elements styles none of them', () => {
   // The rule used to be emitted as `.btn { ... }`, which restyled both buttons while the
   // review list reported the edit as not applied.
   expect(statuses.get('r1')).toBe('not-found');
-  expect(document.querySelector('style[data-pg-editor]')).toBeNull();
+  expect(document.querySelector('style[data-tweakpage-style]')).toBeNull();
   expect(document.querySelectorAll('[data-tweakpage]')).toHaveLength(0);
 });
 

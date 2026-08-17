@@ -159,11 +159,11 @@ test('clicking a change scrolls the page back to its element', async ({ context 
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
 
   await page.locator('[data-testid="review-changes"]').click();
-  await page.locator('.pgve-change button[data-testid^="select-change-"]').first().click();
+  await page.locator('.twk-change button[data-testid^="select-change-"]').first().click();
 
   // Smooth scrolling settles over a few frames.
   await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 }).toBeLessThan(300);
-  await expect(page.locator('.pgve-outline--selected')).toBeVisible();
+  await expect(page.locator('.twk-outline--selected')).toBeVisible();
 });
 
 test('swapping a responsive image actually changes what the browser shows', async ({ context }) => {
@@ -212,7 +212,7 @@ test('every control in the panel is labelled, addressable and in a field row', a
       if (!el.getAttribute('data-testid')) problems.push(`${id}: no data-testid`);
       if (!el.getAttribute('aria-label')) problems.push(`${id}: no aria-label`);
       // A property editor belongs in a Field row — that is what gives it a name and a reset.
-      if (el.closest('.pgve-section') && !el.closest('.pgve-field') && !el.closest('.pgve-box')) {
+      if (el.closest('.twk-section') && !el.closest('.twk-field') && !el.closest('.twk-box')) {
         problems.push(`${id}: in a section but not in a field row`);
       }
     }
@@ -282,14 +282,14 @@ test('two proposals can be saved and switched between', async ({ context }) => {
   await expect(page.locator('h1')).toHaveText('Option B headline');
 
   // Switching back is what makes the two comparable without rebuilding either.
-  await page.locator('.pgve-variant button', { hasText: 'A' }).first().click();
+  await page.locator('.twk-variant button', { hasText: 'A' }).first().click();
   await expect(page.locator('h1')).toHaveText('Option A headline');
 
   // And it survives a reload, because a proposal is stored with the page.
   await page.reload();
   await expect(page.locator('h1')).toHaveText('Option A headline');
   await activateEditor(context);
-  await expect(page.locator('.pgve-variant')).toHaveCount(1);
+  await expect(page.locator('.twk-variant')).toHaveCount(1);
 });
 
 test('the share button is dead until a bucket is configured', async ({ context }) => {
@@ -370,7 +370,7 @@ test('a shared link works for someone who has set nothing up', async ({ context 
   await sender.locator('[data-testid="text"]').fill('Headline from a colleague');
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await sender.locator('[data-testid="share-link"]').click();
-  await expect(sender.locator('.pgve-toast')).toBeVisible();
+  await expect(sender.locator('.twk-toast')).toBeVisible();
 
   const link: string = await sender.evaluate(() => navigator.clipboard.readText());
   expect(link, 'the link points at the page, carrying a reference').toContain('?tweakpage=');
@@ -461,8 +461,8 @@ test('header and change count stay reachable when the panel scrolls', async ({ c
   const panel = page.locator('#tweakpage-host aside');
   await panel.evaluate((el) => el.scrollTo(0, el.scrollHeight));
   const panelBox = (await panel.boundingBox())!;
-  const headerBox = (await page.locator('.pgve-header').boundingBox())!;
-  const footerBox = (await page.locator('.pgve-footer').boundingBox())!;
+  const headerBox = (await page.locator('.twk-header').boundingBox())!;
+  const footerBox = (await page.locator('.twk-footer').boundingBox())!;
 
   expect(headerBox.y).toBeGreaterThanOrEqual(panelBox.y - 1);
   expect(headerBox.y).toBeLessThan(panelBox.y + headerBox.height + 1);
@@ -476,7 +476,7 @@ test('selection outline stays legible against the page', async ({ context }) => 
   await activateEditor(context);
   await page.locator('h1').click();
 
-  const outline = page.locator('.pgve-outline--selected');
+  const outline = page.locator('.twk-outline--selected');
   await expect(outline).toHaveCSS('outline-width', '3px');
   // The white halo is what keeps the stroke readable on dark and busy backgrounds.
   const shadow = await outline.evaluate((el) => getComputedStyle(el).boxShadow);
@@ -492,7 +492,7 @@ test('selection outline stays legible against the page', async ({ context }) => 
     document.body.append(probe);
     const token = getComputedStyle(probe).color;
     probe.remove();
-    const box = host.shadowRoot!.querySelector('.pgve-outline--selected')!;
+    const box = host.shadowRoot!.querySelector('.twk-outline--selected')!;
     return { token, painted: getComputedStyle(box).outlineColor };
   });
   expect(colors.token).not.toBe('');
@@ -514,13 +514,13 @@ test('the panel fades at rest and comes back solid once you reach for it', async
 
   await page.mouse.move(200, 500);
   await page.waitForTimeout(300);
-  expect(await opacityOf('.pgve-panel'), 'the page should show through at rest').toBeLessThan(1);
+  expect(await opacityOf('.twk-panel'), 'the page should show through at rest').toBeLessThan(1);
   // The outline is a sibling, not a child: fading the panel must not dim what it points at.
-  expect(await opacityOf('.pgve-outline--selected')).toBe(1);
+  expect(await opacityOf('.twk-outline--selected')).toBe(1);
 
   await page.mouse.move(box.x + box.width / 2, box.y + 120);
   await page.waitForTimeout(300);
-  expect(await opacityOf('.pgve-panel'), 'reaching for the panel should make it solid').toBe(1);
+  expect(await opacityOf('.twk-panel'), 'reaching for the panel should make it solid').toBe(1);
 });
 
 test('choosing a theme beats the system setting in both directions', async ({ context }) => {
@@ -531,7 +531,7 @@ test('choosing a theme beats the system setting in both directions', async ({ co
     page.evaluate(
       () =>
         getComputedStyle(
-          document.getElementById('tweakpage-host')!.shadowRoot!.querySelector('.pgve-panel')!,
+          document.getElementById('tweakpage-host')!.shadowRoot!.querySelector('.twk-panel')!,
         ).backgroundColor,
     );
 
@@ -585,8 +585,8 @@ test('spacing box-model editor fits inside the panel', async ({ context }) => {
   expect(inputBox.width).toBeLessThan(60);
 
   const panelBox = (await page.locator('#tweakpage-host aside').boundingBox())!;
-  const marginBox = (await page.locator('.pgve-box--margin').boundingBox())!;
-  const paddingBox = (await page.locator('.pgve-box--padding').boundingBox())!;
+  const marginBox = (await page.locator('.twk-box--margin').boundingBox())!;
+  const paddingBox = (await page.locator('.twk-box--padding').boundingBox())!;
   expect(paddingBox.x + paddingBox.width).toBeLessThanOrEqual(marginBox.x + marginBox.width + 1);
   expect(marginBox.x + marginBox.width).toBeLessThanOrEqual(panelBox.x + panelBox.width + 1);
 });
@@ -598,7 +598,7 @@ test('panel can be dragged to a new position and stays in the viewport', async (
 
   const panel = page.locator('#tweakpage-host aside');
   const before = (await panel.boundingBox())!;
-  const header = (await page.locator('.pgve-header').boundingBox())!;
+  const header = (await page.locator('.twk-header').boundingBox())!;
 
   // Grab the title, not the middle — the header carries undo, redo and the theme picker.
   const grabX = header.x + 60;
@@ -640,17 +640,17 @@ test('browse mode passes clicks through; edit mode selects', async ({ context })
   await activateEditor(context);
 
   await page.locator('h1').click();
-  await expect(page.locator('.pgve-outline--selected')).toBeVisible();
+  await expect(page.locator('.twk-outline--selected')).toBeVisible();
 
   await page.locator('[data-testid="mode-browse"]').click();
-  await expect(page.locator('.pgve-outline--selected')).toHaveCount(0);
+  await expect(page.locator('.twk-outline--selected')).toHaveCount(0);
   await expect(page.locator('[data-testid="browsing-switch-to-edit"]')).toBeVisible();
   await page.locator('#anchor-link').click();
   expect(page.url()).toContain('#test-anchor');
 
   await page.locator('[data-testid="mode-edit"]').click();
-  await expect(page.locator('.pgve-outline--selected')).toBeVisible();
-  await expect(page.locator('.pgve-selection-label')).toBeVisible();
+  await expect(page.locator('.twk-outline--selected')).toBeVisible();
+  await expect(page.locator('.twk-selection-label')).toBeVisible();
   expect(page.url()).toContain('#test-anchor');
 });
 
@@ -740,12 +740,12 @@ test('settings live in the panel, and filling them in switches sharing on', asyn
   const before = await share.evaluate((el) => getComputedStyle(el).opacity);
 
   await page.locator('[data-testid="open-settings"]').click();
-  await expect(page.locator('.pgve-settings')).toBeVisible();
+  await expect(page.locator('.twk-settings')).toBeVisible();
 
   // Nothing may push past the panel: the settings labels are long identifiers, and a
   // row that overflows is invisible until someone opens it on a real page.
   const panel = (await page.locator('#tweakpage-host aside').boundingBox())!;
-  for (const row of await page.locator('.pgve-setting').all()) {
+  for (const row of await page.locator('.twk-setting').all()) {
     const box = (await row.boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(panel.x);
     expect(box.x + box.width).toBeLessThanOrEqual(panel.x + panel.width + 1);
@@ -845,8 +845,8 @@ test('the idle panel stays readable, measured, in both themes', async ({ context
   const contrastOf = () =>
     page.evaluate(() => {
       const host = document.getElementById('tweakpage-host')!.shadowRoot!;
-      const panel = host.querySelector('.pgve-panel') as HTMLElement;
-      const sample = host.querySelector('.pgve-prop') as HTMLElement; // ink-2 secondary text
+      const panel = host.querySelector('.twk-panel') as HTMLElement;
+      const sample = host.querySelector('.twk-prop') as HTMLElement; // ink-2 secondary text
       const o = Number(getComputedStyle(panel).opacity);
       const rgb = (s: string) => s.match(/\d+(\.\d+)?/g)!.slice(0, 3).map(Number);
       const behind = [255, 255, 255]; // the fixture page is white

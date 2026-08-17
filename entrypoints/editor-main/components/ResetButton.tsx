@@ -13,11 +13,11 @@ interface ResetButtonProps {
 
 export function ResetButton({ controller, element, property, companions }: ResetButtonProps) {
   const record = controller.recordFor(element, property);
-  if (!record) return <span className="pgve-reset-slot" aria-hidden="true" />;
+  if (!record) return <span className="twk-reset-slot" aria-hidden="true" />;
   return (
     <button
       type="button"
-      className="pgve-reset"
+      className="twk-reset"
       aria-label={t('aria_reset', [property])}
       data-testid={`reset-${property}`}
       title={t('tip_reset')}

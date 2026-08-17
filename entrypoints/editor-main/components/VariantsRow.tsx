@@ -29,12 +29,12 @@ export function VariantsRow({ controller }: VariantsRowProps) {
   };
 
   return (
-    <div className="pgve-variants">
-      <span className="pgve-share-label">{t('variants')}</span>
+    <div className="twk-variants">
+      <span className="twk-share-label">{t('variants')}</span>
       {variants.length > 0 && (
-        <div className="pgve-variant-list">
+        <div className="twk-variant-list">
           {variants.map((variant) => (
-            <span key={variant.id} className="pgve-variant">
+            <span key={variant.id} className="twk-variant">
               <button
                 type="button"
                 aria-label={t('aria_load_variant', [variant.name])}
@@ -45,7 +45,7 @@ export function VariantsRow({ controller }: VariantsRowProps) {
               </button>
               <button
                 type="button"
-                className="pgve-variant-remove"
+                className="twk-variant-remove"
                 aria-label={t('aria_delete_variant', [variant.name])}
                 data-testid={`delete-variant-${variant.id}`}
                 onClick={() => controller.deleteVariant(variant.id)}
@@ -57,7 +57,7 @@ export function VariantsRow({ controller }: VariantsRowProps) {
         </div>
       )}
       {naming ? (
-        <span className="pgve-variant-naming">
+        <span className="twk-variant-naming">
           <input
             type="text"
             aria-label={t('aria_variant_name')}
@@ -79,7 +79,7 @@ export function VariantsRow({ controller }: VariantsRowProps) {
         hasEdits && (
           <button
             type="button"
-            className="pgve-variant-add"
+            className="twk-variant-add"
             aria-label={t('aria_new_variant')}
             data-testid="new-variant"
             onClick={() => setNaming(true)}

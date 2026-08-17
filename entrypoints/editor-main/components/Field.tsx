@@ -49,28 +49,28 @@ export function Field({
   const modified = controller.recordFor(element, property) !== undefined;
   const shownUnit = value !== undefined && isBareNumber(value) ? unit : undefined;
   return (
-    <div className={stacked ? 'pgve-field pgve-field--stacked' : 'pgve-field'}>
-      <span className="pgve-field-name">
+    <div className={stacked ? 'twk-field twk-field--stacked' : 'twk-field'}>
+      <span className="twk-field-name">
         <ResetButton
           controller={controller}
           element={element}
           property={property}
           companions={companions}
         />
-        <span className={modified ? 'pgve-prop pgve-prop--modified' : 'pgve-prop'} title={name}>
+        <span className={modified ? 'twk-prop twk-prop--modified' : 'twk-prop'} title={name}>
           {name}
         </span>
       </span>
       {shownUnit ? (
-        <span className="pgve-unit-wrap">
+        <span className="twk-unit-wrap">
           {children}
-          <span className="pgve-unit" aria-hidden="true">{shownUnit}</span>
+          <span className="twk-unit" aria-hidden="true">{shownUnit}</span>
         </span>
       ) : (
         children
       )}
       {error && (
-        <p className="pgve-field-error" role="alert">
+        <p className="twk-field-error" role="alert">
           {error}
         </p>
       )}

@@ -46,8 +46,8 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
   };
 
   return (
-    <div className="pgve-changes">
-      <div className="pgve-changes-actions">
+    <div className="twk-changes">
+      <div className="twk-changes-actions">
         <button type="button" onClick={() => fileRef.current?.click()}>{t('import_json')}</button>
         {page.records.length > 0 && (
           <ConfirmButton
@@ -72,7 +72,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
       {page.records.length > 3 && (
         <input
           type="search"
-          className="pgve-changes-filter"
+          className="twk-changes-filter"
           aria-label={t('search_changes')}
           data-testid="filter-changes"
           placeholder={t('search_changes')}
@@ -81,29 +81,29 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
         />
       )}
       {page.records.length === 0 ? (
-        <p className="pgve-empty">{t('no_changes')}</p>
+        <p className="twk-empty">{t('no_changes')}</p>
       ) : (
         <ul>
           {groupByElement(visible).map(([label, group]) => (
-            <li key={label} className="pgve-change-group">
-              <div className="pgve-change-group-head">
-                <span className="pgve-change-group-label">{label}</span>
-                <span className="pgve-change-group-count">{group.length}</span>
+            <li key={label} className="twk-change-group">
+              <div className="twk-change-group-head">
+                <span className="twk-change-group-label">{label}</span>
+                <span className="twk-change-group-count">{group.length}</span>
               </div>
               <ul>
           {group.map((record) => (
             <li
               key={record.id}
-              className={record.enabled ? 'pgve-change' : 'pgve-change pgve-change-off'}
+              className={record.enabled ? 'twk-change' : 'twk-change twk-change-off'}
               onMouseEnter={() => onHighlight(resolveRecord(record, document))}
               onMouseLeave={() => onHighlight(null)}
             >
-              <div className="pgve-change-head">
+              <div className="twk-change-head">
                 {/* Selecting is a control, so it is a button: reachable by keyboard and
                     announced for what it does, rather than a click handler on a row. */}
                 <button
                   type="button"
-                  className="pgve-change-target"
+                  className="twk-change-target"
                   aria-label={t('aria_select_change', [record.elementLabel])}
                   data-testid={`select-change-${record.id}`}
                   onFocus={() => onHighlight(resolveRecord(record, document))}
@@ -119,21 +119,21 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
                 </button>
                 <input
                   type="checkbox"
-                  className="pgve-change-switch"
+                  className="twk-change-switch"
                   checked={record.enabled}
                   aria-label={t('aria_toggle_change', [labelFor(record)])}
                   onClick={(e) => e.stopPropagation()}
                   onChange={() => controller.toggleRecord(record.id)}
                 />
               </div>
-              <div className="pgve-change-diff">
+              <div className="twk-change-diff">
                 <s>{shorten(record.oldValue)}</s> → <b>{shorten(record.newValue)}</b>
               </div>
               {record.viewport !== undefined && farFromNow(record.viewport) && (
-                <div className="pgve-change-viewport">{t('made_at_width', [record.viewport])}</div>
+                <div className="twk-change-viewport">{t('made_at_width', [record.viewport])}</div>
               )}
               {controller.getStatus(record.id) === 'not-found' && (
-                <div className="pgve-change-warning">{t('couldnt_apply')}</div>
+                <div className="twk-change-warning">{t('couldnt_apply')}</div>
               )}
               <button
                 type="button"

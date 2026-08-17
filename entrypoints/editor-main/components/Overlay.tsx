@@ -29,7 +29,7 @@ export function Overlay({ hovered, selected, edited = [], canMove, onMove }: Ove
         el === selected || el === hovered ? null : (
           <div
             key={i}
-            className="pgve-edited-mark"
+            className="twk-edited-mark"
             style={boxOf(el)}
             data-testid="edited-mark"
             aria-hidden="true"
@@ -40,7 +40,7 @@ export function Overlay({ hovered, selected, edited = [], canMove, onMove }: Ove
       {selected && (
         <OutlineBox el={selected} kind="selected">
           {onMove && canMove && (canMove(selected, -1) || canMove(selected, 1)) && (
-            <span className="pgve-move-buttons">
+            <span className="twk-move-buttons">
               <button
                 type="button"
                 aria-label={t('aria_move_up')}
@@ -82,13 +82,13 @@ function OutlineBox({ el, kind, children }: { el: Element; kind: 'hover' | 'sele
       : `${buildElementLabel(el)} · ${Math.round(r.width)}×${Math.round(r.height)}`;
   return (
     <div
-      className={`pgve-outline pgve-outline--${kind}`}
+      className={`twk-outline twk-outline--${kind}`}
       style={{ top: r.top, left: r.left, width: r.width, height: r.height }}
     >
       {/* One bar above the box, anchored left — the right edge is where the panel
           floats, and buttons under the panel cannot be clicked. */}
-      <span className="pgve-outline-top">
-        <span className="pgve-outline-label">{label}</span>
+      <span className="twk-outline-top">
+        <span className="twk-outline-label">{label}</span>
         {children}
       </span>
     </div>

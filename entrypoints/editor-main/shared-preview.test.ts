@@ -81,7 +81,7 @@ test("the panel's reset also honours a baseline the applier retired", async () =
 
   // The applier saw the site rewrite this value and announced the new baseline.
   document.dispatchEvent(
-    new CustomEvent('pg-editor:baseline', { detail: { updates: [{ id, oldValue: 'Live price' }] } }),
+    new CustomEvent('tweakpage:baseline', { detail: { updates: [{ id, oldValue: 'Live price' }] } }),
   );
 
   c.deleteRecord(id);

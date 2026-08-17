@@ -26,9 +26,9 @@ export function SelectionCard({ element, controller, onSelect }: SelectionCardPr
   };
 
   return (
-    <div className="pgve-selection-card">
-      <div className="pgve-selection-head">
-        <div className="pgve-selection-label">{buildElementLabel(element)}</div>
+    <div className="twk-selection-card">
+      <div className="twk-selection-head">
+        <div className="twk-selection-label">{buildElementLabel(element)}</div>
         <button
           type="button"
           aria-label={hidden ? t('aria_unhide_element') : t('aria_hide_element')}
@@ -40,7 +40,7 @@ export function SelectionCard({ element, controller, onSelect }: SelectionCardPr
       </div>
       <Breadcrumb element={element} onSelect={onSelect} />
       {similar && (
-        <label className="pgve-similar">
+        <label className="twk-similar">
           <input
             type="checkbox"
             aria-label={t('aria_apply_similar')}

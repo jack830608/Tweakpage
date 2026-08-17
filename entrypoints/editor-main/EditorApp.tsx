@@ -39,7 +39,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
 
   useEffect(() => {
     document.dispatchEvent(
-      new CustomEvent('pg-editor:ui', {
+      new CustomEvent('tweakpage:ui', {
         detail: { state: minimized ? 'minimized' : 'open', shared: sharedPreview, count: enabledCount },
       }),
     );
@@ -47,8 +47,8 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
 
   useEffect(() => {
     const onOpen = () => setMinimized(false);
-    document.addEventListener('pg-editor:open', onOpen);
-    return () => document.removeEventListener('pg-editor:open', onOpen);
+    document.addEventListener('tweakpage:open', onOpen);
+    return () => document.removeEventListener('tweakpage:open', onOpen);
   }, []);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     const ref = shareRefFrom(location.href);
     if (!ref) return;
     void browser.runtime
-      .sendMessage({ type: 'pg:share-get', ref })
+      .sendMessage({ type: 'tweakpage:share-get', ref })
       .then((result: unknown) => {
         const transfer = result as { ok?: boolean; body?: string } | null;
         if (!transfer?.ok || typeof transfer.body !== 'string') {
@@ -97,14 +97,14 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
       setHovered(null);
       void controller.navigate(url);
     };
-    document.addEventListener('pg-editor:navigated', onNavigated);
-    return () => document.removeEventListener('pg-editor:navigated', onNavigated);
+    document.addEventListener('tweakpage:navigated', onNavigated);
+    return () => document.removeEventListener('tweakpage:navigated', onNavigated);
   }, [controller]);
 
   useEffect(() => {
     const onSaveFailed = () => setToast({ message: t('toast_save_failed') });
-    document.addEventListener('pg-editor:save-failed', onSaveFailed);
-    return () => document.removeEventListener('pg-editor:save-failed', onSaveFailed);
+    document.addEventListener('tweakpage:save-failed', onSaveFailed);
+    return () => document.removeEventListener('tweakpage:save-failed', onSaveFailed);
   }, []);
 
   const dismissOnboarding = useCallback(() => {

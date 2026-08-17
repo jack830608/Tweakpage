@@ -40,12 +40,12 @@ export function TypographySection({ element, controller }: SectionProps) {
   const color = useFieldDraft(controller, element, 'color', cs.color, rgbToHex);
 
   return (
-    <section className="pgve-section">
+    <section className="twk-section">
       <Field name="font-family" property="fontFamily" controller={controller} element={element} error={fontFamily.error}>
         <input
           type="text"
           aria-label={t('aria_font_family')} data-testid="font-family"
-          list="pgve-font-suggestions"
+          list="twk-font-suggestions"
           value={fontFamily.value}
           onChange={(e) => {
             const value = e.target.value;
@@ -59,7 +59,7 @@ export function TypographySection({ element, controller }: SectionProps) {
           }}
         />
       </Field>
-      <datalist id="pgve-font-suggestions">
+      <datalist id="twk-font-suggestions">
         <option value="system-ui" />
         <option value="Arial" />
         <option value="Helvetica Neue" />

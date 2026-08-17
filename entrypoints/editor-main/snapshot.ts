@@ -42,14 +42,14 @@ export async function captureBeforeAfter(
 
   const composite = await sideBySide(original, edited);
   await browser.runtime.sendMessage({
-    type: 'pg:save-png',
+    type: 'tweakpage:save-png',
     filename: `tweakpage-${hostname}-before-after-${stamp}.png`,
     url: composite,
   });
 }
 
 async function grab(): Promise<string | undefined> {
-  const result = await browser.runtime.sendMessage({ type: 'pg:grab' });
+  const result = await browser.runtime.sendMessage({ type: 'tweakpage:grab' });
   return typeof result === 'string' ? result : undefined;
 }
 

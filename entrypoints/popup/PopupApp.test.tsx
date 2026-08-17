@@ -63,7 +63,7 @@ test('the page you are on opens the editor instead of a second tab', async () =>
   expect(screen.queryByText('example.com/landing'), 'the URL line gives way to the marker').toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Edit https://example.com/landing' }));
 
-  await waitFor(() => expect(send).toHaveBeenCalledWith(7, { type: 'pg:toggle' }));
+  await waitFor(() => expect(send).toHaveBeenCalledWith(7, { type: 'tweakpage:toggle' }));
   expect(create).not.toHaveBeenCalled();
   expect(closed).toHaveBeenCalled();
 });

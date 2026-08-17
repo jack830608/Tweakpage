@@ -20,7 +20,7 @@ export default defineContentScript({
     };
     const openEditor = async () => {
       // Loading boots the editor open; if it is already loaded, say "up", not "toggle".
-      if (!(await loadEditor())) document.dispatchEvent(new CustomEvent('pg-editor:open'));
+      if (!(await loadEditor())) document.dispatchEvent(new CustomEvent('tweakpage:open'));
     };
     engine.whenOpened(() => void openEditor().catch(() => {}));
     engine.start(location.href).catch(() => {});
@@ -35,11 +35,11 @@ export default defineContentScript({
     }
 
     browser.runtime.onMessage.addListener((message: { type?: string }) => {
-      if (message?.type !== 'pg:toggle') return;
+      if (message?.type !== 'tweakpage:toggle') return;
       // The toolbar icon is the one control that means "toggle".
       void loadEditor()
         .then((booted) => {
-          if (!booted) document.dispatchEvent(new CustomEvent('pg-editor:toggle'));
+          if (!booted) document.dispatchEvent(new CustomEvent('tweakpage:toggle'));
         })
         .catch(() => {});
     });
