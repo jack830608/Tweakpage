@@ -5,7 +5,7 @@
 <h1 align="center">Tweakpage</h1>
 
 <p align="center">
-  Visually edit any web page — tweak copy, colors, spacing and images,
+  Visually edit any web page — tweak copy, colors, spacing and images, reorder sections,
   replay your edits on reload, and export a clean change list for engineers.
 </p>
 
@@ -18,6 +18,8 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 
 - **Hand engineers a change list** — Copy Markdown from the Changes tab, paste into Slack/Jira.
 - **Keep your edits** — they're saved locally per URL and re-applied automatically on reload.
+  A query string that selects content (`?view=b`) counts as its own page; tracking
+  parameters (`utm_*`, click ids) don't.
 - **Share with a colleague** — Export JSON, and import theirs; edits for other pages
   wait until you open those pages.
 
@@ -60,14 +62,18 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 8. `⌘Z` / `⇧⌘Z` (or `Ctrl+Z`) undo and redo, or the arrows in the header. Each change in
    Review can be toggled, hovered (highlights the element) or selected (scrolls the page to
    it). `⌥` + arrow keys move the selection through the page without a mouse.
-9. A page showing edits says so: a small marker sits in the bottom-left corner whether or
-   not the editor is open, so an edited page is never mistaken for the real one. Click it
-   to open the editor.
-10. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere,
-   drag its left edge to resize, or minimize it to a corner pill — all remembered. The gear
-   in the header opens Settings, where the theme follows your system unless you pick Light or
-   Dark. The UI ships in English and Traditional Chinese. Edits survive reloads and follow
-   client-side navigation.
+9. A page showing edits says so with **one chip, bottom-left**. While the panel is open
+   the chip stays out of the way (the footer carries the count); minimize or close the
+   editor and the chip takes over, in the same spot — click it to bring the editor back.
+   During a shared preview it says the edits are someone else's. An edited page is never
+   mistaken for the real one, editor open or not.
+10. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere;
+   resize by dragging its left edge or by focusing the edge and using the arrow keys —
+   both remembered. The idle panel goes slightly translucent so the page shows through,
+   and solidifies when you reach for it. The gear in the header opens Settings, where the
+   theme follows your system unless you pick Light or Dark. The UI ships in English and
+   Traditional Chinese — visible text and screen-reader labels both. Edits survive
+   reloads and follow client-side navigation.
 
 
 ## Share links (optional)
@@ -117,14 +123,16 @@ never leaves the machine — requests carry a signature derived from it.
 ## Development
 
 - `pnpm dev` — WXT dev mode with HMR
-- `pnpm test` — unit/component tests (vitest)
-- `pnpm e2e` — builds, then runs the Playwright smoke test
+- `pnpm test` — typecheck, then unit/component tests (vitest)
+- `pnpm typecheck` — `tsc --noEmit` alone
+- `pnpm e2e` — builds, then drives the real extension in Chromium (Playwright)
 - Spec: `docs/superpowers/specs/2026-08-15-tweakpage-design.md`
 - Plan: `docs/superpowers/plans/2026-08-15-tweakpage-mvp.md`
 
 ## Manual QA checklist (per release)
 
-- [ ] A real marketing/landing page — edit hero copy + color, reload, verify replay, export Markdown
+- [ ] A real marketing/landing page — edit hero copy + color, reorder two sections, reload,
+      verify replay, export Markdown
 - [ ] A React SPA — edit text, trigger a client-side navigation and back, verify replay
 - [ ] A static site — full flow including Export JSON
 
