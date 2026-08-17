@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, useSyncExternalStore, type PointerEvent as
 import {
   clampWidth,
   DEFAULT_PREFS,
+  MAX_WIDTH,
+  MIN_WIDTH,
   getPanelPrefs,
   getSavedPanelPosition,
   savePanelPosition,
@@ -163,12 +165,32 @@ export function Panel(props: PanelProps) {
 
   return (
     <aside className="pgve-panel" ref={panelRef} style={{ ...style, width: prefs.width }}>
+      {/* The separator pattern: focusable, announcing its value, driven by arrows —
+          resizing existed only for pointers before (review 2026-08-17, finding 5).
+          The panel is anchored right, so ArrowLeft moves its left edge left: wider. */}
       <span
         className="pgve-resize"
         role="separator"
+        tabIndex={0}
         aria-label={t('aria_resize')}
+        aria-orientation="vertical"
+        aria-valuemin={MIN_WIDTH}
+        aria-valuemax={MAX_WIDTH}
+        aria-valuenow={prefs.width}
         data-testid="resize-panel"
         onPointerDown={onResize}
+        onKeyDown={(e) => {
+          const step = e.shiftKey ? 64 : 16;
+          const next =
+            e.key === 'ArrowLeft' ? prefs.width + step
+            : e.key === 'ArrowRight' ? prefs.width - step
+            : e.key === 'Home' ? MAX_WIDTH
+            : e.key === 'End' ? MIN_WIDTH
+            : null;
+          if (next === null) return;
+          e.preventDefault();
+          updatePrefs({ ...prefs, width: clampWidth(next) });
+        }}
       />
       <header className="pgve-header" {...handleProps}>
         <strong><GripIcon /> Tweakpage</strong>

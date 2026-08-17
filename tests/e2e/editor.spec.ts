@@ -816,3 +816,39 @@ test('clearing from the popup puts the open page back, with no reload', async ({
   );
   await expect(page.locator('#tweakpage-marker')).toHaveCount(0);
 });
+
+test('the panel can be resized without a pointer', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  const handle = page.locator('[data-testid="resize-panel"]');
+  await handle.focus();
+  const focused = await page.evaluate(
+    () =>
+      document.getElementById('tweakpage-host')!.shadowRoot!.activeElement?.getAttribute('data-testid'),
+  );
+  expect(focused, 'the handle takes keyboard focus').toBe('resize-panel');
+
+  // Focus on a 6px strip must be visible, not just present.
+  const idleBg = await page.evaluate(() => {
+    const host = document.getElementById('tweakpage-host')!.shadowRoot!;
+    return getComputedStyle(host.querySelector('[data-testid="resize-panel"]')!).backgroundColor;
+  });
+  expect(idleBg, 'focused handle is painted').not.toBe('rgba(0, 0, 0, 0)');
+
+  const width = () => page.locator('#tweakpage-host aside').evaluate((el) => el.getBoundingClientRect().width);
+  const before = await width();
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowLeft');
+  expect(await width(), 'ArrowLeft widens the right-anchored panel').toBe(before + 32);
+
+  await page.keyboard.press('ArrowRight');
+  expect(await width()).toBe(before + 16);
+
+  await page.keyboard.press('End');
+  expect(await width(), 'End snaps to the minimum').toBe(280);
+
+  const now = await handle.getAttribute('aria-valuenow');
+  expect(Number(now), 'the separator announces its value').toBe(280);
+});
