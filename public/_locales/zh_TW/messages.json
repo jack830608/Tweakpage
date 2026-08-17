@@ -291,9 +291,6 @@
   "aria_radius": {
     "message": "圓角"
   },
-  "aria_expand": {
-    "message": "展開 Tweakpage"
-  },
   "aria_export_json": {
     "message": "匯出 JSON"
   },
@@ -728,5 +725,8 @@
   },
   "tip_move_down": {
     "message": "下移"
+  },
+  "marker_title_min": {
+    "message": "Tweakpage 已縮小,點一下重新開啟編輯器。"
   }
 }

@@ -233,10 +233,14 @@ test('the marker yields while the editor UI is on screen and returns when it clo
   await engine.start(url);
   expect(document.getElementById('tweakpage-marker'), 'alone, the applier says it').toBeTruthy();
 
-  // The panel opens: its footer and pill already carry the count.
-  document.dispatchEvent(new CustomEvent('pg-editor:ui', { detail: { visible: true } }));
-  expect(document.getElementById('tweakpage-marker'), 'two corners, same sentence').toBeNull();
+  // The panel opens: its footer already carries the count.
+  document.dispatchEvent(new CustomEvent('pg-editor:ui', { detail: { state: 'open', shared: false, count: 1 } }));
+  expect(document.getElementById('tweakpage-marker'), 'two voices, same sentence').toBeNull();
 
-  document.dispatchEvent(new CustomEvent('pg-editor:ui', { detail: { visible: false } }));
+  // Minimized: the chip is the way back in, even before anything is edited.
+  document.dispatchEvent(new CustomEvent('pg-editor:ui', { detail: { state: 'minimized', shared: false, count: 0 } }));
+  expect(document.getElementById('tweakpage-marker'), 'minimized keeps the chip').toBeTruthy();
+
+  document.dispatchEvent(new CustomEvent('pg-editor:ui', { detail: { state: 'closed', shared: false, count: 1 } }));
   expect(document.getElementById('tweakpage-marker')).toBeTruthy();
 });

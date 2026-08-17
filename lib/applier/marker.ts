@@ -14,9 +14,11 @@ export function showMarker(
   doc: Document,
   count: number,
   onOpen: () => void,
-  { shared = false }: { shared?: boolean } = {},
+  { shared = false, minimized = false }: { shared?: boolean; minimized?: boolean } = {},
 ): void {
-  if (count <= 0) {
+  // A minimized editor keeps its chip even with nothing edited yet — the chip is the
+  // only way back in.
+  if (count <= 0 && !minimized) {
     removeMarker(doc);
     return;
   }
@@ -36,9 +38,13 @@ export function showMarker(
   }
   const button = host.shadowRoot?.querySelector('button');
   if (!button) return;
-  button.title = t(shared ? 'marker_title_shared' : 'marker_title');
+  button.title = t(shared ? 'marker_title_shared' : minimized ? 'marker_title_min' : 'marker_title');
   button.textContent = '';
-  const text = shared ? t('marker_label_shared') : plural(count, 'marker_label_one', 'marker_label');
+  const text = shared
+    ? t('marker_label_shared')
+    : count > 0
+      ? plural(count, 'marker_label_one', 'marker_label')
+      : 'Tweakpage';
   button.append(dot(doc), label(doc, text));
 }
 

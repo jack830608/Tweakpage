@@ -92,9 +92,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-theme { max-width: 84px; padding: 2px 4px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11px; }
 .pgve-viewport { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }
 .pgve-header-divider { width: 1px; height: 14px; margin: 0 3px; background: var(--border); }
-.pgve-pill { position: fixed; right: 16px; bottom: 16px; z-index: 2147483647; display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border: none; border-radius: 999px; background: var(--surface); color: var(--ink); font: 600 12.5px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ui-sans-serif, system-ui, sans-serif; cursor: pointer; box-shadow: 0 0 0 1px rgba(24, 24, 27, 0.09), 0 8px 24px rgba(24, 24, 27, 0.22); }
-.pgve-pill svg { color: var(--ink-3); }
-.pgve-pill-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 11px; }
 
 /* ---------- mode switches ---------- */
 .pgve-segmented { display: flex; margin: 0 12px 6px; background: var(--sunken); border-radius: 8px; padding: 2px; gap: 2px; }

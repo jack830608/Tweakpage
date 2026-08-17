@@ -1,7 +1,7 @@
 import { browser } from 'wxt/browser';
 import { isExtensionAlive, safeSendMessage } from '../extension-context';
 import { applyAll, revertAll, revertRemoved } from '../edits/apply';
-import { showMarker } from './marker';
+import { removeMarker, showMarker } from './marker';
 import { readDomValue } from '../edits/dom';
 import { loadPageEdits, pageKey, savePageEdits } from '../edits/storage';
 import { resolveRecord } from '../selector/resolve';
@@ -18,11 +18,15 @@ export class ApplierEngine {
   private loadSeq = 0;
   private paused = false;
   /**
-   * The panel and its minimized pill already carry the edit count, so while either is
-   * on screen the corner marker would say the same thing twice. It yields, and speaks
-   * again when the editor closes.
+   * What the editor told us about itself. The chip has one owner — this engine — and
+   * one home; the editor only reports its state. 'open' silences the chip (the panel
+   * footer carries the count), 'minimized' and 'closed' each give it a voice.
    */
-  private editorVisible = false;
+  private editorUi: { state: 'open' | 'minimized' | 'closed'; shared: boolean; count: number } = {
+    state: 'closed',
+    shared: false,
+    count: 0,
+  };
 
   constructor(private doc: Document) {}
 
@@ -38,7 +42,12 @@ export class ApplierEngine {
       if (!this.paused) this.applyNow();
     });
     this.doc.addEventListener('pg-editor:ui', (e) => {
-      this.editorVisible = (e as CustomEvent<{ visible?: boolean }>).detail?.visible === true;
+      const detail = (e as CustomEvent<Partial<typeof this.editorUi>>).detail;
+      this.editorUi = {
+        state: detail?.state ?? 'closed',
+        shared: detail?.shared === true,
+        count: typeof detail?.count === 'number' ? detail.count : 0,
+      };
       this.syncMarker();
     });
     browser.storage.onChanged.addListener((changes, area) => {
@@ -85,8 +94,17 @@ export class ApplierEngine {
   }
 
   private syncMarker(): void {
-    const count = this.editorVisible ? 0 : this.edits?.records.filter((r) => r.enabled).length ?? 0;
-    showMarker(this.doc, count, this.onOpenEditor);
+    const { state, shared } = this.editorUi;
+    if (state === 'open') {
+      removeMarker(this.doc);
+      return;
+    }
+    // A shared preview lives nowhere but this tab, so its count rides on the event;
+    // saved edits are counted from storage, which keeps the chip fresh as they change.
+    const count = shared
+      ? this.editorUi.count
+      : this.edits?.records.filter((r) => r.enabled).length ?? 0;
+    showMarker(this.doc, count, this.onOpenEditor, { shared, minimized: state === 'minimized' });
   }
 
   private applyNow(): void {

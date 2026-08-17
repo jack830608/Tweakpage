@@ -574,37 +574,6 @@ test('the header controls stay inside the panel', async ({ context }) => {
   }
 });
 
-test('the minimized pill follows the colour scheme', async ({ context }) => {
-  const page = await context.newPage();
-  await page.goto('http://localhost:4173/');
-  await activateEditor(context);
-  await page.locator('[data-testid="minimize"]').click();
-  const pill = page.locator('.pgve-pill');
-  await expect(pill).toBeVisible();
-
-  // The pill used to sit outside the token scope and stayed light in dark mode.
-  const surfaceOf = () =>
-    page.evaluate(() => {
-      const host = document.getElementById('tweakpage-host')!;
-      const probe = document.createElement('div');
-      probe.style.color = getComputedStyle(host).getPropertyValue('--surface').trim();
-      document.body.append(probe);
-      const token = getComputedStyle(probe).color;
-      probe.remove();
-      const el = host.shadowRoot!.querySelector('.pgve-pill')!;
-      return { token, painted: getComputedStyle(el).backgroundColor };
-    });
-
-  await page.emulateMedia({ colorScheme: 'light' });
-  const light = await surfaceOf();
-  expect(light.painted).toBe(light.token);
-
-  await page.emulateMedia({ colorScheme: 'dark' });
-  const dark = await surfaceOf();
-  expect(dark.painted).toBe(dark.token);
-  expect(dark.painted).not.toBe(light.painted);
-});
-
 test('spacing box-model editor fits inside the panel', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
@@ -950,23 +919,36 @@ test('reordering siblings persists, undoes, and leaves other edits on the right 
   expect(Number(disabledOpacity), 'a dead arrow has to look dead').toBeLessThan(Number(enabledOpacity));
 });
 
-test('one corner speaks at a time: panel, pill, or marker', async ({ context }) => {
+test('one chip, one home: it hides with the panel and holds its spot otherwise', async ({
+  context,
+}) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
   await page.locator('[data-testid="text"]').fill('Edited headline');
 
-  // Panel open: its footer carries the count, the corner marker stays away.
+  // Panel open: its footer carries the count, no chip anywhere.
   await expect(page.locator('#tweakpage-marker')).toHaveCount(0);
 
-  // Minimized: the pill says "1" bottom-right; a marker bottom-left would repeat it.
+  // Minimized: the chip appears bottom-left and is the way back in.
   await page.locator('[data-testid="minimize"]').click();
-  await expect(page.locator('[data-testid="expand-tweakpage"]')).toBeVisible();
+  const chip = page.locator('#tweakpage-marker button');
+  await expect(chip).toBeVisible();
+  const minimizedBox = (await chip.boundingBox())!;
+  const viewport = page.viewportSize()!;
+  expect(minimizedBox.x, 'the chip lives on the left').toBeLessThan(viewport.width / 2);
+  expect(minimizedBox.y, 'and at the bottom').toBeGreaterThan(viewport.height / 2);
+
+  // Clicking it brings the panel back — up, never toggled shut.
+  await chip.click();
+  await expect(page.locator('#tweakpage-host aside')).toBeVisible();
   await expect(page.locator('#tweakpage-marker')).toHaveCount(0);
 
-  // Closed: now the marker is the only voice, so it speaks.
-  await page.locator('[data-testid="expand-tweakpage"]').click();
+  // Closed: the chip returns in exactly the same place — one home, not two corners.
   await page.locator('[data-testid="close"]').click();
-  await expect(page.locator('#tweakpage-marker button')).toBeVisible();
+  await expect(chip).toBeVisible();
+  const closedBox = (await chip.boundingBox())!;
+  expect(closedBox.x).toBe(minimizedBox.x);
+  expect(closedBox.y).toBe(minimizedBox.y);
 });
