@@ -61,7 +61,7 @@ export function moveToIndex(el: Element, index: number): void {
   parent.insertBefore(el, others[index] ?? null);
 }
 
-function pageSiblings(parent: Element): Element[] {
+export function pageSiblings(parent: Element): Element[] {
   return Array.from(parent.children).filter((child) => !child.matches(OUR_NODES));
 }
 

@@ -716,5 +716,17 @@
   },
   "aria_clear_page": {
     "message": "Clear edits for $1"
+  },
+  "aria_move_up": {
+    "message": "Move before its previous sibling"
+  },
+  "aria_move_down": {
+    "message": "Move after its next sibling"
+  },
+  "tip_move_up": {
+    "message": "Move up"
+  },
+  "tip_move_down": {
+    "message": "Move down"
   }
 }

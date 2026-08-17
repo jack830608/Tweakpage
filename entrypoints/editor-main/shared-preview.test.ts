@@ -89,3 +89,41 @@ test("the panel's reset also honours a baseline the applier retired", async () =
     'Live price',
   );
 });
+
+test('stepping an element back to where it started leaves no record behind', async () => {
+  document.body.innerHTML = '<div><p id="a">A</p><p id="b">B</p><p id="c">C</p></div>';
+  const c = new EditsController(null, document, NOW);
+  const el = document.getElementById('b')!;
+  const order = () => [...document.querySelectorAll('p')].map((p) => p.id).join('');
+
+  c.moveElement(el, -1);
+  expect(order()).toBe('bac');
+  expect(c.getPage().records).toHaveLength(1);
+
+  c.moveElement(el, 1);
+  expect(order()).toBe('abc');
+  expect(c.getPage().records, 'a round trip is not an edit').toHaveLength(0);
+});
+
+test('the edges of a container have nowhere further to go', () => {
+  document.body.innerHTML = '<div><p id="a">A</p><p id="b">B</p></div>';
+  const c = new EditsController(null, document, NOW);
+  expect(c.canMove(document.getElementById('a')!, -1)).toBe(false);
+  expect(c.canMove(document.getElementById('a')!, 1)).toBe(true);
+  expect(c.canMove(document.getElementById('b')!, 1)).toBe(false);
+
+  c.moveElement(document.getElementById('a')!, -1);
+  expect(c.getPage().records, 'refused moves record nothing').toHaveLength(0);
+});
+
+test('two moves of the same element coalesce into one record with the true origin', () => {
+  document.body.innerHTML = '<div><p id="a">A</p><p id="b">B</p><p id="c">C</p></div>';
+  const c = new EditsController(null, document, NOW);
+  const el = document.getElementById('c')!;
+  c.moveElement(el, -1);
+  c.moveElement(el, -1);
+  expect([...document.querySelectorAll('p')].map((p) => p.id).join('')).toBe('cab');
+  expect(c.getPage().records).toHaveLength(1);
+  expect(c.getPage().records[0].oldValue, 'undo target is the pristine position').toBe('2');
+  expect(c.getPage().records[0].newValue).toBe('0');
+});

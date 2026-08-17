@@ -716,5 +716,17 @@
   },
   "aria_clear_page": {
     "message": "清除 $1 的改動"
+  },
+  "aria_move_up": {
+    "message": "移到前一個同層元素之前"
+  },
+  "aria_move_down": {
+    "message": "移到下一個同層元素之後"
+  },
+  "tip_move_up": {
+    "message": "上移"
+  },
+  "tip_move_down": {
+    "message": "下移"
   }
 }

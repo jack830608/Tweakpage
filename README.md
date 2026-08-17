@@ -48,6 +48,8 @@ Every edit is recorded as a structured diff (selector + property + old → new),
    parents/children.
 5. Selection card: **Hide / Unhide** the selected element (editing locks while hidden), and
    **apply style edits to every similar element** when the element is one of a family.
+   The ▲▼ on the selection outline reorder the element among its siblings; stepping it
+   back to where it started removes the edit.
    Hand off with **Copy** (Markdown summary), **CSS** (a pasteable stylesheet) or **Snap**
    (one image with the original and the edited page side by side); send with **Copy JSON**
    or **Export JSON**.
