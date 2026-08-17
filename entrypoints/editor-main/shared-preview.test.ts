@@ -1,5 +1,5 @@
 import { fakeBrowser } from 'wxt/testing';
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import { EditsController } from './controller';
 import { loadPageEdits } from '../../lib/edits/storage';
 import type { EditRecord } from '../../lib/edits/types';
@@ -57,4 +57,18 @@ test('previewing does not disturb edits already saved for the page', async () =>
 
   c.previewShared(shared());
   expect(await loadPageEdits(location.href), 'storage is untouched by a preview').toEqual(before);
+});
+
+test('the panel is never told a preview is saved', async () => {
+  const c = new EditsController(null, document, NOW);
+  c.recordEdit(document.querySelector('h1')!, 'style', 'color', 'rgb(0, 0, 0)', '#059669');
+  await vi.waitFor(() => expect(c.getSaveState().state).toBe('saved'));
+
+  // A footer reading "Saved" over edits that exist nowhere but this tab is the same
+  // false-status bug as the disabled button that still looked clickable.
+  c.previewShared(shared());
+  expect(c.getSaveState().state).toBe('preview');
+
+  c.keepShared();
+  await vi.waitFor(() => expect(c.getSaveState().state).toBe('saved'));
 });

@@ -592,7 +592,7 @@
     "message": "1 筆改動 · 檢視 ›"
   },
   "tip_share_unset": {
-    "message": "請先設定 bucket:在工具列圖示按右鍵 → 選項"
+    "message": "請先填 AWS 資訊 —— 上方的齒輪圖示"
   },
   "pop_settings": {
     "message": "分享設定"
@@ -629,5 +629,38 @@
   },
   "marker_title_shared": {
     "message": "這個頁面正顯示別人分享給你的改動,並未存在你這裡。點一下開啟編輯器。"
+  },
+  "settings_title": {
+    "message": "設定"
+  },
+  "aria_settings": {
+    "message": "設定"
+  },
+  "settings_appearance": {
+    "message": "外觀"
+  },
+  "settings_theme": {
+    "message": "主題"
+  },
+  "settings_sharing": {
+    "message": "分享連結"
+  },
+  "settings_sharing_hint": {
+    "message": "用你自己的 S3 bucket。開啟連結的人只需要裝 Tweakpage,不需要其他設定。輸入即儲存。"
+  },
+  "settings_share_ready": {
+    "message": "分享功能已開啟。"
+  },
+  "settings_bucket_help": {
+    "message": "Bucket 設定與權限 →"
+  },
+  "aria_bucket_help": {
+    "message": "開啟完整設定頁查看 bucket 設定"
+  },
+  "toast_share_cleared": {
+    "message": "已清除 AWS 資訊,分享功能關閉。"
+  },
+  "not_saved_preview": {
+    "message": "未儲存"
   }
 }

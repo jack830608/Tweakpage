@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { safeSendMessage } from '../../../lib/extension-context';
 import { makeShareId, shareLink } from '../../../lib/share/link';
-import { getShareSettings, isConfigured } from '../../../lib/share/settings';
+import { getShareSettings, isConfigured, watchShareSettings } from '../../../lib/share/settings';
 import { toCss } from '../../../lib/export/css';
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
@@ -22,7 +22,9 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
   // Offering a button that can only fail is worse than not offering it.
   const [canShare, setCanShare] = useState(false);
   useEffect(() => {
-    void getShareSettings().then((settings) => setCanShare(isConfigured(settings)));
+    const read = (settings: Parameters<typeof isConfigured>[0]) => setCanShare(isConfigured(settings));
+    void getShareSettings().then(read);
+    return watchShareSettings(read);
   }, []);
 
   const copy = async (text: string, message: string) => {

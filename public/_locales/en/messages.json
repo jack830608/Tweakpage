@@ -592,7 +592,7 @@
     "message": "1 change · Review ›"
   },
   "tip_share_unset": {
-    "message": "Set up a bucket first: right-click the toolbar icon → Options"
+    "message": "Add your AWS details first — the gear icon above"
   },
   "pop_settings": {
     "message": "Share settings"
@@ -629,5 +629,38 @@
   },
   "marker_title_shared": {
     "message": "This page is showing edits someone shared with you. They are not saved here. Click to open the editor."
+  },
+  "settings_title": {
+    "message": "Settings"
+  },
+  "aria_settings": {
+    "message": "Settings"
+  },
+  "settings_appearance": {
+    "message": "Appearance"
+  },
+  "settings_theme": {
+    "message": "Theme"
+  },
+  "settings_sharing": {
+    "message": "Share links"
+  },
+  "settings_sharing_hint": {
+    "message": "Your own S3 bucket. Whoever opens a link needs Tweakpage and nothing else. Saved as you type."
+  },
+  "settings_share_ready": {
+    "message": "Sharing is on."
+  },
+  "settings_bucket_help": {
+    "message": "Bucket setup and permissions →"
+  },
+  "aria_bucket_help": {
+    "message": "Open the full settings page for bucket setup"
+  },
+  "toast_share_cleared": {
+    "message": "AWS details cleared. Sharing is off."
+  },
+  "not_saved_preview": {
+    "message": "Not saved"
   }
 }

@@ -4,16 +4,10 @@ import {
   getShareSettings,
   isConfigured,
   saveShareSettings,
+  SHARE_FIELDS,
   type ShareSettings,
 } from '../../lib/share/settings';
 import { t } from '../../lib/i18n';
-
-const FIELDS: Array<{ key: keyof ShareSettings; label: string; secret?: boolean; hint?: string }> = [
-  { key: 'bucket', label: 'AWS_S3_BUCKET' },
-  { key: 'region', label: 'AWS_REGION', hint: 'ap-northeast-1' },
-  { key: 'accessKeyId', label: 'AWS_ACCESS_KEY_ID' },
-  { key: 'secretAccessKey', label: 'AWS_SECRET_ACCESS_KEY', secret: true },
-];
 
 export function OptionsApp() {
   const [settings, setSettings] = useState<ShareSettings>(EMPTY_SETTINGS);
@@ -44,7 +38,7 @@ export function OptionsApp() {
           });
         }}
       >
-        {FIELDS.map(({ key, label, secret, hint }) => (
+        {SHARE_FIELDS.map(({ key, label, secret, hint }) => (
           <label key={key}>
             <span>{label}</span>
             <input

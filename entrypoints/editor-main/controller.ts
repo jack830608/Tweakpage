@@ -1,6 +1,6 @@
 import { applyAll, revertAll, type ApplyStatus } from '../../lib/edits/apply';
 
-export type SaveState = 'idle' | 'saving' | 'saved' | 'failed';
+export type SaveState = 'idle' | 'saving' | 'saved' | 'failed' | 'preview';
 import { findRecord, upsertRecord } from '../../lib/edits/coalesce';
 import { mergeRecords } from '../../lib/edits/import';
 import { revertDomEdit } from '../../lib/edits/dom';
@@ -82,7 +82,10 @@ export class EditsController {
   private saveState: SaveState = 'idle';
   private savedAt = '';
 
-  getSaveState = (): { state: SaveState; at: string } => ({ state: this.saveState, at: this.savedAt });
+  getSaveState = (): { state: SaveState; at: string } =>
+    this.sharedPreview
+      ? { state: 'preview', at: '' }
+      : { state: this.saveState, at: this.savedAt };
 
   canUndo = (): boolean => this.undoStack.length > 0;
 
