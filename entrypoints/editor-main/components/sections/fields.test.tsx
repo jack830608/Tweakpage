@@ -404,6 +404,38 @@ describe('what a bare number means is always stated', () => {
   });
 });
 
+describe('a control that fills a field sits with that field', () => {
+  /** Reads the section in the order a person does. */
+  function rowsOf(section: string): string[] {
+    const el = document.querySelector(`[data-section="${section}"]`)!.closest('.pgve-disclosure')
+      ?? document.body;
+    return Array.from(el.querySelectorAll('.pgve-field')).map((row) => {
+      const name = row.querySelector('.pgve-prop')?.textContent;
+      if (name) return name;
+      const picker = row.querySelector('[data-testid$="-file-button"]');
+      return picker ? 'file-picker' : 'other';
+    });
+  }
+
+  test('the image file picker follows src, not alt', () => {
+    document.body.innerHTML = '<img id="target" src="/a.png" alt="hero">';
+    setup(document.getElementById('target'));
+    openSection('image');
+    const rows = rowsOf('image');
+    // It sets src. Sitting after alt made it read as a way to choose the alt text.
+    expect(rows.indexOf('file-picker')).toBe(rows.indexOf('src') + 1);
+    expect(rows.indexOf('alt')).toBeGreaterThan(rows.indexOf('file-picker'));
+  });
+
+  test('the background file picker follows background-image', () => {
+    const controller = setup();
+    openSection('background');
+    const rows = rowsOf('background');
+    expect(rows.indexOf('file-picker')).toBe(rows.indexOf('background-image') + 1);
+    expect(controller.getPage().records).toHaveLength(0);
+  });
+});
+
 describe('border width', () => {
   test('adds a border style so the width shows, and takes it back on reset', () => {
     // An element with no border at all: border-style is 'none', so a width alone
