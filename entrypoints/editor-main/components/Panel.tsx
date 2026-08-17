@@ -13,7 +13,7 @@ import type { Position } from '../hooks/useDraggable';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
 import { useDraggable } from '../hooks/useDraggable';
-import { t } from '../../../lib/i18n';
+import { plural, t } from '../../../lib/i18n';
 import { ShareRow } from './ShareRow';
 import { VariantsRow } from './VariantsRow';
 import { ChangesTab } from './ChangesTab';
@@ -303,7 +303,7 @@ export function Panel(props: PanelProps) {
             aria-label={t('aria_review_changes')} data-testid="review-changes"
             onClick={() => setView('changes')}
           >
-            {t('footer_changes', [count])}
+            {plural(count, 'footer_changes_one', 'footer_changes')}
             {count > 0 && (
               <span className="pgve-saved" data-testid="save-state">
                 {saveState.state === 'failed'

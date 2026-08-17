@@ -539,5 +539,65 @@
   },
   "aria_delete_variant": {
     "message": "刪除 $1"
+  },
+  "opt_title": {
+    "message": "分享連結"
+  },
+  "opt_intro": {
+    "message": "把一頁的改動上傳到你自己的 S3,再把連結給別人。對方需要裝 Tweakpage 並設定同一個 bucket。"
+  },
+  "opt_risk_title": {
+    "message": "這些金鑰在這台電腦上是讀得到的"
+  },
+  "opt_risk_body": {
+    "message": "擴充功能的儲存不是保險箱:能存取這個瀏覽器設定檔的人都讀得到你貼在這裡的內容,而且這個擴充功能是開源的。請用一把「只能讀寫這一個 prefix、其他什麼都不能做」的金鑰,並像對待其他憑證一樣定期輪替。密鑰本身不會被送出 — 請求帶的是由它推導出的簽章。"
+  },
+  "opt_save": {
+    "message": "儲存"
+  },
+  "opt_clear": {
+    "message": "清除"
+  },
+  "opt_incomplete": {
+    "message": "四個 AWS 欄位都填好之前,分享功能不會啟用。"
+  },
+  "share_link": {
+    "message": "分享連結"
+  },
+  "aria_share_link": {
+    "message": "上傳並複製分享連結"
+  },
+  "tip_share_link": {
+    "message": "把這些改動上傳並複製連結。對方需要裝 Tweakpage 並設定同一個 bucket。"
+  },
+  "toast_share_copied": {
+    "message": "連結已複製 — 打開它就會看到你的改動"
+  },
+  "toast_share_unset": {
+    "message": "請先設定 bucket:在工具列圖示按右鍵 → 選項"
+  },
+  "toast_share_failed": {
+    "message": "上傳被拒絕。請檢查 bucket、region 與金鑰權限。"
+  },
+  "shared_missing": {
+    "message": "這個連結的改動已不存在,或你的 bucket 設定和分享者不同。"
+  },
+  "marker_label": {
+    "message": "Tweakpage · $1 處改動"
+  },
+  "marker_title": {
+    "message": "這個頁面顯示的是用 Tweakpage 做的本機改動,不是網站真正的內容。點一下開啟編輯器。"
+  },
+  "toast_shared_applied": {
+    "message": "已套用分享的 $1 筆改動"
+  },
+  "marker_label_one": {
+    "message": "Tweakpage · 1 處改動"
+  },
+  "toast_shared_applied_one": {
+    "message": "已套用分享的 1 筆改動"
+  },
+  "footer_changes_one": {
+    "message": "1 筆改動 · 檢視 ›"
   }
 }

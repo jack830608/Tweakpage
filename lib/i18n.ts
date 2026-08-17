@@ -16,6 +16,25 @@ export const MESSAGES: Record<string, string> = {
   aria_variant_name: "Proposal name",
   aria_load_variant: "Switch to $1",
   aria_delete_variant: "Delete $1",
+  opt_title: "Share links",
+  opt_intro: "Upload a page of edits to your own S3 bucket and share the link. Whoever opens it needs Tweakpage and the same bucket configured.",
+  opt_risk_title: "These keys are readable on this machine",
+  opt_risk_body: "Extension storage is not a vault: anyone with access to this profile can read what you paste here, and this extension is open source. Use a key that can do nothing but write and read this one prefix, and rotate it like any other credential. The secret itself is never sent \u2014 requests carry a signature derived from it.",
+  opt_save: "Save",
+  opt_clear: "Clear",
+  opt_incomplete: "Sharing stays off until all four AWS fields are filled.",
+  share_link: "Share link",
+  aria_share_link: "Upload and copy a share link",
+  tip_share_link: "Upload these edits and copy a link. Whoever opens it needs Tweakpage and the same bucket.",
+  toast_share_copied: "Link copied \u2014 it opens this page with your edits",
+  toast_share_unset: "Set up a bucket first: right-click the toolbar icon \u2192 Options",
+  toast_share_failed: "Upload refused. Check the bucket, the region and the key's permissions.",
+  shared_missing: "That link's edits are gone, or your bucket settings differ from the sender's.",
+  marker_label_one: 'Tweakpage · 1 change',
+  marker_label: 'Tweakpage · $1 changes',
+  marker_title: "This page is showing local edits made with Tweakpage, not what the site serves. Click to open the editor.",
+  toast_shared_applied_one: 'Applied 1 shared edit',
+  toast_shared_applied: 'Applied $1 shared edits',
   share: 'Share',
   share_summary: "Copy summary",
   share_css: "Copy CSS",
@@ -36,6 +55,7 @@ export const MESSAGES: Record<string, string> = {
   iframe_note: "Editing inside iframes isn't supported.",
   preview_note: 'Viewing the original page — switch back to Edited to continue editing.',
   hidden_note: 'Element is hidden — Unhide to edit it.',
+  footer_changes_one: '1 change · Review ›',
   footer_changes: '$1 changes · Review ›',
   back_row: '‹ Back to editing',
   onboarding_title: 'Welcome to Tweakpage',
@@ -173,6 +193,16 @@ export const MESSAGES: Record<string, string> = {
   err_image_url: 'Needs to start with https:// — or pick a file',
   stale_edits: '$1 of $2 edits no longer match this page',
 };
+
+/**
+ * Picks between a one form and a many form.
+ *
+ * chrome.i18n has no plural support, so "1 changes" is what you get from a single
+ * string. Languages without inflection simply use the same message for both keys.
+ */
+export function plural(count: number, oneKey: string, manyKey: string): string {
+  return t(count === 1 ? oneKey : manyKey, [count]);
+}
 
 export function t(key: string, subs?: Array<string | number>): string {
   try {

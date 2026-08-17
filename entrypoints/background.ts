@@ -1,8 +1,20 @@
 import { browser } from 'wxt/browser';
+import { getShared, putShared } from '../lib/share/transfer';
 
 export default defineBackground(() => {
   browser.runtime.onMessage.addListener(
-    (message: { type?: string; active?: boolean; count?: number; filename?: string; url?: string }, sender) => {
+    (
+      message: {
+        type?: string;
+        active?: boolean;
+        count?: number;
+        filename?: string;
+        url?: string;
+        id?: string;
+        body?: string;
+      },
+      sender,
+    ) => {
       if (message?.type === 'pg:state' && sender.tab?.id != null) {
         void browser.action.setBadgeBackgroundColor({
           tabId: sender.tab.id,
@@ -28,6 +40,12 @@ export default defineBackground(() => {
       }
       // Hands the pixels back instead of downloading them, so the editor can put the
       // two captures side by side before anything reaches the downloads folder.
+      if (message?.type === 'pg:share-put' && typeof message.id === 'string' && typeof message.body === 'string') {
+        return putShared(message.id, message.body);
+      }
+      if (message?.type === 'pg:share-get' && typeof message.id === 'string') {
+        return getShared(message.id);
+      }
       if (message?.type === 'pg:grab' && sender.tab?.windowId != null) {
         return browser.tabs
           .captureVisibleTab(sender.tab.windowId, { format: 'png' })

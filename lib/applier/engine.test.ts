@@ -157,3 +157,25 @@ test('re-applies an attribute the page rewrites behind us', async () => {
   await wait(120);
   expect(document.querySelector('.hero')!.getAttribute('src')).toBe('/new.jpg');
 });
+
+test('marks the page while edits are applied, and stops when they are gone', async () => {
+  await seed('https://a.com/page', [record({})]);
+  const engine = new ApplierEngine(document);
+  await engine.start('https://a.com/page');
+  // The editor may never be opened on this page; the marker is how anyone knows.
+  expect(document.getElementById('tweakpage-marker')).toBeTruthy();
+
+  await engine.navigate('https://a.com/clean');
+  expect(document.getElementById('tweakpage-marker')).toBeNull();
+});
+
+test('counts only the edits actually in force', async () => {
+  await seed('https://a.com/page', [
+    record({}),
+    record({ id: 'r2', property: 'color', type: 'style', enabled: false }),
+  ]);
+  const engine = new ApplierEngine(document);
+  await engine.start('https://a.com/page');
+  const label = document.getElementById('tweakpage-marker')!.shadowRoot!.textContent ?? '';
+  expect(label).toContain('1');
+});

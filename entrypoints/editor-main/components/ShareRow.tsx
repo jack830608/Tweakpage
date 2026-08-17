@@ -1,10 +1,12 @@
+import { browser } from 'wxt/browser';
 import { safeSendMessage } from '../../../lib/extension-context';
+import { makeShareId, shareLink } from '../../../lib/share/link';
 import { toCss } from '../../../lib/export/css';
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
-import { CameraIcon, CopyIcon, DownloadIcon } from './icons';
+import { CameraIcon, CopyIcon, DownloadIcon, LinkIcon } from './icons';
 import { t } from '../../../lib/i18n';
 
 interface ShareRowProps {
@@ -23,6 +25,20 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
     } catch {
       window.prompt('Copy the text below:', text);
     }
+  };
+
+  const onShareLink = async () => {
+    const page = controller.getPage();
+    const id = makeShareId();
+    const result = (await browser.runtime
+      .sendMessage({ type: 'pg:share-put', id, body: toJson(page) })
+      .catch(() => null)) as { ok?: boolean; reason?: string } | null;
+
+    if (!result?.ok) {
+      onToast({ message: t(result?.reason === 'not-configured' ? 'toast_share_unset' : 'toast_share_failed') });
+      return;
+    }
+    await copy(shareLink(page.url, id), t('toast_share_copied'));
   };
 
   const onJsonFile = () => {
@@ -70,6 +86,15 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
         </button>
         <button type="button" aria-label={t('aria_export_json')} data-testid="export-json" title={t('tip_export')} onClick={onJsonFile}>
           <DownloadIcon /> {t('share_download')}
+        </button>
+        <button
+          type="button"
+          aria-label={t('aria_share_link')}
+          data-testid="share-link"
+          title={t('tip_share_link')}
+          onClick={() => void onShareLink()}
+        >
+          <LinkIcon /> {t('share_link')}
         </button>
       </div>
     </div>

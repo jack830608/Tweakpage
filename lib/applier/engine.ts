@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser';
 import { isExtensionAlive, safeSendMessage } from '../extension-context';
 import { applyAll } from '../edits/apply';
+import { showMarker } from './marker';
 import { loadPageEdits, pageKey } from '../edits/storage';
 import type { PageEdits } from '../edits/types';
 
@@ -8,6 +9,7 @@ const REAPPLY_DELAY_MS = 50;
 
 export class ApplierEngine {
   private edits: PageEdits | null = null;
+  private onOpenEditor: () => void = () => {};
   private observer: MutationObserver | null = null;
   private pending = false;
   private url = '';
@@ -15,6 +17,11 @@ export class ApplierEngine {
   private paused = false;
 
   constructor(private doc: Document) {}
+
+  /** What the on-page marker does when clicked. */
+  whenOpened(handler: () => void): void {
+    this.onOpenEditor = handler;
+  }
 
   async start(url: string): Promise<void> {
     this.url = url;
@@ -52,9 +59,11 @@ export class ApplierEngine {
     if (this.edits) {
       this.applyNow();
       this.observe();
+      showMarker(this.doc, this.edits.records.filter((r) => r.enabled).length, this.onOpenEditor);
     } else {
       this.observer?.disconnect();
       this.observer = null;
+      showMarker(this.doc, 0, this.onOpenEditor);
     }
   }
 
