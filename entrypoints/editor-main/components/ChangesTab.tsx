@@ -52,7 +52,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
         {page.records.length > 0 && (
           <ConfirmButton
             label={t('revert_all')}
-            ariaLabel="Revert all"
+            ariaLabel={t('aria_revert_all')}
             onConfirm={() => controller.revertAllEdits()}
           />
         )}
@@ -121,7 +121,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
                   type="checkbox"
                   className="pgve-change-switch"
                   checked={record.enabled}
-                  aria-label={`Toggle ${labelFor(record)} change`}
+                  aria-label={t('aria_toggle_change', [labelFor(record)])}
                   onClick={(e) => e.stopPropagation()}
                   onChange={() => controller.toggleRecord(record.id)}
                 />
@@ -137,7 +137,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
               )}
               <button
                 type="button"
-                aria-label={`Delete ${labelFor(record)} change`}
+                aria-label={t('aria_delete_change', [labelFor(record)])}
                 onClick={(e) => {
                   e.stopPropagation();
                   controller.deleteRecord(record.id);

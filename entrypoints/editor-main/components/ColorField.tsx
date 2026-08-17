@@ -80,7 +80,7 @@ export function ColorField({
           />
           <input
             type="text"
-            aria-label={`${aria} hex`}
+            aria-label={t('aria_hex', [aria])}
             data-testid={`${property}-hex`}
             placeholder={value === null ? 'none' : undefined}
             value={draft}
@@ -98,9 +98,9 @@ export function ColorField({
           {eyeDropperCtor && (
             <button
               type="button"
-              aria-label={`${aria} eyedropper`}
+              aria-label={t('aria_eyedropper', [aria])}
               data-testid={`${property}-eyedropper`}
-              title="Pick a color from the page"
+              title={t('tip_eyedropper')}
               onClick={() => void onPick()}
             >
               <EyedropperIcon />
@@ -116,7 +116,7 @@ export function ColorField({
               type="range"
               min={0}
               max={100}
-              aria-label={`${aria} opacity`}
+              aria-label={t('aria_opacity_slider', [aria])}
               data-testid={`${property}-alpha`}
               value={alphaPercent(value)}
               // Adjusting transparency is not choosing a colour.
@@ -136,7 +136,7 @@ export function ColorField({
               <button
                 key={color}
                 type="button"
-                aria-label={`Use ${color}`}
+                aria-label={t('aria_use_color', [color])}
                 title={color}
                 style={{ background: color }}
                 onClick={() => {

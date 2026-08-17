@@ -1,5 +1,6 @@
 import { fakeBrowser } from 'wxt/testing';
 import { beforeEach, expect, test } from 'vitest';
+import { t } from '../../../../lib/i18n';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { AppearanceSection } from './AppearanceSection';
 import { BackgroundSection } from './BackgroundSection';
@@ -20,7 +21,7 @@ test('background color records a backgroundColor edit', () => {
   document.body.innerHTML = '<div id="box" style="background-color: rgb(255, 255, 255)">x</div>';
   const controller = new EditsController(null, document, NOW);
   render(<BackgroundSection element={document.getElementById('box')!} controller={controller} />);
-  fireEvent.change(screen.getByLabelText('Background color hex'), { target: { value: '#112233' } });
+  fireEvent.change(screen.getByLabelText(t('aria_hex', ['Background color'])), { target: { value: '#112233' } });
   const record = controller.getPage().records.find((r) => r.property === 'backgroundColor')!;
   expect(record.newValue).toBe('#112233');
 });
@@ -79,7 +80,7 @@ test('transparent background shows an empty value instead of black', () => {
   document.body.innerHTML = '<div id="box">x</div>';
   const controller = new EditsController(null, document, NOW);
   render(<BackgroundSection element={document.getElementById('box')!} controller={controller} />);
-  const hex = screen.getByLabelText('Background color hex') as HTMLInputElement;
+  const hex = screen.getByLabelText(t('aria_hex', ['Background color'])) as HTMLInputElement;
   expect(hex.value).toBe('');
   expect(hex.placeholder).toBe('none');
 });
@@ -144,6 +145,6 @@ test('border width auto-adds a solid style when none, and border color records',
   const records = controller.getPage().records;
   expect(records.find((r) => r.property === 'borderWidth')!.newValue).toBe('2px');
   expect(records.find((r) => r.property === 'borderStyle')!.newValue).toBe('solid');
-  fireEvent.change(screen.getByLabelText('Border color hex'), { target: { value: '#112233' } });
+  fireEvent.change(screen.getByLabelText(t('aria_hex', ['Border color'])), { target: { value: '#112233' } });
   expect(controller.getPage().records.find((r) => r.property === 'borderColor')!.newValue).toBe('#112233');
 });

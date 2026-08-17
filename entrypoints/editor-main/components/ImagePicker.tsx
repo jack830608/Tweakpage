@@ -33,7 +33,7 @@ export function ImagePicker({ ariaLabel, testId, onPicked }: ImagePickerProps) {
         ref={input}
         type="file"
         accept="image/*"
-        aria-label={`${ariaLabel} file`}
+        aria-label={t('aria_file_input', [ariaLabel])}
         data-testid={testId}
         style={{ display: 'none' }}
         onChange={(e) => {

@@ -1,4 +1,5 @@
 import { fakeBrowser } from 'wxt/testing';
+import { t } from '../../../lib/i18n';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { Panel } from './Panel';
@@ -69,7 +70,7 @@ test('font size records a style edit in px', () => {
 
 test('color hex input records a color edit', () => {
   const { controller } = setup();
-  fireEvent.change(screen.getByLabelText('Color hex'), { target: { value: '#ff0000' } });
+  fireEvent.change(screen.getByLabelText(t('aria_hex', ['Color'])), { target: { value: '#ff0000' } });
   const record = controller.getPage().records.find((r) => r.property === 'color')!;
   expect(record.newValue).toBe('#ff0000');
 });
