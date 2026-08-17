@@ -394,6 +394,26 @@ test('a shared link works for someone who has set nothing up', async ({ context 
     readerPage.locator('#tweakpage-marker button'),
     'and the page says it is not what the site serves',
   ).toBeVisible();
+  // The reader's own copy of the page must be untouched: following a link is looking.
+  const plain = await reader.context.newPage();
+  await plain.goto('http://localhost:4173/');
+  await expect(plain.locator('h1'), 'a link must not edit the page you already had').toHaveText(
+    'Original Headline',
+  );
+  await expect(plain.locator('#tweakpage-marker')).toHaveCount(0);
+  await plain.close();
+
+  await expect(
+    readerPage.locator('[data-testid="shared-preview"]'),
+    'and says the edits came from someone else',
+  ).toBeVisible();
+
+  // Keeping is the decision that makes them yours, and only then do they persist.
+  await readerPage.locator('[data-testid="keep-shared"]').click();
+  await expect(readerPage.locator('[data-testid="shared-preview"]')).toHaveCount(0);
+  const kept = await reader.context.newPage();
+  await kept.goto('http://localhost:4173/');
+  await expect(kept.locator('h1')).toHaveText('Headline from a colleague');
   await reader.context.close();
 });
 

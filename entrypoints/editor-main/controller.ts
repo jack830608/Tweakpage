@@ -23,6 +23,14 @@ export class EditsController {
   private listeners = new Set<() => void>();
   private selectorCache = new WeakMap<Element, GeneratedSelector>();
   private previewing = false;
+  /**
+   * True while the page is showing edits that arrived from a share link.
+   *
+   * Following a link is looking, not adopting. Nothing reaches this machine's storage
+   * until the reader keeps it or edits something of their own, so a colleague's proposal
+   * cannot quietly become your saved copy of the page.
+   */
+  private sharedPreview = false;
   private undoStack: EditRecord[][] = [];
   private redoStack: EditRecord[][] = [];
   private lastEditTarget: string | null = null;
@@ -52,6 +60,23 @@ export class EditsController {
     findRecord(this.page.records, this.genFor(el).selector, property);
 
   isPreviewingOriginal = (): boolean => this.previewing;
+
+  isPreviewingShared = (): boolean => this.sharedPreview;
+
+  /** Shows shared edits. Storage is left exactly as it was. */
+  previewShared(records: EditRecord[]): void {
+    this.sharedPreview = true;
+    this.lastEditTarget = null;
+    this.setRecords(mergeRecords(this.page.records, records));
+  }
+
+  /** Adopts what was being previewed, which is the point at which it becomes yours. */
+  keepShared(): void {
+    if (!this.sharedPreview) return;
+    this.sharedPreview = false;
+    this.persist();
+    this.listeners.forEach((fn) => fn());
+  }
 
   /** What the last write to storage did, so the panel can say the work is safe. */
   private saveState: SaveState = 'idle';
@@ -94,6 +119,8 @@ export class EditsController {
   }
 
   recordEdit(el: Element, type: EditType, property: string, oldValue: string, newValue: string): void {
+    // Editing a shared page is taking it on, so it stops being a preview and starts saving.
+    this.sharedPreview = false;
     if (this.previewing) this.setPreviewOriginal(false);
     const gen = this.genFor(el);
     const target = `${gen.selector}\u0000${property}`;
@@ -225,8 +252,10 @@ export class EditsController {
     const variants = existing
       ? this.getVariants().map((v) => (v.id === existing.id ? variant : v))
       : [...this.getVariants(), variant];
+    // Naming and keeping a proposal is deliberate: from here it is yours.
+    this.sharedPreview = false;
     this.page = { ...this.page, variants, updatedAt: this.now() };
-    savePageEdits(this.page).catch(() => {});
+    this.persist();
     this.listeners.forEach((fn) => fn());
   }
 
@@ -241,7 +270,7 @@ export class EditsController {
   deleteVariant(id: string): void {
     const variants = this.getVariants().filter((v) => v.id !== id);
     this.page = { ...this.page, variants, updatedAt: this.now() };
-    savePageEdits(this.page).catch(() => {});
+    this.persist();
     this.listeners.forEach((fn) => fn());
   }
 
@@ -262,6 +291,29 @@ export class EditsController {
     if (this.previewing) this.setPreviewOriginal(false);
     this.lastEditTarget = null;
     this.setRecords([]);
+  }
+
+  /**
+   * The one path to storage.
+   *
+   * A shared preview stops here: it is the reader's decision, not a side effect of
+   * looking, that puts someone else's edits on this machine.
+   */
+  private persist(): void {
+    if (this.sharedPreview) return;
+    this.saveState = 'saving';
+    savePageEdits(this.page)
+      .then(() => {
+        this.saveState = 'saved';
+        this.savedAt = this.now();
+      })
+      .catch((error: unknown) => {
+        console.warn('[tweakpage] failed to save edits', error);
+        this.saveState = 'failed';
+        // Storage is the only copy. Silently losing it is worse than any other failure here.
+        this.doc.dispatchEvent(new CustomEvent('pg-editor:save-failed'));
+      })
+      .finally(() => this.listeners.forEach((fn) => fn()));
   }
 
   private genFor(el: Element): GeneratedSelector {
@@ -299,11 +351,7 @@ export class EditsController {
     }
     this.page = { ...this.page, records, title: this.doc.title, updatedAt: this.now() };
     this.statuses = applyAll(records, this.doc);
-    savePageEdits(this.page).catch((error: unknown) => {
-      console.warn('[tweakpage] failed to save edits', error);
-      // Storage is the only copy. Silently losing it is worse than any other failure here.
-      this.doc.dispatchEvent(new CustomEvent('pg-editor:save-failed'));
-    });
+    this.persist();
     this.listeners.forEach((fn) => fn());
   }
 }

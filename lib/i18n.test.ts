@@ -73,7 +73,7 @@ test('a count of one never reads as a plural', () => {
   for (const [one, many] of [
     ['marker_label_one', 'marker_label'],
     ['footer_changes_one', 'footer_changes'],
-    ['toast_shared_applied_one', 'toast_shared_applied'],
+    ['toast_shared_preview_one', 'toast_shared_preview'],
   ]) {
     expect(plural(1, one, many), one).not.toMatch(/\b1 \w+s\b/);
     expect(plural(3, one, many), many).toContain('3');

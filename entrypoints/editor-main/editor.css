@@ -215,6 +215,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-stale button { align-self: flex-start; padding: 6px 14px; border: none; border-radius: var(--r-control); background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
 .pgve-stale button:hover { background: var(--accent-ink); }
 
+/* A shared page is on loan: the accent band marks the whole session as not-yours-yet,
+   and it sits directly under the header so it is read before anything is touched. */
+.pgve-shared { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--accent-soft); border-bottom: 1px solid var(--border); }
+.pgve-shared strong { display: block; font-size: 12px; font-weight: 650; color: var(--ink); }
+.pgve-shared p { margin-top: 2px; font-size: 11.5px; line-height: 1.5; color: var(--ink-2); }
+.pgve-shared button { flex: none; align-self: center; padding: 6px 12px; border: none; border-radius: var(--r-control); background: var(--accent); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
+.pgve-shared button:hover { background: var(--accent-ink); }
+
 .pgve-onboarding { padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
 .pgve-onboarding h3 { font-size: 13px; font-weight: 650; color: var(--ink); }
 .pgve-onboarding ol { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; color: var(--ink-2); }

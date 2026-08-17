@@ -12,6 +12,7 @@ import { useExtensionAlive } from './hooks/useExtensionAlive';
 import { captureBeforeAfter } from './snapshot';
 import { parseImport } from '../../lib/edits/import';
 import { shareRefFrom } from '../../lib/share/link';
+import { showMarker } from '../../lib/applier/marker';
 import { safeStorageSet } from '../../lib/extension-context';
 import { plural, t } from '../../lib/i18n';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
@@ -27,6 +28,7 @@ export interface EditorAppProps {
 export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
+  const sharedPreview = useSyncExternalStore(controller.subscribe, controller.isPreviewingShared);
   const [hovered, setHovered] = useState<Element | null>(null);
   const [selected, setSelected] = useState<Element | null>(null);
   const [mode, setMode] = useState<InteractionMode>('edit');
@@ -49,6 +51,14 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     }
   }, []);
 
+  const shownCount = controller.getPage().records.filter((r) => r.enabled).length;
+  useEffect(() => {
+    if (!sharedPreview) return;
+    showMarker(document, shownCount, () => setMinimized(false), { shared: true });
+    // Not cleaned up on the way out: once the reader keeps the edits, the applier is the
+    // one drawing the marker, and removing it here would blank a marker we no longer own.
+  }, [sharedPreview, shownCount]);
+
   useEffect(() => {
     const ref = shareRefFrom(location.href);
     if (!ref) return;
@@ -61,14 +71,16 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
           return;
         }
         // Still validated like any imported file — a link is not a reason to trust what
-        // it points at — but opening the link is the decision, so it applies.
+        // it points at.
         const parsed = parseImport(transfer.body);
         if (!parsed.ok || parsed.page.records.length === 0) {
           setToast({ message: t('shared_missing') });
           return;
         }
-        controller.importRecords(parsed.page.records);
-        setToast({ message: plural(parsed.page.records.length, 'toast_shared_applied_one', 'toast_shared_applied') });
+        // Shown, not saved: whoever opens the link is looking at someone else's proposal,
+        // and it stays out of their own copy of the page until they say to keep it.
+        controller.previewShared(parsed.page.records);
+        setToast({ message: plural(parsed.page.records.length, 'toast_shared_preview_one', 'toast_shared_preview') });
       })
       .catch(() => setToast({ message: t('shared_missing') }));
   }, [controller]);

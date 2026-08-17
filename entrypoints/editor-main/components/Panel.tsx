@@ -109,6 +109,7 @@ export function Panel(props: PanelProps) {
   const canUndo = controller.canUndo();
   const canRedo = controller.canRedo();
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
+  const sharedPreview = useSyncExternalStore(controller.subscribe, controller.isPreviewingShared);
   const panelRef = useRef<HTMLElement>(null);
   const [restoredPosition, setRestoredPosition] = useState<Position | null>(null);
   useEffect(() => {
@@ -210,6 +211,25 @@ export function Panel(props: PanelProps) {
           </button>
         </span>
       </header>
+      {sharedPreview && (
+        <div className="pgve-shared" role="status" data-testid="shared-preview">
+          <div>
+            <strong>{t('shared_preview_title')}</strong>
+            <p>{t('shared_preview_body')}</p>
+          </div>
+          <button
+            type="button"
+            aria-label={t('aria_keep_shared')}
+            data-testid="keep-shared"
+            onClick={() => {
+              controller.keepShared();
+              props.onToast({ message: t('toast_shared_kept') });
+            }}
+          >
+            {t('shared_preview_keep')}
+          </button>
+        </div>
+      )}
       {props.stale ? (
         <div className="pgve-stale" role="alert">
           <p>{STALE_NOTE}</p>
