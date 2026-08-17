@@ -1,141 +1,199 @@
 <p align="center">
-  <img src="public/icon/128.png" width="96" alt="Tweakpage icon">
+  <img src="https://raw.githubusercontent.com/jack830608/Tweakpage/main/public/icon/128.png" width="96" alt="Tweakpage icon">
 </p>
 
 <h1 align="center">Tweakpage</h1>
 
 <p align="center">
-  Visually edit any web page — tweak copy, colors, spacing and images, reorder sections,
-  replay your edits on reload, and export a clean change list for engineers.
+  Visually edit any web page — then keep it, prove it, and hand it off.
 </p>
 
-![Tweakpage editing a demo page](docs/assets/screenshot.png)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-10b981" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/Chrome-Manifest%20V3-10b981" alt="Chrome Manifest V3">
+  <img src="https://img.shields.io/badge/UI-English%20%C2%B7%20%E7%B9%81%E9%AB%94%E4%B8%AD%E6%96%87-10b981" alt="English and Traditional Chinese">
+</p>
 
-For anyone who wants to try a page change before asking someone to build it —
-designers, marketers, PMs, and engineers who'd rather not open DevTools for a copy tweak.
+![Tweakpage editing a demo page](https://raw.githubusercontent.com/jack830608/Tweakpage/main/docs/assets/screenshot.png)
 
-Every edit is recorded as a structured diff (selector + property + old → new), so you can:
+Tweakpage is a Chrome extension for anyone who wants to try a page change before asking
+someone to build it — designers, marketers, PMs, and engineers who'd rather not open
+DevTools for a copy tweak. Every edit is recorded as a structured diff
+(selector + property + old → new), not a screenshot of an idea.
 
-- **Hand engineers a change list** — Copy Markdown from the Changes tab, paste into Slack/Jira.
-- **Keep your edits** — they're saved locally per URL and re-applied automatically on reload.
-  A query string that selects content (`?view=b`) counts as its own page; tracking
-  parameters (`utm_*`, click ids) don't.
-- **Share with a colleague** — Export JSON, and import theirs; edits for other pages
-  wait until you open those pages.
+## Features
 
-## Install (pilot)
+- **Edit almost anything** — text (inline markup preserved, one box per run), typography,
+  colors with an eyedropper and alpha, backgrounds, images (local file or URL), links,
+  size, spacing, layout, borders, shadows, opacity.
+- **Reorder and hide** — ▲▼ on the selection outline swap an element with its siblings;
+  Hide removes it non-destructively.
+- **Apply to every similar element** — style a card once, restyle the family.
+- **Compare** — flip the whole page between Edited and Original with one switch.
+- **Edits persist** — saved locally per URL, replayed on reload and across client-side
+  navigation. A query string that selects content (`?view=b`) counts as its own page;
+  tracking parameters (`utm_*`, click ids) don't.
+- **Honest pages** — a page showing edits says so with a chip in the bottom-left corner,
+  whether or not the editor is open. One chip, one home: while the panel is open its
+  footer carries the count; minimize or close and the chip takes over in the same spot.
+- **Proposals** — save the current edits under a name and switch between directions
+  without rebuilding either. They travel with exports.
+- **Hand-off** — copy a Markdown change list for Slack/Jira, copy a pasteable CSS
+  stylesheet, export/import JSON, or snap one image with the original and edited page
+  side by side.
+- **Share links** — upload a page's edits to your own S3 bucket and send a URL.
+  The recipient needs Tweakpage and nothing else. Opening a link previews; nothing is
+  saved on their machine until they choose **Keep**.
+- **Undo everything** — `⌘Z`/`⇧⌘Z`, per-edit toggles, per-element resets, revert all.
+- **Keyboard-first friendly** — pick, navigate, resize, and edit without a mouse;
+  visible text and screen-reader labels ship in English and Traditional Chinese.
 
-1. Download and unzip the latest build (or run `pnpm install && pnpm build` — output in `.output/chrome-mv3/`).
-2. Open `chrome://extensions`, enable **Developer mode** (top right).
-3. Click **Load unpacked** and select the `chrome-mv3` folder.
+## Install
 
-## Usage
+Not on the Chrome Web Store yet — load it from source:
 
-1. Click the **Tweakpage** toolbar icon and hit **Edit this page** (the popup also lists every
-   page holding saved edits — open or clear them from there; the badge shows each page's edit
-   count). First launch shows a three-step intro card.
-2. **Edit / Browse** (top switch): Edit selects elements on hover/click; Browse lets you use
-   the page normally (menus, tabs, links) — a badge reminds you while browsing. Holding
-   `⌥ Alt` in Edit mode is a temporary Browse.
-3. **Edited / Original** (second switch): flips the whole page between your edited version
-   and the untouched original — the page badge takes you back.
-4. Select an element and edit it in the collapsible sections: Text, Typography (family, size,
-   weight, line height, align, letter spacing, transform, color), Background (color + image),
-   Image, Appearance (corner radius, opacity, border), Size, Layout (display, flex, gap,
-   position, shadow), Spacing. Text with inline markup gets one box per run, so a heading
-   keeps the link or coloured span inside it. Images can come from a local file or a URL (which applies
-   when you leave the field or press Enter), and colours keep their transparency. Fields are named after
-   the CSS property they write, and an edited one shows a ↺ beside it. Color fields have
-   an eyedropper (pick from the page) and recent swatches. Use the breadcrumb to reach
-   parents/children.
-5. Selection card: **Hide / Unhide** the selected element (editing locks while hidden), and
-   **apply style edits to every similar element** when the element is one of a family.
-   The ▲▼ on the selection outline reorder the element among its siblings; stepping it
-   back to where it started removes the edit.
-   Hand off with **Copy** (Markdown summary), **CSS** (a pasteable stylesheet) or **Snap**
-   (one image with the original and the edited page side by side); send with **Copy JSON**
-   or **Export JSON**.
-6. **Proposals**: save the current edits under a name, then switch between them to compare
-   two directions without rebuilding either. They travel with the export.
-7. Footer **Review** opens the change list (delete individual edits, revert all, **Import JSON**
-   from a teammate — edits for other pages are stored and apply when you open them).
-8. `⌘Z` / `⇧⌘Z` (or `Ctrl+Z`) undo and redo, or the arrows in the header. Each change in
-   Review can be toggled, hovered (highlights the element) or selected (scrolls the page to
-   it). `⌥` + arrow keys move the selection through the page without a mouse.
-9. A page showing edits says so with **one chip, bottom-left**. While the panel is open
-   the chip stays out of the way (the footer carries the count); minimize or close the
-   editor and the chip takes over, in the same spot — click it to bring the editor back.
-   During a shared preview it says the edits are someone else's. An edited page is never
-   mistaken for the real one, editor open or not.
-10. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere;
-   resize by dragging its left edge or by focusing the edge and using the arrow keys —
-   both remembered. The idle panel goes slightly translucent so the page shows through,
-   and solidifies when you reach for it. The gear in the header opens Settings, where the
-   theme follows your system unless you pick Light or Dark. The UI ships in English and
-   Traditional Chinese — visible text and screen-reader labels both. Edits survive
-   reloads and follow client-side navigation.
+```bash
+pnpm install && pnpm build   # output in .output/chrome-mv3/
+```
 
+1. Open `chrome://extensions` and enable **Developer mode** (top right).
+2. Click **Load unpacked** and select the `.output/chrome-mv3` folder.
 
-## Share links (optional)
+## Quick start
 
-Upload a page's edits to **your own** S3 bucket and share the link. Whoever opens it needs
-Tweakpage and nothing else — no AWS account, no setup.
+1. Click the **Tweakpage** toolbar icon → **Edit this page**.
+2. Hover to outline, click to select. Edit in the panel's sections.
+3. Reload the page — your edits replay. Footer **Review ›** lists every change.
+4. Done? **Copy summary** and paste the change list into Slack or Jira.
+
+## Guide
+
+### Selecting
+
+**Edit / Browse** is the top switch: Edit selects elements on hover/click; Browse lets
+you use the page normally (menus, tabs, links). Holding `⌥ Alt` in Edit mode is a
+temporary Browse. Use the breadcrumb in the selection card to reach parents and
+children, or `⌥` + arrow keys to walk the DOM without a mouse.
+
+### Editing
+
+Fields are named after the CSS property they write — an edited one shows a ↺ reset
+beside it, and reset restores what the page holds *now*, not a stale snapshot, even if
+the site updated the value underneath you. Text with inline markup gets one box per run,
+so a heading keeps the link or coloured span inside it. Image URLs apply on Enter or
+blur; local files apply immediately. Color fields have an eyedropper and recent
+swatches, and keep their transparency.
+
+The selection card offers **Hide / Unhide** and **apply to every similar element**;
+the ▲▼ on the selection outline reorder the element among its siblings — stepping it
+back to where it started removes the edit.
+
+### Reviewing and handing off
+
+**Review ›** in the footer opens the change list: toggle an edit off and on, delete it,
+hover to highlight its element, click to scroll to it. **Import JSON** merges a
+teammate's edits — edits for other pages wait until you open those pages.
+
+Hand off with **Copy summary** (Markdown), **Copy CSS** (a pasteable stylesheet),
+**Screenshot** (original and edited side by side in one image), or **Copy / Download
+JSON**. **Proposals** saves the current set under a name so two directions can be
+compared live.
+
+### The panel
+
+Drag it anywhere; resize by dragging its left edge or focusing the edge and using the
+arrow keys — both remembered. Idle, it turns slightly translucent so the page shows
+through, and solidifies when you reach for it. The gear opens Settings: theme
+(system/light/dark) and the share-link credentials. The popup on the toolbar icon lists
+every page holding saved edits — open or clear them from there.
+
+### Keyboard shortcuts
+
+| Keys | Action |
+| --- | --- |
+| `⌘Z` / `Ctrl+Z` | Undo |
+| `⇧⌘Z` / `Ctrl+Shift+Z` | Redo |
+| `Esc` | Deselect, then close; in Browse, return to Edit |
+| hold `⌥ Alt` | Temporary Browse while in Edit |
+| `⌥` + `↑ ↓ ← →` | Move selection: parent / first child / previous / next sibling |
+| `← →` on the resize edge | Narrow / widen the panel (`⇧` for bigger steps) |
+| `Enter` in an image URL field | Apply the URL |
+
+## Share links
+
+Upload a page's edits to **your own** S3 bucket and share the link. Whoever opens it
+needs Tweakpage and nothing else — no AWS account, no setup.
 
 Opening a link **shows** the edits; it does not save them. The panel says they came from
-someone else and offers **Keep on this page**, which is what puts them in your own storage.
-Look at a colleague's proposal, close the tab, and your copy of the page is as it was.
+someone else and offers **Keep on this page**, which is what puts them in the reader's
+own storage. Look at a colleague's proposal, close the tab, and your copy of the page is
+as it was.
 
-Open the panel's gear icon → **Share links**, then fill in bucket, region, key id and secret.
-They save as you type. Until all four are set the Share link button stays disabled, and this
+### Setup
+
+Gear icon → **Share links** → fill in bucket, region, access key id and secret. They
+save as you type; until all four are set, the Share link button stays disabled. This
 repo ships no defaults.
 
-The key you paste needs to write, and to be allowed to mark what it writes as readable:
+The key needs to write, and to be allowed to mark what it writes as readable:
 
 ```json
 { "Effect": "Allow", "Action": ["s3:PutObject", "s3:PutObjectAcl"],
   "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
 ```
 
-Then the bucket has to let a stranger read a share. Either give it a policy:
+Then the bucket has to let a stranger read a share — either a bucket policy:
 
 ```json
 { "Effect": "Allow", "Principal": "*", "Action": "s3:GetObject",
   "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
 ```
 
-or leave ACLs enabled with Block Public Access off, and Tweakpage marks each file public as
-it uploads. Either way it checks: after writing, it reads the object back with no
+or leave ACLs enabled with Block Public Access off, and Tweakpage marks each file public
+as it uploads. Either way it verifies: after writing, it reads the object back with no
 credentials, exactly as a recipient would, and refuses to hand you a link that would 403.
 
-The object name is 113 bits of randomness, so the link is the permission — but the file is
-readable by anyone holding it, so don't share pages whose content is confidential. Set a
-lifecycle rule on the prefix to expire old shares.
+### What to know before pasting a key
 
-A link carries an id, a bucket and a region as separate, validated parts — never a URL — so
-it can only ever resolve to an address Tweakpage builds itself, and what arrives is checked
-exactly like an imported file.
+- Extension storage is not a vault: anyone with access to the browser profile can read
+  what you paste, and this extension is open source. Use a key that can do nothing
+  except write that one prefix, and rotate it like any other credential. The secret
+  never leaves the machine — requests carry a signature derived from it.
+- The object name is 113 bits of randomness, so the link is the permission — but the
+  file is readable by anyone holding it. Don't share pages whose content is
+  confidential. A lifecycle rule on the `tweakpage/` prefix expires old shares.
+- A link carries an id, bucket and region as separate validated parts — never a URL —
+  so it can only resolve to an address Tweakpage builds itself, and what arrives is
+  validated exactly like an imported file.
 
-**About the key.** Extension storage is not a vault: anyone with access to that browser
-profile can read it, and this extension is open source. Use a key that can do nothing
-except write that one prefix, and rotate it like any other credential. The secret itself
-never leaves the machine — requests carry a signature derived from it.
+## How it works
+
+- A tiny always-on content script replays saved edits and draws the corner chip; the
+  editor itself loads lazily into a Shadow DOM, so pages you never edit pay almost
+  nothing.
+- Style edits go through one injected stylesheet targeting a `data-tweakpage` marker
+  stamped on the resolved element — a selector can never fan out to elements you didn't
+  pick.
+- Selectors prove uniqueness, not identity: a hit is held against the remembered text
+  before it is believed, so a site inserting a sibling can't get the wrong element
+  edited.
+- Everything lives in `chrome.storage.local`, keyed by normalized URL. Nothing leaves
+  the machine unless you export or share.
 
 ## Development
 
-- `pnpm dev` — WXT dev mode with HMR
-- `pnpm test` — typecheck, then unit/component tests (vitest)
-- `pnpm typecheck` — `tsc --noEmit` alone
-- `pnpm e2e` — builds, then drives the real extension in Chromium (Playwright)
-- Spec: `docs/superpowers/specs/2026-08-15-tweakpage-design.md`
-- Plan: `docs/superpowers/plans/2026-08-15-tweakpage-mvp.md`
+```bash
+pnpm dev         # WXT dev mode with HMR
+pnpm test        # typecheck, then unit/component tests (vitest)
+pnpm typecheck   # tsc --noEmit alone
+pnpm e2e         # builds, then drives the real extension in Chromium (Playwright)
+```
 
-## Manual QA checklist (per release)
-
-- [ ] A real marketing/landing page — edit hero copy + color, reorder two sections, reload,
-      verify replay, export Markdown
-- [ ] A React SPA — edit text, trigger a client-side navigation and back, verify replay
-- [ ] A static site — full flow including Export JSON
+Design notes live in [`docs/`](docs/), including the
+[release QA checklist](docs/qa-checklist.md). Issues and PRs welcome — please keep both
+locales in step (tests enforce it) and anchor E2E assertions on `data-testid`, never on
+translated text.
 
 ## License
 
-MIT
+[MIT](LICENSE)
