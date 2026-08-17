@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/jack830608/Tweakpage/main/public/icon/128.png" width="96" alt="Tweakpage icon">
+  <img src="public/icon/128.png" width="96" alt="Tweakpage icon">
 </p>
 
 <h1 align="center">Tweakpage</h1>
@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/UI-English%20%C2%B7%20%E7%B9%81%E9%AB%94%E4%B8%AD%E6%96%87-10b981" alt="English and Traditional Chinese">
 </p>
 
-![Tweakpage editing a demo page](https://raw.githubusercontent.com/jack830608/Tweakpage/main/docs/assets/screenshot.png)
+![Tweakpage editing a demo page](docs/assets/screenshot.png)
 
 Tweakpage is a Chrome extension for anyone who wants to try a page change before asking
 someone to build it — designers, marketers, PMs, and engineers who'd rather not open
