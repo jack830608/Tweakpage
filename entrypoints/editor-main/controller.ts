@@ -13,6 +13,7 @@ import {
   type PageEdits,
   type Variant,
 } from '../../lib/edits/types';
+import { elementIndex, pageSiblings } from '../../lib/edits/dom';
 import { generateSelector, type GeneratedSelector } from '../../lib/selector/generate';
 import { resolveRecord } from '../../lib/selector/resolve';
 import { similarSelector } from '../../lib/selector/similar';
@@ -161,6 +162,24 @@ export class EditsController {
       { mergeSnapshot: target === this.lastEditTarget },
     );
     this.lastEditTarget = target;
+  }
+
+  /** True when the element has a same-parent sibling in that direction to swap with. */
+  canMove(el: Element, direction: -1 | 1): boolean {
+    if (!el.parentElement) return false;
+    const target = elementIndex(el) + direction;
+    return target >= 0 && target < pageSiblings(el.parentElement).length;
+  }
+
+  /**
+   * Swaps the element with its neighbour. from/to describe the live DOM, and recordEdit
+   * compares against the record's original oldValue, so stepping back to where the
+   * element started deletes the record instead of keeping a 2→1→2 no-op around.
+   */
+  moveElement(el: Element, direction: -1 | 1): void {
+    if (!this.canMove(el, direction)) return;
+    const from = elementIndex(el);
+    this.recordEdit(el, 'move', 'domIndex', String(from), String(from + direction));
   }
 
   deleteRecord(id: string): void {

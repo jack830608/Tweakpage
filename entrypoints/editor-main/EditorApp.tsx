@@ -148,6 +148,8 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         hovered={mode === 'edit' && alive && hovered?.isConnected ? hovered : null}
         selected={mode === 'edit' && alive ? activeSelected : null}
         edited={mode === 'edit' && showMarks ? Array.from(document.querySelectorAll('[data-tweakpage]')) : []}
+        canMove={(el, direction) => controller.canMove(el, direction)}
+        onMove={(el, direction) => controller.moveElement(el, direction)}
       />
       <StatusBadge
         previewing={previewing}

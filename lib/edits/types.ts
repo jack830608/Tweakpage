@@ -1,4 +1,5 @@
-export type EditType = 'style' | 'text' | 'attr';
+/** 'move' reorders an element among its siblings; old/newValue hold its index. */
+export type EditType = 'style' | 'text' | 'attr' | 'move';
 
 /** 'similar' points a style edit at every element the selector matches, not just one. */
 export type EditScope = 'element' | 'similar';

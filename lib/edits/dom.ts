@@ -4,6 +4,8 @@ import type { EditRecord } from './types';
 export function applyDomEdit(el: Element, record: EditRecord): void {
   if (record.type === 'text') {
     writeText(el, record, record.newValue);
+  } else if (record.type === 'move') {
+    moveToIndex(el, Number(record.newValue));
   } else if (record.type === 'attr') {
     if (el.getAttribute(record.property) !== record.newValue) {
       el.setAttribute(record.property, record.newValue);
@@ -14,6 +16,8 @@ export function applyDomEdit(el: Element, record: EditRecord): void {
 export function revertDomEdit(el: Element, record: EditRecord): void {
   if (record.type === 'text') {
     writeText(el, record, record.oldValue);
+  } else if (record.type === 'move') {
+    moveToIndex(el, Number(record.oldValue));
   } else if (record.type === 'attr') {
     if (record.absent) {
       el.removeAttribute(record.property);
@@ -31,7 +35,34 @@ export function readDomValue(el: Element, record: EditRecord): string | null {
     return textNodeAt(el, index)?.nodeValue ?? null;
   }
   if (record.type === 'attr') return el.getAttribute(record.property);
+  if (record.type === 'move') {
+    const index = elementIndex(el);
+    return index === -1 ? null : String(index);
+  }
   return null;
+}
+
+// Our own nodes live in the page too; counting them would make the same index mean
+// different positions with the editor open and closed.
+const OUR_NODES = '#tweakpage-host, #tweakpage-marker, style[data-pg-editor]';
+
+/** The element's position among its parent's children, ignoring tweakpage's own nodes. */
+export function elementIndex(el: Element): number {
+  if (!el.parentElement) return -1;
+  return pageSiblings(el.parentElement).indexOf(el);
+}
+
+/** Places el at the given index among its siblings. Already there means untouched. */
+export function moveToIndex(el: Element, index: number): void {
+  const parent = el.parentElement;
+  if (!parent || !Number.isInteger(index) || index < 0) return;
+  if (elementIndex(el) === index) return;
+  const others = pageSiblings(parent).filter((sibling) => sibling !== el);
+  parent.insertBefore(el, others[index] ?? null);
+}
+
+export function pageSiblings(parent: Element): Element[] {
+  return Array.from(parent.children).filter((child) => !child.matches(OUR_NODES));
 }
 
 function writeText(el: Element, record: EditRecord, value: string): void {

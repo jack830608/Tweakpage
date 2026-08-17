@@ -892,3 +892,52 @@ test('the idle panel stays readable, measured, in both themes', async ({ context
     expect(await contrastOf(), `secondary text on an idle ${scheme} panel`).toBeGreaterThanOrEqual(4.5);
   }
 });
+
+test('reordering siblings persists, undoes, and leaves other edits on the right elements', async ({
+  context,
+}) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  const order = () =>
+    page.evaluate(() => [...document.querySelectorAll('#perks li')].map((li) => li.id).join(','));
+
+  // Pin an edit on the third perk before anything moves — it has to stay on that
+  // element, not on whatever ends up third.
+  await page.locator('#perk-c').click();
+  await page.locator('[data-testid="text"]').fill('Three-year warranty');
+
+  await page.locator('#perk-b').click();
+  await page.locator('[data-testid="move-up"]').click();
+  await expect.poll(order).toBe('perk-b,perk-a,perk-c');
+
+  // The reapply loop runs on every mutation, ours included; give it time to misbehave.
+  await page.waitForTimeout(200);
+  expect(await order(), 'the reapply loop must not fight the move').toBe('perk-b,perk-a,perk-c');
+  await expect(page.locator('#perk-c')).toHaveText('Three-year warranty');
+
+  // Undo puts the order back; redo re-arranges it. (The undo stack lives in the
+  // session, so this happens before the reload.)
+  await page.locator('[data-testid="undo"]').click();
+  await expect.poll(order).toBe('perk-a,perk-b,perk-c');
+  await page.locator('[data-testid="redo"]').click();
+  await expect.poll(order).toBe('perk-b,perk-a,perk-c');
+
+  // Replay from storage on a fresh load — the applier, no editor.
+  await page.reload();
+  await expect.poll(order).toBe('perk-b,perk-a,perk-c');
+  await expect(page.locator('#perk-c'), 'the text edit still belongs to perk-c').toHaveText(
+    'Three-year warranty',
+  );
+
+  // At the edges there is nowhere further to go.
+  await activateEditor(context);
+  await page.locator('#perk-b').click();
+  const up = page.locator('[data-testid="move-up"]');
+  await expect(up).toBeDisabled();
+  const [disabledOpacity, enabledOpacity] = await Promise.all([
+    up.evaluate((el) => getComputedStyle(el).opacity),
+    page.locator('[data-testid="move-down"]').evaluate((el) => getComputedStyle(el).opacity),
+  ]);
+  expect(Number(disabledOpacity), 'a dead arrow has to look dead').toBeLessThan(Number(enabledOpacity));
+});

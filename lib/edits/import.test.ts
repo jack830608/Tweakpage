@@ -107,3 +107,23 @@ test('background image values must be plain http(s) or data-image urls', () => {
     expect(result.page.records[0].id).toBe('c');
   }
 });
+
+test('move records import, and a forged index does not', () => {
+  const page = (record: object) =>
+    JSON.stringify({
+      version: 1, url: 'https://a.com/p', title: '', updatedAt: 'n',
+      records: [{
+        id: 'm1', selector: '#x', fallbackSelectors: [], elementLabel: 'p',
+        enabled: true, createdAt: 'n', updatedAt: 'n',
+        type: 'move', property: 'domIndex', oldValue: '3', newValue: '0',
+        ...record,
+      }],
+    });
+  const good = parseImport(page({}));
+  expect(good.ok && good.page.records).toHaveLength(1);
+
+  for (const bad of [{ newValue: '-1' }, { newValue: '1e9' }, { property: 'order' }, { oldValue: 'x' }]) {
+    const result = parseImport(page(bad));
+    expect(result.ok && result.skipped, JSON.stringify(bad)).toBe(1);
+  }
+});
