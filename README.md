@@ -72,7 +72,8 @@ Every edit is recorded as a structured diff (selector + property + old → new),
 Upload a page's edits to **your own** S3 bucket and share the link. Whoever opens it needs
 Tweakpage and nothing else — no AWS account, no setup — and the edits apply on arrival.
 
-Right-click the toolbar icon → **Options** and fill in bucket, region, key id and secret.
+Open the popup and click **Share settings** (or right-click the toolbar icon → Options), then
+fill in bucket, region, key id and secret.
 Until all four are set the Share link button stays disabled, and this repo ships no
 defaults.
 

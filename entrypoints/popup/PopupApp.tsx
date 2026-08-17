@@ -93,6 +93,15 @@ export function PopupApp() {
     <div className="pop">
       <header className="pop-header">
         <strong>Tweakpage</strong>
+        <button
+          type="button"
+          className="pop-settings"
+          aria-label={t('aria_open_settings')}
+          data-testid="open-settings"
+          onClick={() => browser.runtime.openOptionsPage()}
+        >
+          {t('pop_settings')}
+        </button>
       </header>
       <button type="button" className="pop-primary" onClick={() => void onEditThisPage()}>
         {t('pop_edit_this_page')}

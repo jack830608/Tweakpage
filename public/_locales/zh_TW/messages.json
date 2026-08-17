@@ -599,5 +599,11 @@
   },
   "tip_share_unset": {
     "message": "請先設定 bucket:在工具列圖示按右鍵 → 選項"
+  },
+  "pop_settings": {
+    "message": "分享設定"
+  },
+  "aria_open_settings": {
+    "message": "開啟分享設定"
   }
 }

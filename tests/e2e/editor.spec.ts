@@ -299,9 +299,39 @@ test('the share button is dead until a bucket is configured', async ({ context }
 
   const button = page.locator('[data-testid="share-link"]');
   await expect(button, 'a button that can only fail should not invite a click').toBeDisabled();
+
+  // The attribute alone proved nothing a person could see: this button was disabled and
+  // looked exactly like its neighbours — same opacity, same colour, same pointer cursor.
+  const [share, neighbour] = await Promise.all([
+    button.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { opacity: Number(cs.opacity), cursor: cs.cursor };
+    }),
+    page.locator('[data-testid="copy-summary"]').evaluate((el) => Number(getComputedStyle(el).opacity)),
+  ]);
+  expect(share.opacity, 'it should read as unavailable').toBeLessThan(neighbour);
+  expect(share.cursor).not.toBe('pointer');
+
   // The tooltip is translated, so assert that it says something rather than what.
   const explained = await button.getAttribute('title');
   expect(explained?.length ?? 0, 'a disabled button must say why').toBeGreaterThan(10);
+});
+
+test('the popup can reach the settings the share button needs', async ({ context }) => {
+  const page = await context.newPage();
+  const [worker] = context.serviceWorkers().length
+    ? context.serviceWorkers()
+    : [await context.waitForEvent('serviceworker')];
+  const extensionId = new URL(worker.url()).host;
+
+  await page.goto(`chrome-extension://${extensionId}/popup.html`);
+  // Right-clicking the toolbar icon is where nobody looks for this.
+  await expect(page.locator('[data-testid="open-settings"]')).toBeVisible();
+
+  await page.goto(`chrome-extension://${extensionId}/options.html`);
+  for (const field of ['bucket', 'region', 'accessKeyId', 'secretAccessKey']) {
+    await expect(page.locator(`[data-testid="${field}"]`)).toBeVisible();
+  }
 });
 
 test('a shared link works for someone who has set nothing up', async ({ context }) => {

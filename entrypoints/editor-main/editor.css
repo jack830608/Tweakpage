@@ -69,7 +69,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pgve-header button { border: none; background: none; cursor: pointer; color: var(--ink-3); font-size: 13px; padding: 2px 6px; border-radius: var(--r-control); }
 .pgve-header button:hover { color: var(--ink); background: var(--sunken); }
 .pgve-header-buttons { display: inline-flex; align-items: center; gap: 2px; }
-.pgve-header button:disabled { opacity: 0.35; cursor: default; }
+/* Being unclickable is not a state anyone can see. */
+.pgve-panel button:disabled, .pgve-panel input:disabled, .pgve-panel select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.pgve-panel button:disabled:hover {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--ink-2);
+}
 .pgve-header button:disabled:hover { background: none; color: var(--ink-3); }
 .pgve-resize { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; touch-action: none; }
 .pgve-resize:hover { background: var(--accent-soft); }
