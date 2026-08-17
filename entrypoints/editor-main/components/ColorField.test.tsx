@@ -54,12 +54,50 @@ test('recent colors render as swatches and apply on click', async () => {
   const swatch = await screen.findByRole('button', { name: 'Use #112233' });
   fireEvent.click(swatch);
   expect(onChange).toHaveBeenCalledWith('#112233');
+  // Re-recording it would reshuffle the row under the pointer mid-click.
+  const stored = await fakeBrowser.storage.local.get('tweakpage:recent-colors');
+  expect(stored['tweakpage:recent-colors']).toEqual(['#112233']);
 });
 
-test('committing a color records it as recent', async () => {
+test('a colour is remembered once you are finished choosing it', async () => {
   const onChange = vi.fn();
   renderField(onChange);
-  fireEvent.change(screen.getByLabelText('Color hex'), { target: { value: '#445566' } });
+  const hex = screen.getByLabelText('Color hex');
+
+  fireEvent.change(hex, { target: { value: '#445566' } });
+  await Promise.resolve();
+  expect(onChange, 'the page updates while typing').toHaveBeenCalledWith('#445566');
+  expect(
+    (await fakeBrowser.storage.local.get('tweakpage:recent-colors'))['tweakpage:recent-colors'],
+    'but a half-typed colour is not a choice',
+  ).toBeUndefined();
+
+  fireEvent.blur(hex);
+  await Promise.resolve();
+  await Promise.resolve();
+  const stored = await fakeBrowser.storage.local.get('tweakpage:recent-colors');
+  expect(stored['tweakpage:recent-colors']).toEqual(['#445566']);
+});
+
+test('adjusting transparency never fills the list', async () => {
+  const onChange = vi.fn();
+  renderField(onChange);
+  const alpha = screen.getByLabelText('Color opacity');
+  for (const percent of ['90', '80', '70', '60']) {
+    fireEvent.change(alpha, { target: { value: percent } });
+    await Promise.resolve();
+  }
+  expect(onChange).toHaveBeenCalledTimes(4);
+  const stored = await fakeBrowser.storage.local.get('tweakpage:recent-colors');
+  expect(stored['tweakpage:recent-colors'], 'transparency is not a colour choice').toBeUndefined();
+});
+
+test('a remembered colour drops its transparency', async () => {
+  const onChange = vi.fn();
+  renderField(onChange);
+  const hex = screen.getByLabelText('Color hex');
+  fireEvent.change(hex, { target: { value: '#44556680' } });
+  fireEvent.blur(hex);
   await Promise.resolve();
   await Promise.resolve();
   const stored = await fakeBrowser.storage.local.get('tweakpage:recent-colors');

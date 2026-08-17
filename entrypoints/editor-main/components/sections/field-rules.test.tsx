@@ -9,8 +9,7 @@ import { EditsController } from '../../controller';
  *
  * A field either has a single possible unit, in which case it shows a bare number and
  * states that unit; or it takes several forms, in which case it shows exactly what CSS
- * holds and states nothing. Whether the name can be dragged follows from the same
- * question: a bare number can be scrubbed, a value carrying its own unit cannot.
+ * holds and states nothing.
  *
  * A slider is separate and rarer: it needs a real range to point at. Opacity has one,
  * 0 to 100. Corner radius does not — its slider was capped at an invented 64, so a card
@@ -105,7 +104,6 @@ function row(testid: string): Element {
 
 const unitOf = (testid: string) => row(testid).querySelector('.pgve-unit')?.textContent ?? null;
 const sliderIn = (testid: string) => row(testid).querySelector('input[type="range"]');
-const scrubHandle = (testid: string) => row(testid).querySelector('.pgve-prop--scrub');
 
 describe.each(FIELDS)('$testid ($kind)', (field) => {
   test('states its unit only when the number on screen is bare', () => {
@@ -118,17 +116,6 @@ describe.each(FIELDS)('$testid ($kind)', (field) => {
       expect(unitOf(field.testid)).toBe(field.unit);
     } else {
       expect(unitOf(field.testid), 'only a fixed unit may be claimed').toBeNull();
-    }
-  });
-
-  test('offers dragging exactly when the value is a bare number', () => {
-    setup();
-    const bare = /^-?\d*\.?\d+$/.test(control(field.testid).value);
-    const draggable = scrubHandle(field.testid) !== null;
-    if (field.kind === 'choice' || field.kind === 'text') {
-      expect(draggable, 'nothing to count up or down here').toBe(false);
-    } else {
-      expect(draggable).toBe(bare);
     }
   });
 
@@ -155,14 +142,8 @@ describe('free-form fields behave the same as each other', () => {
       fireEvent.change(control(field.testid), { target: { value: field.unitful! } });
       expect(control(field.testid).value, field.testid).toBe(field.unitful);
       expect(unitOf(field.testid), field.testid).toBeNull();
-      expect(scrubHandle(field.testid), `${field.testid} cannot be counted up or down`).toBeNull();
+
     }
   });
 
-  test('a bare ratio in line-height can still be dragged', () => {
-    setup();
-    fireEvent.change(control('line-height'), { target: { value: '1.5' } });
-    expect(scrubHandle('line-height')).toBeTruthy();
-    expect(unitOf('line-height'), 'a ratio has no unit to state').toBeNull();
-  });
 });

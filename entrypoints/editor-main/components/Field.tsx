@@ -1,8 +1,7 @@
-import { useSyncExternalStore, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useSyncExternalStore, type ReactNode } from 'react';
 import type { EditsController } from '../controller';
 import { isBareNumber } from '../../../lib/css-values';
 import { ResetButton } from './ResetButton';
-import { t } from '../../../lib/i18n';
 
 interface FieldProps {
   /** The CSS property as the user sees it, e.g. "font-size". */
@@ -16,17 +15,13 @@ interface FieldProps {
   /** Shown under the row when the typed value was refused. */
   error?: string | null;
   /**
-   * What the control currently shows. Field needs it because two rules depend on the
-   * shape of the value rather than on which field it is:
-   *   a bare number gets its unit stated, and can be dragged;
-   *   a value carrying its own unit or keyword (24px, auto, 50%) gets neither.
-   * Keeping that decision here is what stops fields from drifting apart.
+   * What the control currently shows. Field needs it because the unit rule depends on the
+   * shape of the value rather than on which field it is: a bare number gets its unit
+   * stated, a value carrying its own unit or keyword (24px, auto, 50%) does not.
    */
   value?: string;
   /** The unit a bare number means here. Omitted when the property has none, like line-height. */
   unit?: string;
-  /** Called with whole steps dragged, when the value is a bare number. */
-  onScrub?: (steps: number) => void;
   children: ReactNode;
 }
 
@@ -48,14 +43,11 @@ export function Field({
   error,
   value,
   unit,
-  onScrub,
   children,
 }: FieldProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
   const modified = controller.recordFor(element, property) !== undefined;
-  const bare = value !== undefined && isBareNumber(value);
-  const shownUnit = bare ? unit : undefined;
-  const scrub = bare ? onScrub : undefined;
+  const shownUnit = value !== undefined && isBareNumber(value) ? unit : undefined;
   return (
     <div className={stacked ? 'pgve-field pgve-field--stacked' : 'pgve-field'}>
       <span className="pgve-field-name">
@@ -65,17 +57,7 @@ export function Field({
           property={property}
           companions={companions}
         />
-        <span
-          className={[
-            'pgve-prop',
-            modified ? 'pgve-prop--modified' : '',
-            scrub ? 'pgve-prop--scrub' : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          title={scrub ? t('tip_scrub', [name]) : name}
-          onPointerDown={scrub ? (e) => startScrub(e, scrub) : undefined}
-        >
+        <span className={modified ? 'pgve-prop pgve-prop--modified' : 'pgve-prop'} title={name}>
           {name}
         </span>
       </span>
@@ -96,29 +78,3 @@ export function Field({
   );
 }
 
-/** Pixels of travel per step — loose enough to be controllable on a trackpad. */
-const SCRUB_PIXELS = 4;
-
-/**
- * Drag the property name to change its value.
- *
- * This replaces the native spinner, which only appeared on hover, sat on top of the
- * unit label, and gave no way to move quickly through a range.
- */
-function startScrub(e: ReactPointerEvent<HTMLElement>, onScrub: (steps: number) => void): void {
-  e.preventDefault();
-  const startX = e.clientX;
-  let applied = 0;
-  const move = (ev: PointerEvent) => {
-    const steps = Math.trunc((ev.clientX - startX) / SCRUB_PIXELS);
-    if (steps === applied) return;
-    onScrub(steps - applied);
-    applied = steps;
-  };
-  const stop = () => {
-    document.removeEventListener('pointermove', move);
-    document.removeEventListener('pointerup', stop);
-  };
-  document.addEventListener('pointermove', move);
-  document.addEventListener('pointerup', stop);
-}

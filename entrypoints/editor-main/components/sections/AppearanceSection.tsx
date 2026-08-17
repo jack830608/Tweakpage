@@ -3,7 +3,6 @@ import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
 import { Field } from '../Field';
-import { scrubbedValue } from '../../scrub';
 import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
@@ -78,9 +77,6 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         element={element}
         unit="px"
         value={radius.value}
-        onScrub={(steps) =>
-          setRadius(String(scrubbedValue(controller, element, 'borderRadius', radius.original, steps, { min: 0 })))
-        }
       >
         <input
           type="number"
@@ -98,16 +94,6 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         element={element}
         unit="%"
         value={opacity.value}
-        onScrub={(steps) =>
-          setOpacity(
-            String(
-              scrubbedValue(controller, element, 'opacity', String(Number(opacity.original) * 100), steps, {
-                min: 0,
-                max: 100,
-              }),
-            ),
-          )
-        }
       >
         <span className="pgve-slider-pair">
           <input
@@ -136,11 +122,6 @@ export function AppearanceSection({ element, controller }: SectionProps) {
         companions={['borderStyle']}
         unit="px"
         value={borderWidth.value}
-        onScrub={(steps) =>
-          setBorderWidth(
-            String(scrubbedValue(controller, element, 'borderWidth', borderWidth.original, steps, { min: 0 })),
-          )
-        }
       >
         <input
           type="number"

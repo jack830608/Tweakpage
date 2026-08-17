@@ -3,7 +3,6 @@ import type { EditsController } from '../../controller';
 import { sameNumber, useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
 import { Field } from '../Field';
-import { scrubbedValue } from '../../scrub';
 import { t } from '../../../../lib/i18n';
 
 interface SectionProps {
@@ -81,12 +80,6 @@ export function TypographySection({ element, controller }: SectionProps) {
         unit="px"
         value={fontSize.value}
         error={fontSize.error}
-        onScrub={(steps) => {
-          const next = scrubbedValue(controller, element, 'fontSize', fontSize.original, steps, {
-            min: 1,
-          });
-          controller.recordEdit(element, 'style', 'fontSize', fontSize.original, `${next}px`);
-        }}
       >
         <input
           type="number"
@@ -128,13 +121,6 @@ export function TypographySection({ element, controller }: SectionProps) {
         element={element}
         error={lineHeight.error}
         value={lineHeight.value}
-        onScrub={(steps) => {
-          const next = scrubbedValue(controller, element, 'lineHeight', lineHeight.original, steps, {
-            increment: 0.1,
-            min: 0,
-          });
-          controller.recordEdit(element, 'style', 'lineHeight', lineHeight.original, String(next));
-        }}
       >
         <input
           type="text"
@@ -177,17 +163,6 @@ export function TypographySection({ element, controller }: SectionProps) {
         unit="px"
         value={letterSpacing.value}
         error={letterSpacing.error}
-        onScrub={(steps) => {
-          const next = scrubbedValue(
-            controller,
-            element,
-            'letterSpacing',
-            letterSpacing.original,
-            steps,
-            { increment: 0.1 },
-          );
-          controller.recordEdit(element, 'style', 'letterSpacing', letterSpacing.original, `${next}px`);
-        }}
       >
         <input
           type="number"
