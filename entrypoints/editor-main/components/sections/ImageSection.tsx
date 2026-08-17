@@ -55,6 +55,12 @@ export function ImageSection({ element, controller }: SectionProps) {
           }}
         />
       </Field>
+      <div className="pgve-field pgve-field--actions">
+        <span aria-hidden="true" />
+        <div className="pgve-field-actions">
+          <ImagePicker ariaLabel={t('aria_choose_image')} testId="image-file" onPicked={applySrc} />
+        </div>
+      </div>
       <Field name="alt" property="alt" controller={controller} element={element}>
         <input
           type="text"
@@ -70,12 +76,6 @@ export function ImageSection({ element, controller }: SectionProps) {
           }}
         />
       </Field>
-      <div className="pgve-field pgve-field--actions">
-        <span aria-hidden="true" />
-        <div className="pgve-field-actions">
-          <ImagePicker ariaLabel={t('aria_choose_image')} testId="image-file" onPicked={applySrc} />
-        </div>
-      </div>
     </section>
   );
 }
