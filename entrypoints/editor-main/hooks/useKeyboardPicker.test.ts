@@ -57,3 +57,17 @@ test('the editor never selects its own UI', () => {
   press('ArrowDown');
   expect(onSelect).not.toHaveBeenCalled();
 });
+
+test("arrow navigation never lands on tweakpage's own marker", () => {
+  document.body.innerHTML =
+    '<div id="host"></div><section><h1 id="one">One</h1>' +
+    '<div id="tweakpage-marker"><button>Tweakpage</button></div><p id="two">Two</p></section>';
+  for (const el of Array.from(document.querySelectorAll('#one, #two, #tweakpage-marker'))) {
+    vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({ width: 100, height: 20 } as DOMRect);
+  }
+  const onSelect = setup(document.getElementById('one'));
+  press('ArrowRight');
+  expect(onSelect, 'the marker between the siblings is skipped').toHaveBeenCalledWith(
+    document.getElementById('two'),
+  );
+});

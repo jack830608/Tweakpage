@@ -12,7 +12,6 @@ import { useExtensionAlive } from './hooks/useExtensionAlive';
 import { captureBeforeAfter } from './snapshot';
 import { parseImport } from '../../lib/edits/import';
 import { shareRefFrom } from '../../lib/share/link';
-import { showMarker } from '../../lib/applier/marker';
 import { safeStorageSet } from '../../lib/extension-context';
 import { plural, t } from '../../lib/i18n';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
@@ -50,14 +49,6 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
       // context invalidated — onboarding is pointless in a dead session
     }
   }, []);
-
-  const shownCount = controller.getPage().records.filter((r) => r.enabled).length;
-  useEffect(() => {
-    if (!sharedPreview) return;
-    showMarker(document, shownCount, () => setMinimized(false), { shared: true });
-    // Not cleaned up on the way out: once the reader keeps the edits, the applier is the
-    // one drawing the marker, and removing it here would blank a marker we no longer own.
-  }, [sharedPreview, shownCount]);
 
   useEffect(() => {
     const ref = shareRefFrom(location.href);

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { isTweakpageNode } from '../../../lib/edits/dom';
 import { isTextEntry } from './useUndoRedoShortcuts';
 
 interface KeyboardPickerOptions {
@@ -9,7 +10,7 @@ interface KeyboardPickerOptions {
 
 /** Skips the editor's own UI and anything with no box on screen. */
 function isPickable(el: Element | null, host: HTMLElement): boolean {
-  if (!el || el === host || host.contains(el)) return false;
+  if (!el || el === host || host.contains(el) || isTweakpageNode(el)) return false;
   if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return false;
   const rect = el.getBoundingClientRect();
   return rect.width > 0 || rect.height > 0;

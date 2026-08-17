@@ -17,6 +17,12 @@ export class ApplierEngine {
   private url = '';
   private loadSeq = 0;
   private paused = false;
+  /**
+   * The panel and its minimized pill already carry the edit count, so while either is
+   * on screen the corner marker would say the same thing twice. It yields, and speaks
+   * again when the editor closes.
+   */
+  private editorVisible = false;
 
   constructor(private doc: Document) {}
 
@@ -30,6 +36,10 @@ export class ApplierEngine {
     this.doc.addEventListener('pg-editor:preview', (e) => {
       this.paused = (e as CustomEvent<{ on?: boolean }>).detail?.on === true;
       if (!this.paused) this.applyNow();
+    });
+    this.doc.addEventListener('pg-editor:ui', (e) => {
+      this.editorVisible = (e as CustomEvent<{ visible?: boolean }>).detail?.visible === true;
+      this.syncMarker();
     });
     browser.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local') return;
@@ -63,15 +73,20 @@ export class ApplierEngine {
       revertRemoved(previous, this.edits.records, this.doc);
       this.applyNow();
       this.observe();
-      showMarker(this.doc, this.edits.records.filter((r) => r.enabled).length, this.onOpenEditor);
+      this.syncMarker();
     } else {
       // Clearing a page from the popup reaches an already-open tab this way. Nothing is
       // going to reload it, so the page has to be put back here.
       revertAll(previous, this.doc);
       this.observer?.disconnect();
       this.observer = null;
-      showMarker(this.doc, 0, this.onOpenEditor);
+      this.syncMarker();
     }
+  }
+
+  private syncMarker(): void {
+    const count = this.editorVisible ? 0 : this.edits?.records.filter((r) => r.enabled).length ?? 0;
+    showMarker(this.doc, count, this.onOpenEditor);
   }
 
   private applyNow(): void {

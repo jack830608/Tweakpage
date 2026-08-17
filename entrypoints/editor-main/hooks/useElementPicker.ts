@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { isTweakpageNode } from '../../../lib/edits/dom';
 import { isTextEntry } from './useUndoRedoShortcuts';
 
 export interface PickerCallbacks {
@@ -11,7 +12,10 @@ export function eventTargetElement(e: Event, host: HTMLElement): Element | null 
   const path = e.composedPath();
   if (path.includes(host)) return null;
   const target = path[0] ?? e.target;
-  return target instanceof Element ? target : null;
+  if (!(target instanceof Element)) return null;
+  // The on-page marker is ours too: offering to edit it would record UI that is not in
+  // the page and will not exist on the next load.
+  return isTweakpageNode(target) ? null : target;
 }
 
 export function useElementPicker(

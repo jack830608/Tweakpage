@@ -46,6 +46,11 @@ export function readDomValue(el: Element, record: EditRecord): string | null {
 // different positions with the editor open and closed.
 const OUR_NODES = '#tweakpage-host, #tweakpage-marker, style[data-pg-editor]';
 
+/** True for tweakpage's own UI — never pickable, never a sibling, never editable. */
+export function isTweakpageNode(el: Element): boolean {
+  return el.closest(OUR_NODES) !== null;
+}
+
 /** The element's position among its parent's children, ignoring tweakpage's own nodes. */
 export function elementIndex(el: Element): number {
   if (!el.parentElement) return -1;
