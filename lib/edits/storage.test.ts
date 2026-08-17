@@ -7,14 +7,38 @@ beforeEach(() => {
   fakeBrowser.reset();
 });
 
-test('normalizePageUrl keeps origin + pathname, drops query and hash', () => {
+test('normalizePageUrl drops tracking params and the fragment', () => {
   expect(normalizePageUrl('https://example.com/products/spark?utm_source=x#hero')).toBe(
     'https://example.com/products/spark',
   );
 });
 
+test('a query that selects content is part of the page identity', () => {
+  // ?view=A and ?view=B serve different documents; treating them as one page applied
+  // A's edits to B (review 2026-08-17, finding 2).
+  expect(normalizePageUrl('https://a.com/?view=A')).not.toBe(normalizePageUrl('https://a.com/?view=B'));
+  expect(normalizePageUrl('https://a.com/search?q=guitars')).toBe('https://a.com/search?q=guitars');
+});
+
+test('tracking params never split a page into buckets', () => {
+  const clean = normalizePageUrl('https://a.com/p?view=A');
+  expect(normalizePageUrl('https://a.com/p?view=A&utm_source=mail&utm_campaign=x')).toBe(clean);
+  expect(normalizePageUrl('https://a.com/p?gclid=123&view=A&fbclid=456')).toBe(clean);
+});
+
+test('param order does not create a second bucket', () => {
+  expect(normalizePageUrl('https://a.com/p?b=2&a=1')).toBe(normalizePageUrl('https://a.com/p?a=1&b=2'));
+});
+
+test('a share link opens the same bucket as the page it points at', () => {
+  // The recipient arrives with ?tweakpage=<ref>; Keep must save where the clean URL loads.
+  expect(normalizePageUrl('https://a.com/p?tweakpage=abc_bucket_region')).toBe(
+    normalizePageUrl('https://a.com/p'),
+  );
+});
+
 test('pageKey prefixes with page:', () => {
-  expect(pageKey('https://a.com/b?q=1')).toBe('page:https://a.com/b');
+  expect(pageKey('https://a.com/b?q=1')).toBe('page:https://a.com/b?q=1');
 });
 
 test('save and load round-trip', async () => {
@@ -29,7 +53,7 @@ test('save and load round-trip', async () => {
     ],
   };
   await savePageEdits(page);
-  expect(await loadPageEdits('https://a.com/b?utm=1')).toEqual(page);
+  expect(await loadPageEdits('https://a.com/b?utm_source=1')).toEqual(page);
 });
 
 test('loading an unknown url returns null', async () => {

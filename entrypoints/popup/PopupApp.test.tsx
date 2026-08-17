@@ -52,12 +52,12 @@ test('lists pages with edits and clears them', async () => {
 
 test('the page you are on opens the editor instead of a second tab', async () => {
   await seed('https://example.com/landing', 'Landing');
-  openTabs = [{ id: 7, url: 'https://example.com/landing?utm=x#hero' }];
+  openTabs = [{ id: 7, url: 'https://example.com/landing?utm_source=x#hero' }];
   const create = vi.spyOn(fakeBrowser.tabs, 'create');
   const send = vi.spyOn(fakeBrowser.tabs, 'sendMessage').mockResolvedValue(undefined as never);
   render(<PopupApp />);
 
-  // Query and hash don't change which page it is — the storage key ignores them.
+  // Tracking params and the hash don't change which page it is — the storage key ignores them.
   const here = await screen.findByText('Applied on this page');
   expect(here.closest('li')?.className).toContain('pop-current');
   expect(screen.queryByText('example.com/landing'), 'the URL line gives way to the marker').toBeNull();
