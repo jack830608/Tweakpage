@@ -15,8 +15,12 @@ h1 { font-size: 20px; letter-spacing: -0.01em; }
 .opt-warning p { font-size: 13px; }
 .opt-warning pre { font-family: var(--mono); font-size: 11.5px; line-height: 1.5; overflow-x: auto; background: rgba(0,0,0,.06); border-radius: 8px; padding: 10px 12px; }
 .opt-form { display: flex; flex-direction: column; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
-.opt-form label { display: grid; grid-template-columns: 200px minmax(0, 1fr); align-items: center; gap: 12px; }
-.opt-form label span { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+.opt-form label { display: grid; grid-template-columns: 220px minmax(0, 1fr); align-items: center; gap: 12px; }
+/* The name and its environment variable stack: side by side they fought for one column
+   and broke "Access key ID" across three lines. */
+.opt-form label span { display: flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 500; color: var(--ink); }
+/* The environment variable of the same value, for matching against an existing .env. */
+.opt-form label code { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
 .opt-form input { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--sunken); color: var(--ink); font-family: var(--mono); font-size: 12.5px; }
 .opt-form input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .opt-actions { display: flex; align-items: center; gap: 10px; margin-top: 4px; }

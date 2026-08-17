@@ -147,6 +147,7 @@ export function PopupApp() {
                   </button>
                 )}
                 <ConfirmButton
+                  testId="clear-page"
                   label={t('pop_clear')}
                   ariaLabel={`Clear edits for ${page.url}`}
                   onConfirm={() => void onClear(key)}

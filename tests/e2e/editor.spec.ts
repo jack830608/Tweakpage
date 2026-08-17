@@ -789,3 +789,30 @@ test('settings live in the panel, and filling them in switches sharing on', asyn
     .not.toBe(before);
   expect(Number(await share.evaluate((el) => getComputedStyle(el).opacity))).toBe(1);
 });
+
+test('clearing from the popup puts the open page back, with no reload', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited headline');
+  await page.locator('[data-testid="close"]').click();
+  await expect(page.locator('#tweakpage-marker button')).toBeVisible();
+
+  // The real popup, in a tab of its own — the page under edit stays open beside it.
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  const popup = await context.newPage();
+  // chrome-extension:// has no origin as far as URL() is concerned, so slice the id out.
+  const extensionRoot = worker.url().slice(0, worker.url().lastIndexOf('/'));
+  await popup.goto(`${extensionRoot}/popup.html`);
+  const clear = popup.locator('[data-testid="clear-page"]').first();
+  await clear.click();
+  await clear.click();
+
+  // No reload here: this is the tab that was already open when the edits were dropped.
+  await expect(page.locator('h1'), 'the page should come back on its own').toHaveText(
+    'Original Headline',
+  );
+  await expect(page.locator('#tweakpage-marker')).toHaveCount(0);
+});

@@ -648,19 +648,28 @@
   "settings_sharing_hint": {
     "message": "用你自己的 S3 bucket。開啟連結的人只需要裝 Tweakpage,不需要其他設定。輸入即儲存。"
   },
-  "settings_share_ready": {
-    "message": "分享功能已開啟。"
-  },
-  "settings_bucket_help": {
-    "message": "Bucket 設定與權限 →"
-  },
-  "aria_bucket_help": {
-    "message": "開啟完整設定頁查看 bucket 設定"
-  },
   "toast_share_cleared": {
     "message": "已清除 AWS 資訊,分享功能關閉。"
   },
   "not_saved_preview": {
     "message": "未儲存"
+  },
+  "settings_share_on": {
+    "message": "已開啟"
+  },
+  "settings_share_off": {
+    "message": "未設定"
+  },
+  "settings_permissions": {
+    "message": "Bucket 需要開放什麼"
+  },
+  "settings_permissions_body": {
+    "message": "在 bucket 或其 IAM user 上加兩條規則。少了第二條,上傳會成功但連結打不開。"
+  },
+  "copy_policy": {
+    "message": "複製"
+  },
+  "toast_policy_copied": {
+    "message": "已複製政策"
   }
 }

@@ -1,6 +1,6 @@
 import { browser } from 'wxt/browser';
 import { isExtensionAlive, safeSendMessage } from '../extension-context';
-import { applyAll } from '../edits/apply';
+import { applyAll, revertAll, revertRemoved } from '../edits/apply';
 import { showMarker } from './marker';
 import { loadPageEdits, pageKey } from '../edits/storage';
 import type { PageEdits } from '../edits/types';
@@ -54,13 +54,18 @@ export class ApplierEngine {
   }
 
   private setEdits(edits: PageEdits | null): void {
+    const previous = this.edits?.records ?? [];
     this.edits = edits && edits.records.length > 0 ? edits : null;
     safeSendMessage({ type: 'pg:count', count: this.edits?.records.length ?? 0 });
     if (this.edits) {
+      revertRemoved(previous, this.edits.records, this.doc);
       this.applyNow();
       this.observe();
       showMarker(this.doc, this.edits.records.filter((r) => r.enabled).length, this.onOpenEditor);
     } else {
+      // Clearing a page from the popup reaches an already-open tab this way. Nothing is
+      // going to reload it, so the page has to be put back here.
+      revertAll(previous, this.doc);
       this.observer?.disconnect();
       this.observer = null;
       showMarker(this.doc, 0, this.onOpenEditor);

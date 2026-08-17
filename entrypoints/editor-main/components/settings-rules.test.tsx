@@ -44,7 +44,17 @@ function openSettings() {
     />,
   );
   fireEvent.click(screen.getByTestId('open-settings'));
+  // Groups collapse, and one of them is nested — a child header does not exist until its
+  // parent is open — so keep opening until there is nothing left closed.
+  for (let pass = 0; pass < 5; pass++) {
+    const closed = [...document.querySelectorAll<HTMLButtonElement>('.pgve-settings [data-section]')]
+      .filter((header) => header.getAttribute('aria-expanded') !== 'true');
+    if (closed.length === 0) break;
+    closed.forEach((header) => fireEvent.click(header));
+  }
 }
+
+const groups = () => [...document.querySelectorAll('.pgve-settings .pgve-disclosure')];
 
 const rows = () => [...document.querySelectorAll('.pgve-setting')];
 
@@ -60,6 +70,21 @@ describe('the settings view', () => {
     // Theme, plus one per share field. A new setting shifts this number, which is the
     // point: the count is a reminder to check the rules below still hold.
     expect(rows()).toHaveLength(1 + SHARE_FIELDS.length);
+  });
+
+  test('every group can be collapsed, and says so', () => {
+    openSettings();
+    // Closed and opened again one at a time: closing a group unmounts anything nested
+    // inside it, so leaving one shut would take the next group off the screen with it.
+    for (let i = 0; i < groups().length; i++) {
+      const header = groups()[i].querySelector('.pgve-disclosure-header')!;
+      const name = header.textContent ?? '';
+      expect(header.getAttribute('aria-expanded'), name).toBe('true');
+      fireEvent.click(header);
+      expect(header.getAttribute('aria-expanded'), `${name} should close on click`).toBe('false');
+      fireEvent.click(header);
+      expect(header.getAttribute('aria-expanded'), `${name} should reopen`).toBe('true');
+    }
   });
 
   test('every row has a visible label and exactly one control', () => {
@@ -82,11 +107,16 @@ describe('the settings view', () => {
 
   test('every group announces itself with a heading', () => {
     openSettings();
-    const groups = [...document.querySelectorAll('.pgve-settings-group')];
-    expect(groups.length).toBeGreaterThan(1);
-    for (const group of groups) {
-      expect(group.querySelector('h3')?.textContent?.trim()).toBeTruthy();
+    expect(groups().length).toBeGreaterThan(1);
+    for (const group of groups()) {
+      expect(group.querySelector('.pgve-disclosure-header')?.textContent?.trim()).toBeTruthy();
     }
+  });
+
+  test('the permissions a bucket needs are here, not a page away', () => {
+    openSettings();
+    expect(screen.getByTestId('copy-policy')).toBeTruthy();
+    expect(document.querySelector('.pgve-policy')?.textContent).toContain('s3:GetObject');
   });
 });
 
@@ -109,13 +139,13 @@ describe('share credentials', () => {
 
   test('sharing stays off until the whole set is there', async () => {
     openSettings();
-    expect(screen.getByTestId('share-status').textContent).toBe(t('opt_incomplete'));
+    expect(screen.getByTestId('share-status').textContent).toBe(t('settings_share_off'));
 
     for (const field of SHARE_FIELDS) {
       fireEvent.change(screen.getByTestId(`setting-${field.key}`), { target: { value: 'x' } });
     }
     await waitFor(() => {
-      expect(screen.getByTestId('share-status').textContent).toBe(t('settings_share_ready'));
+      expect(screen.getByTestId('share-status').textContent).toBe(t('settings_share_on'));
     });
   });
 

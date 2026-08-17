@@ -2,7 +2,7 @@ import { fakeBrowser } from 'wxt/testing';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { ApplierEngine } from './engine';
 import { watchUrlChanges } from './navigation';
-import { savePageEdits } from '../edits/storage';
+import { pageKey, savePageEdits } from '../edits/storage';
 import { emptyPageEdits, type EditRecord } from '../edits/types';
 
 function record(overrides: Partial<EditRecord>): EditRecord {
@@ -178,4 +178,23 @@ test('counts only the edits actually in force', async () => {
   await engine.start('https://a.com/page');
   const label = document.getElementById('tweakpage-marker')!.shadowRoot!.textContent ?? '';
   expect(label).toContain('1');
+});
+
+test('clearing a page puts it back without a reload', async () => {
+  const url = 'https://example.com/p';
+  await seed(url, [record({}), record({ id: 'r2', type: 'style', property: 'color', oldValue: 'rgb(0, 0, 0)', newValue: 'rgb(5, 150, 105)' })]);
+  const engine = new ApplierEngine(document);
+  await engine.start(url);
+  expect(document.querySelector('.title')!.textContent).toBe('Changed');
+  expect(document.querySelector('style[data-pg-editor]')).toBeTruthy();
+
+  // What the popup's Clear does. The page is already open; nothing will reload it.
+  await fakeBrowser.storage.local.remove(pageKey(url));
+  await wait(10);
+
+  expect(document.querySelector('.title')!.textContent, 'the text edit should be undone').toBe(
+    'Original',
+  );
+  expect(document.querySelector('style[data-pg-editor]'), 'and the styles taken back out').toBeNull();
+  expect(document.getElementById('tweakpage-marker')).toBeNull();
 });
