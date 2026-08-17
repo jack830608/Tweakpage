@@ -585,20 +585,14 @@
   "marker_title": {
     "message": "這個頁面顯示的是用 Tweakpage 做的本機改動,不是網站真正的內容。點一下開啟編輯器。"
   },
-  "toast_shared_applied": {
-    "message": "已套用分享的 $1 筆改動"
-  },
   "marker_label_one": {
     "message": "Tweakpage · 1 處改動"
-  },
-  "toast_shared_applied_one": {
-    "message": "已套用分享的 1 筆改動"
   },
   "footer_changes_one": {
     "message": "1 筆改動 · 檢視 ›"
   },
   "tip_share_unset": {
-    "message": "請先設定 bucket:在工具列圖示按右鍵 → 選項"
+    "message": "請先填 AWS 資訊 —— 上方的齒輪圖示"
   },
   "pop_settings": {
     "message": "分享設定"
@@ -608,5 +602,65 @@
   },
   "toast_share_private": {
     "message": "已上傳,但檔案不是公開可讀的,連結打不開。請為 tweakpage/* 加上公開讀取的 bucket policy,或允許金鑰設定物件 ACL。"
+  },
+  "toast_shared_preview": {
+    "message": "顯示分享的 $1 筆改動,尚未存到這台電腦。"
+  },
+  "toast_shared_preview_one": {
+    "message": "顯示分享的 1 筆改動,尚未存到這台電腦。"
+  },
+  "shared_preview_title": {
+    "message": "有人分享了這些改動給你"
+  },
+  "shared_preview_body": {
+    "message": "目前只是顯示,關掉分頁後這個頁面就會恢復原狀。"
+  },
+  "shared_preview_keep": {
+    "message": "保留在這個頁面"
+  },
+  "aria_keep_shared": {
+    "message": "把分享的改動保留在這個頁面"
+  },
+  "toast_shared_kept": {
+    "message": "已保留。之後打開這個頁面都會套用這些改動。"
+  },
+  "marker_label_shared": {
+    "message": "Tweakpage · 分享預覽"
+  },
+  "marker_title_shared": {
+    "message": "這個頁面正顯示別人分享給你的改動,並未存在你這裡。點一下開啟編輯器。"
+  },
+  "settings_title": {
+    "message": "設定"
+  },
+  "aria_settings": {
+    "message": "設定"
+  },
+  "settings_appearance": {
+    "message": "外觀"
+  },
+  "settings_theme": {
+    "message": "主題"
+  },
+  "settings_sharing": {
+    "message": "分享連結"
+  },
+  "settings_sharing_hint": {
+    "message": "用你自己的 S3 bucket。開啟連結的人只需要裝 Tweakpage,不需要其他設定。輸入即儲存。"
+  },
+  "settings_share_ready": {
+    "message": "分享功能已開啟。"
+  },
+  "settings_bucket_help": {
+    "message": "Bucket 設定與權限 →"
+  },
+  "aria_bucket_help": {
+    "message": "開啟完整設定頁查看 bucket 設定"
+  },
+  "toast_share_cleared": {
+    "message": "已清除 AWS 資訊,分享功能關閉。"
+  },
+  "not_saved_preview": {
+    "message": "未儲存"
   }
 }

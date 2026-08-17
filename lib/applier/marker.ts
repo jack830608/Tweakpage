@@ -10,7 +10,12 @@ export const MARKER_HOST_ID = 'tweakpage-marker';
  * matters most for the person you sent a link to. It lives in its own shadow root so the
  * page's CSS cannot restyle or hide it.
  */
-export function showMarker(doc: Document, count: number, onOpen: () => void): void {
+export function showMarker(
+  doc: Document,
+  count: number,
+  onOpen: () => void,
+  { shared = false }: { shared?: boolean } = {},
+): void {
   if (count <= 0) {
     removeMarker(doc);
     return;
@@ -31,9 +36,10 @@ export function showMarker(doc: Document, count: number, onOpen: () => void): vo
   }
   const button = host.shadowRoot?.querySelector('button');
   if (!button) return;
-  button.title = t('marker_title');
+  button.title = t(shared ? 'marker_title_shared' : 'marker_title');
   button.textContent = '';
-  button.append(dot(doc), label(doc, plural(count, 'marker_label_one', 'marker_label')));
+  const text = shared ? t('marker_label_shared') : plural(count, 'marker_label_one', 'marker_label');
+  button.append(dot(doc), label(doc, text));
 }
 
 export function removeMarker(doc: Document): void {

@@ -585,20 +585,14 @@
   "marker_title": {
     "message": "This page is showing local edits made with Tweakpage, not what the site serves. Click to open the editor."
   },
-  "toast_shared_applied": {
-    "message": "Applied $1 shared edits"
-  },
   "marker_label_one": {
     "message": "Tweakpage · 1 change"
-  },
-  "toast_shared_applied_one": {
-    "message": "Applied 1 shared edit"
   },
   "footer_changes_one": {
     "message": "1 change · Review ›"
   },
   "tip_share_unset": {
-    "message": "Set up a bucket first: right-click the toolbar icon → Options"
+    "message": "Add your AWS details first — the gear icon above"
   },
   "pop_settings": {
     "message": "Share settings"
@@ -608,5 +602,65 @@
   },
   "toast_share_private": {
     "message": "Uploaded, but the file is not readable, so the link would not open. Give the bucket a public-read policy for tweakpage/*, or allow the key to set object ACLs."
+  },
+  "toast_shared_preview": {
+    "message": "Showing $1 shared edits. Nothing is saved on this computer yet."
+  },
+  "toast_shared_preview_one": {
+    "message": "Showing 1 shared edit. Nothing is saved on this computer yet."
+  },
+  "shared_preview_title": {
+    "message": "Someone shared these edits with you"
+  },
+  "shared_preview_body": {
+    "message": "They are only being shown. Close this tab and the page goes back to normal."
+  },
+  "shared_preview_keep": {
+    "message": "Keep on this page"
+  },
+  "aria_keep_shared": {
+    "message": "Keep the shared edits on this page"
+  },
+  "toast_shared_kept": {
+    "message": "Kept. These edits now load whenever you open this page."
+  },
+  "marker_label_shared": {
+    "message": "Tweakpage · shared preview"
+  },
+  "marker_title_shared": {
+    "message": "This page is showing edits someone shared with you. They are not saved here. Click to open the editor."
+  },
+  "settings_title": {
+    "message": "Settings"
+  },
+  "aria_settings": {
+    "message": "Settings"
+  },
+  "settings_appearance": {
+    "message": "Appearance"
+  },
+  "settings_theme": {
+    "message": "Theme"
+  },
+  "settings_sharing": {
+    "message": "Share links"
+  },
+  "settings_sharing_hint": {
+    "message": "Your own S3 bucket. Whoever opens a link needs Tweakpage and nothing else. Saved as you type."
+  },
+  "settings_share_ready": {
+    "message": "Sharing is on."
+  },
+  "settings_bucket_help": {
+    "message": "Bucket setup and permissions →"
+  },
+  "aria_bucket_help": {
+    "message": "Open the full settings page for bucket setup"
+  },
+  "toast_share_cleared": {
+    "message": "AWS details cleared. Sharing is off."
+  },
+  "not_saved_preview": {
+    "message": "Not saved"
   }
 }

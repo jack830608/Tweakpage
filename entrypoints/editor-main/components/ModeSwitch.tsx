@@ -8,7 +8,7 @@ interface ModeSwitchOption<T extends string> {
 
 interface ModeSwitchProps<T extends string> {
   ariaLabel: string;
-  options: readonly [ModeSwitchOption<T>, ModeSwitchOption<T>];
+  options: readonly ModeSwitchOption<T>[];
   value: T;
   onChange: (value: T) => void;
 }

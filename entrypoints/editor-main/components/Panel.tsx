@@ -7,7 +7,6 @@ import {
   savePanelPosition,
   savePanelPrefs,
   type PanelPrefs,
-  type ThemeChoice,
 } from '../panel-position';
 import type { Position } from '../hooks/useDraggable';
 import type { EditsController } from '../controller';
@@ -19,7 +18,8 @@ import { VariantsRow } from './VariantsRow';
 import { ChangesTab } from './ChangesTab';
 import { CollapsibleSection } from './CollapsibleSection';
 import { ModeSwitch } from './ModeSwitch';
-import { CloseIcon, GripIcon, HandIcon, MinusIcon, PencilIcon, RedoIcon, UndoIcon } from './icons';
+import { SettingsView } from './SettingsView';
+import { CloseIcon, GearIcon, GripIcon, HandIcon, MinusIcon, PencilIcon, RedoIcon, UndoIcon } from './icons';
 import { OnboardingCard } from './OnboardingCard';
 import { SelectionCard } from './SelectionCard';
 import { AppearanceSection } from './sections/AppearanceSection';
@@ -32,7 +32,7 @@ import { SpacingSection } from './sections/SpacingSection';
 import { TextSection, hasDirectText } from './sections/TextSection';
 import { TypographySection } from './sections/TypographySection';
 
-type View = 'edit' | 'changes';
+type View = 'edit' | 'changes' | 'settings';
 export type InteractionMode = 'edit' | 'browse';
 
 export interface PanelProps {
@@ -109,6 +109,7 @@ export function Panel(props: PanelProps) {
   const canUndo = controller.canUndo();
   const canRedo = controller.canRedo();
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
+  const sharedPreview = useSyncExternalStore(controller.subscribe, controller.isPreviewingShared);
   const panelRef = useRef<HTMLElement>(null);
   const [restoredPosition, setRestoredPosition] = useState<Position | null>(null);
   useEffect(() => {
@@ -192,17 +193,16 @@ export function Panel(props: PanelProps) {
           >
             <RedoIcon />
           </button>
-          <select
-            className="pgve-theme"
-            aria-label={t('aria_theme')}
-            data-testid="panel-theme"
-            value={prefs.theme}
-            onChange={(e) => updatePrefs({ ...prefs, theme: e.target.value as ThemeChoice })}
+          <button
+            type="button"
+            onClick={() => setView((current) => (current === 'settings' ? 'edit' : 'settings'))}
+            aria-label={t('aria_settings')}
+            aria-pressed={view === 'settings'}
+            data-testid="open-settings"
+            title={t('settings_title')}
           >
-            <option value="system">{t('theme_system')}</option>
-            <option value="light">{t('theme_light')}</option>
-            <option value="dark">{t('theme_dark')}</option>
-          </select>
+            <GearIcon />
+          </button>
           <span className="pgve-header-divider" aria-hidden="true" />
           <button type="button" onClick={props.onMinimize} aria-label={t('aria_minimize')} data-testid="minimize" title={t('tip_minimize')}><MinusIcon /></button>
           <button type="button" onClick={onClose} aria-label={t('aria_close')} data-testid="close" title={t('tip_close')}>
@@ -210,6 +210,25 @@ export function Panel(props: PanelProps) {
           </button>
         </span>
       </header>
+      {sharedPreview && (
+        <div className="pgve-shared" role="status" data-testid="shared-preview">
+          <div>
+            <strong>{t('shared_preview_title')}</strong>
+            <p>{t('shared_preview_body')}</p>
+          </div>
+          <button
+            type="button"
+            aria-label={t('aria_keep_shared')}
+            data-testid="keep-shared"
+            onClick={() => {
+              controller.keepShared();
+              props.onToast({ message: t('toast_shared_kept') });
+            }}
+          >
+            {t('shared_preview_keep')}
+          </button>
+        </div>
+      )}
       {props.stale ? (
         <div className="pgve-stale" role="alert">
           <p>{STALE_NOTE}</p>
@@ -218,6 +237,10 @@ export function Panel(props: PanelProps) {
           </button>
         </div>
       ) : (
+        <>
+      {/* Everything here acts on the page being edited, so settings — which act on the
+          extension — stand on their own rather than under a row of unrelated controls. */}
+      {view !== 'settings' && (
         <>
       <ModeSwitch
         ariaLabel={t('aria_interaction_mode')}
@@ -248,6 +271,8 @@ export function Panel(props: PanelProps) {
       )}
       <VariantsRow controller={controller} />
       <ShareRow controller={controller} onToast={props.onToast} onSnapshot={props.onSnapshot} />
+        </>
+      )}
       {stale > 0 && view === 'edit' && (
         <button
           type="button"
@@ -258,7 +283,19 @@ export function Panel(props: PanelProps) {
           {t('stale_edits', [stale, count])}
         </button>
       )}
-      {view === 'changes' ? (
+      {view === 'settings' ? (
+        <div>
+          <button
+            type="button"
+            className="pgve-back-row"
+            aria-label={t('aria_back_to_editing')} data-testid="back-from-settings"
+            onClick={() => setView('edit')}
+          >
+            {t('back_row')}
+          </button>
+          <SettingsView prefs={prefs} onPrefs={updatePrefs} onToast={props.onToast} />
+        </div>
+      ) : view === 'changes' ? (
         <div>
           <button
             type="button"
@@ -308,9 +345,11 @@ export function Panel(props: PanelProps) {
               <span className="pgve-saved" data-testid="save-state">
                 {saveState.state === 'failed'
                   ? t('toast_save_failed')
-                  : saveState.state === 'saving'
-                    ? t('saving')
-                    : t('saved_just_now')}
+                  : saveState.state === 'preview'
+                    ? t('not_saved_preview')
+                    : saveState.state === 'saving'
+                      ? t('saving')
+                      : t('saved_just_now')}
               </span>
             )}
           </button>

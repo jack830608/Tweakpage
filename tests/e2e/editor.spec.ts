@@ -394,6 +394,26 @@ test('a shared link works for someone who has set nothing up', async ({ context 
     readerPage.locator('#tweakpage-marker button'),
     'and the page says it is not what the site serves',
   ).toBeVisible();
+  // The reader's own copy of the page must be untouched: following a link is looking.
+  const plain = await reader.context.newPage();
+  await plain.goto('http://localhost:4173/');
+  await expect(plain.locator('h1'), 'a link must not edit the page you already had').toHaveText(
+    'Original Headline',
+  );
+  await expect(plain.locator('#tweakpage-marker')).toHaveCount(0);
+  await plain.close();
+
+  await expect(
+    readerPage.locator('[data-testid="shared-preview"]'),
+    'and says the edits came from someone else',
+  ).toBeVisible();
+
+  // Keeping is the decision that makes them yours, and only then do they persist.
+  await readerPage.locator('[data-testid="keep-shared"]').click();
+  await expect(readerPage.locator('[data-testid="shared-preview"]')).toHaveCount(0);
+  const kept = await reader.context.newPage();
+  await kept.goto('http://localhost:4173/');
+  await expect(kept.locator('h1')).toHaveText('Headline from a colleague');
   await reader.context.close();
 });
 
@@ -507,19 +527,22 @@ test('choosing a theme beats the system setting in both directions', async ({ co
         ).backgroundColor,
     );
 
+  // Theme lives in the panel's own settings now, not behind the toolbar icon.
+  await page.locator('[data-testid="open-settings"]').click();
+
   // The failing half was light-on-a-dark-system: the tokens lived on two different
   // elements, so a chosen light theme quietly inherited the dark ones.
   for (const scheme of ['dark', 'light'] as const) {
     await page.emulateMedia({ colorScheme: scheme });
-    await page.locator('[data-testid="panel-theme"]').selectOption('light');
+    await page.locator('[data-testid="mode-light"]').click();
     await page.waitForTimeout(200);
     expect(await background(), `light chosen on a ${scheme} system`).toBe('rgb(255, 255, 255)');
 
-    await page.locator('[data-testid="panel-theme"]').selectOption('dark');
+    await page.locator('[data-testid="mode-dark"]').click();
     await page.waitForTimeout(200);
     expect(await background(), `dark chosen on a ${scheme} system`).toBe('rgb(33, 33, 38)');
 
-    await page.locator('[data-testid="panel-theme"]').selectOption('system');
+    await page.locator('[data-testid="mode-system"]').click();
     await page.waitForTimeout(200);
     expect(await background(), `following a ${scheme} system`).toBe(
       scheme === 'dark' ? 'rgb(33, 33, 38)' : 'rgb(255, 255, 255)',
@@ -534,7 +557,7 @@ test('the header controls stay inside the panel', async ({ context }) => {
   await page.locator('h1').click();
 
   const panel = (await page.locator('#tweakpage-host aside').boundingBox())!;
-  for (const testid of ['close', 'minimize', 'panel-theme', 'undo', 'redo']) {
+  for (const testid of ['close', 'minimize', 'open-settings', 'undo', 'redo']) {
     const box = (await page.locator(`[data-testid="${testid}"]`).boundingBox())!;
     expect(box.x, `${testid} starts inside the panel`).toBeGreaterThanOrEqual(panel.x);
     expect(box.x + box.width, `${testid} ends inside the panel`).toBeLessThanOrEqual(
@@ -728,4 +751,41 @@ test('snapshot saves one image with the two states side by side', async ({ conte
   const viewport = page.viewportSize()!;
   expect(width, 'both captures sit next to each other').toBeGreaterThan(viewport.width * 1.5);
   expect(height).toBeGreaterThan(viewport.height);
+});
+
+test('settings live in the panel, and filling them in switches sharing on', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+
+  const share = page.locator('[data-testid="share-link"]');
+  const before = await share.evaluate((el) => getComputedStyle(el).opacity);
+
+  await page.locator('[data-testid="open-settings"]').click();
+  await expect(page.locator('.pgve-settings')).toBeVisible();
+
+  // Nothing may push past the panel: the settings labels are long identifiers, and a
+  // row that overflows is invisible until someone opens it on a real page.
+  const panel = (await page.locator('#tweakpage-host aside').boundingBox())!;
+  for (const row of await page.locator('.pgve-setting').all()) {
+    const box = (await row.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(panel.x);
+    expect(box.x + box.width).toBeLessThanOrEqual(panel.x + panel.width + 1);
+  }
+
+  for (const [key, value] of [
+    ['bucket', 'demo-bucket'],
+    ['region', 'ap-northeast-1'],
+    ['accessKeyId', 'AKIAIOSFODNN7EXAMPLE'],
+    ['secretAccessKey', 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'],
+  ]) {
+    await page.locator(`[data-testid="setting-${key}"]`).fill(value);
+  }
+
+  await page.locator('[data-testid="back-from-settings"]').click();
+  await expect
+    .poll(() => share.evaluate((el) => getComputedStyle(el).opacity))
+    .not.toBe(before);
+  expect(Number(await share.evaluate((el) => getComputedStyle(el).opacity))).toBe(1);
 });

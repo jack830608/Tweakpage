@@ -62,20 +62,24 @@ Every edit is recorded as a structured diff (selector + property + old → new),
    not the editor is open, so an edited page is never mistaken for the real one. Click it
    to open the editor.
 10. `Esc` deselects, then closes; in Browse it returns to Edit. Drag the panel anywhere,
-   drag its left edge to resize, or minimize it to a corner pill — all remembered. The theme
-   follows your system unless you pick Light or Dark in the header. The UI ships in English
-   and Traditional Chinese. Edits survive reloads and follow client-side navigation.
+   drag its left edge to resize, or minimize it to a corner pill — all remembered. The gear
+   in the header opens Settings, where the theme follows your system unless you pick Light or
+   Dark. The UI ships in English and Traditional Chinese. Edits survive reloads and follow
+   client-side navigation.
 
 
 ## Share links (optional)
 
 Upload a page's edits to **your own** S3 bucket and share the link. Whoever opens it needs
-Tweakpage and nothing else — no AWS account, no setup — and the edits apply on arrival.
+Tweakpage and nothing else — no AWS account, no setup.
 
-Open the popup and click **Share settings** (or right-click the toolbar icon → Options), then
-fill in bucket, region, key id and secret.
-Until all four are set the Share link button stays disabled, and this repo ships no
-defaults.
+Opening a link **shows** the edits; it does not save them. The panel says they came from
+someone else and offers **Keep on this page**, which is what puts them in your own storage.
+Look at a colleague's proposal, close the tab, and your copy of the page is as it was.
+
+Open the panel's gear icon → **Share links**, then fill in bucket, region, key id and secret.
+They save as you type. Until all four are set the Share link button stays disabled, and this
+repo ships no defaults.
 
 The key you paste needs to write, and to be allowed to mark what it writes as readable:
 

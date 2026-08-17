@@ -44,6 +44,9 @@ export default defineBackground(() => {
       if (message?.type === 'pg:share-put' && typeof message.id === 'string' && typeof message.body === 'string') {
         return putShared(message.id, message.body);
       }
+      if (message?.type === 'pg:open-options') {
+        void browser.runtime.openOptionsPage();
+      }
       if (message?.type === 'pg:share-get' && message.ref) {
         return getShared(message.ref);
       }
