@@ -1,5 +1,6 @@
 import { browser } from 'wxt/browser';
-import { getShared, putShared } from '../lib/share/transfer';
+import { getShared, hostImages, putShared } from '../lib/share/transfer';
+import type { HandOff } from '../lib/share/settings';
 import type { PageEdits } from '../lib/edits/types';
 
 export default defineBackground(() => {
@@ -14,6 +15,7 @@ export default defineBackground(() => {
         id?: string;
         body?: string;
         page?: unknown;
+        handOff?: string;
         ref?: { id: string; bucket: string; region: string };
       },
       sender,
@@ -43,6 +45,9 @@ export default defineBackground(() => {
       }
       // Hands the pixels back instead of downloading them, so the editor can put the
       // two captures side by side before anything reaches the downloads folder.
+      if (message?.type === 'tweakpage:host-images' && message.page && typeof message.handOff === 'string') {
+        return hostImages(message.page as PageEdits, message.handOff as HandOff);
+      }
       if (message?.type === 'tweakpage:share-put' && typeof message.id === 'string' && message.page) {
         return putShared(message.id, message.page as PageEdits);
       }

@@ -152,10 +152,16 @@ lifts each image into `tweakpage/images/<sha256>.<ext>` — the same prefix as t
 so the policy below covers both — and sends a URL in its place. The local edit keeps its
 bytes, so your own page still works offline.
 
-Under gear icon → **Images**:
+Under gear icon → **Images**, one switch per hand-off — they want different things. A
+share link is a public object, so a hosted URL is what makes it work at all; a JSON
+export's virtue is being self-contained and needing no AWS account, so it stays embedded
+unless you ask. Defaults: **Copy summary** and **Share link** upload, **Copy JSON** and
+**Download JSON** do not.
 
-- **Upload images when sharing** — on by default. Turn it off and local images stay
-  embedded, and the share tells you they will not travel.
+- With a switch off, the images travel embedded and the toast says how many did.
+- With no bucket configured nothing uploads, whatever the switches say.
+- A summary that could not upload names each image and its size rather than pasting
+  hundreds of kilobytes of base64 into your ticket.
 - **TinyPNG** — paste a [tinify.com](https://tinypng.com/developers) key and switch on
   **Compress with TinyPNG first** to shrink images before they are uploaded. It sends
   the image to a third party, which is why the switch is separate from the key. If the

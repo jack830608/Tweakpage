@@ -6,6 +6,8 @@ import { getShareSettings, isConfigured, watchShareSettings } from '../../../lib
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
+import type { PageEdits } from '../../../lib/edits/types';
+import type { ImageReport } from '../../../lib/share/transfer';
 import type { ToastContent } from './Toast';
 import { AsyncButton } from './AsyncButton';
 import { CameraIcon, CopyIcon, DownloadIcon, LinkIcon } from './icons';
@@ -35,6 +37,21 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
     } catch {
       window.prompt('Copy the text below:', text);
     }
+  };
+
+  /**
+   * The page as this hand-off should carry it.
+   *
+   * Uploading is per destination and per whether a bucket is configured; the worker
+   * answers both. A failure here is never fatal — the page goes as it is, and the
+   * message says the images stayed embedded.
+   */
+  const prepare = async (handOff: 'summary' | 'json' | 'download') => {
+    const page = controller.getPage();
+    const result = (await browser.runtime
+      .sendMessage({ type: 'tweakpage:host-images', page, handOff })
+      .catch(() => null)) as { page?: PageEdits; report?: ImageReport } | null;
+    return { page: result?.page ?? page, report: result?.report };
   };
 
   const onShareLink = async () => {
@@ -68,6 +85,13 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
    * An image that had to travel embedded will be dropped on arrival, and saying so here
    * is the only chance to say it.
    */
+  /** Adds what happened to the images, but only when there were any. */
+  const imageMessage = (base: string, report?: ImageReport) => {
+    if (!report || (report.uploaded === 0 && report.embedded === 0)) return base;
+    if (report.uploaded > 0) return t('toast_with_images', [base, report.uploaded]);
+    return t('toast_with_embedded_images', [base, report.embedded]);
+  };
+
   const shareMessage = (images?: { uploaded: number; compressed: number; embedded: number }) => {
     if (!images || (images.uploaded === 0 && images.embedded === 0)) return t('toast_share_copied');
     if (images.embedded > 0) return t('toast_share_copied_without_images', [images.embedded]);
@@ -76,24 +100,29 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
       : t('toast_share_copied_images', [images.uploaded]);
   };
 
-  const onJsonFile = () => {
-    const page = controller.getPage();
+  const onJsonFile = async () => {
+    const { page, report } = await prepare('download');
     downloadFile(exportFilename(page.url, today().replaceAll('-', '')), toJson(page));
-    onToast({ message: t('toast_exported'), kind: 'success' });
+    onToast({ message: imageMessage(t('toast_exported'), report), kind: 'success' });
   };
 
   return (
     <div className="twk-share">
       <span className="twk-share-label">{t('share')}</span>
       <div className="twk-share-buttons">
-        <button
-          type="button"
-          aria-label={t('aria_copy_summary')} data-testid="copy-summary"
+        <AsyncButton
+          icon={<CopyIcon />}
+          label={t('share_summary')}
+          busyLabel={t('preparing')}
+          doneLabel={t('copied')}
+          ariaLabel={t('aria_copy_summary')}
+          testId="copy-summary"
           title={t('tip_copy_summary')}
-          onClick={() => void copy(toMarkdown(controller.getPage(), today()), t('toast_copied'))}
-        >
-          <CopyIcon /> {t('share_summary')}
-        </button>
+          run={async () => {
+            const { page, report } = await prepare('summary');
+            await copy(toMarkdown(page, today()), imageMessage(t('toast_copied'), report));
+          }}
+        />
         <AsyncButton
           icon={<CameraIcon />}
           label={t('share_snap')}
@@ -105,17 +134,29 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           run={onSnapshot}
         />
 
-        <button
-          type="button"
-          aria-label={t('aria_copy_json')} data-testid="copy-json"
+        <AsyncButton
+          icon={<CopyIcon />}
+          label={t('share_json')}
+          busyLabel={t('preparing')}
+          doneLabel={t('copied')}
+          ariaLabel={t('aria_copy_json')}
+          testId="copy-json"
           title={t('tip_copy_json')}
-          onClick={() => void copy(toJson(controller.getPage()), t('toast_copied_json'))}
-        >
-          <CopyIcon /> {t('share_json')}
-        </button>
-        <button type="button" aria-label={t('aria_export_json')} data-testid="export-json" title={t('tip_export')} onClick={onJsonFile}>
-          <DownloadIcon /> {t('share_download')}
-        </button>
+          run={async () => {
+            const { page, report } = await prepare('json');
+            await copy(toJson(page), imageMessage(t('toast_copied_json'), report));
+          }}
+        />
+        <AsyncButton
+          icon={<DownloadIcon />}
+          label={t('share_download')}
+          busyLabel={t('preparing')}
+          doneLabel={t('snap_done')}
+          ariaLabel={t('aria_export_json')}
+          testId="export-json"
+          title={t('tip_export')}
+          run={onJsonFile}
+        />
         <AsyncButton
           icon={<LinkIcon />}
           label={t('share_link')}
