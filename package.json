@@ -11,6 +11,7 @@
     "test": "tsc --noEmit && vitest run",
     "test:watch": "vitest",
     "e2e": "wxt build && playwright test",
+    "icons": "node scripts/icon.mjs",
     "shots": "wxt build && node scripts/shots.mjs",
     "package": "wxt build && node scripts/zip.mjs"
   },
