@@ -205,6 +205,8 @@ export const MESSAGES: Record<string, string> = {
   aria_open_settings: "Open share settings",
   pop_clear: 'Clear',
   confirm_again: "Sure?",
+  note_placeholder: "Add a note — why this change?",
+  aria_note: "Note for this change",
   sec_advanced: "Advanced",
   aria_custom_css: "Custom CSS declarations",
   custom_css_hint: "One declaration per line, like a stylesheet. Each becomes its own change in Review.",

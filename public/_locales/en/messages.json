@@ -770,5 +770,11 @@
   },
   "custom_css_error": {
     "message": "Couldn't read “$1” — expected property: value;"
+  },
+  "note_placeholder": {
+    "message": "Add a note — why this change?"
+  },
+  "aria_note": {
+    "message": "Note for this change"
   }
 }

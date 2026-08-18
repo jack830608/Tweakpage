@@ -44,7 +44,8 @@ DevTools for a copy tweak. Every edit is recorded as a structured diff
   without rebuilding either. They travel with exports.
 - **Hand-off** — copy a Markdown change list for Slack/Jira, copy a pasteable CSS
   stylesheet, export/import JSON, or snap one image with the original and edited page
-  side by side.
+  side by side. Each change can carry a note — the why under the what — which travels
+  with exports and share links.
 - **Share links** — upload a page's edits to your own S3 bucket and send a URL.
   The recipient needs Tweakpage and nothing else. Opening a link previews; nothing is
   saved on their machine until they choose **Keep**.

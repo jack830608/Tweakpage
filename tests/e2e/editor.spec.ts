@@ -1111,3 +1111,28 @@ test('custom CSS applies, replays, and toggles like any other edit', async ({ co
   const toggles = page.locator('.twk-change-switch');
   await expect(toggles).toHaveCount(2);
 });
+
+test('a note survives reload and travels in the Markdown hand-off', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited headline');
+
+  await page.locator('[data-testid="review-changes"]').click();
+  const note = page.locator('.twk-change-note').first();
+  await note.fill('Legal requires this wording');
+  await note.blur();
+
+  await page.reload();
+  await activateEditor(context);
+  await page.locator('[data-testid="review-changes"]').click();
+  await expect(page.locator('.twk-change-note').first()).toHaveValue('Legal requires this wording');
+
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.locator('[data-testid="back-to-editing"]').click();
+  await page.locator('[data-testid="copy-summary"]').click();
+  await page.waitForTimeout(200);
+  const markdown: string = await page.evaluate(() => navigator.clipboard.readText());
+  expect(markdown).toContain('Legal requires this wording');
+});

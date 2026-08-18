@@ -294,6 +294,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-change-diff { overflow-wrap: break-word; font-size: 12px; color: var(--ink-2); line-height: 1.5; }
 .twk-change-diff s { color: var(--ink-3); }
 .twk-change-diff b { color: var(--ink); font-weight: 600; }
+/* Quiet until it has something to say: borderless, it reads as a caption slot. */
+.twk-change-note { width: 100%; margin-top: 2px; padding: 2px 0; border: none; background: none; color: var(--ink-2); font: italic 11.5px/1.4 var(--sans); }
+.twk-change-note::placeholder { color: var(--ink-3); opacity: 0.7; }
+.twk-change-note:focus-visible { outline: none; border-bottom: 1px solid var(--accent); }
 .twk-change-viewport { font-size: 11px; color: var(--ink-3); }
 .twk-change-warning { color: var(--warn-ink); font-size: 11px; }
 .twk-changes-filter { width: calc(100% - 24px); margin: 0 12px 8px; padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink); font-size: 12px; }
