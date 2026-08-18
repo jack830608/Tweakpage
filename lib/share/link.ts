@@ -3,6 +3,9 @@ export const SHARE_PARAM = 'tweakpage';
 
 /** Every share is written here, so one IAM policy and one lifecycle rule cover them all. */
 export const SHARE_PREFIX = 'tweakpage/';
+/** Everything lives under SHARE_PREFIX, sorted by what it is, so one policy covers all. */
+const SHARES = 'shares/';
+const IMAGES = 'images/';
 
 const ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
 const ID_LENGTH = 22;
@@ -47,17 +50,17 @@ export function decodeRef(value: string): ShareRef | null {
 }
 
 export function objectUrl({ id, bucket, region }: ShareRef): URL {
-  return new URL(`https://${bucket}.s3.${region}.amazonaws.com/${SHARE_PREFIX}${id}.json`);
+  return new URL(`https://${bucket}.s3.${region}.amazonaws.com/${SHARE_PREFIX}${SHARES}${id}.json`);
 }
 
 /**
  * Images live beside the shares, under the same prefix.
  *
- * One prefix means one bucket policy line covers both — the setup instructions do not
- * grow — and the existing share URLs keep the shape they already have.
+ * One prefix means one bucket policy line covers both, so the setup instructions do not
+ * grow as the layout does.
  */
 export function imageUrl(bucket: string, region: string, key: string): URL {
-  return new URL(`https://${bucket}.s3.${region}.amazonaws.com/${SHARE_PREFIX}images/${key}`);
+  return new URL(`https://${bucket}.s3.${region}.amazonaws.com/${SHARE_PREFIX}${IMAGES}${key}`);
 }
 
 /** Adds the reference to the page's own URL, so the link lands on the page it describes. */
