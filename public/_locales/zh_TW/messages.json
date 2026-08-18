@@ -781,13 +781,13 @@
     "message": "上傳圖片"
   },
   "settings_upload_images_hint": {
-    "message": "挑選的圖片是以資料形式存在這台電腦上。以下交付方式可以把它送進你的 bucket、改帶網址 —— 分享連結需要這樣才有效,貼出去的摘要也才讀得下去。需要上面的 bucket 設定。"
+    "message": "挑選的圖片在存到別處之前只是一份資料。上傳能讓分享小到打得開、摘要短到讀得完。"
   },
   "settings_compress": {
     "message": "上傳前用 TinyPNG 壓縮"
   },
   "settings_compress_hint": {
-    "message": "會把圖片送到 tinify.com 再上傳。需要 API key;當月免費額度用完時,改為上傳原圖。"
+    "message": "每張圖片會先送到 tinify.com 再上傳。"
   },
   "aria_upload_images": {
     "message": "$1 時將圖片上傳到你的 bucket"
@@ -826,7 +826,7 @@
     "message": "$1 —— $2 張圖片夾在裡面送出"
   },
   "settings_upload_all": {
-    "message": "全部交付方式"
+    "message": "四項全部上傳"
   },
   "aria_upload_images_all": {
     "message": "所有交付方式都上傳圖片"
@@ -847,7 +847,7 @@
     "message": "開啟擴充功能的設定頁以輸入憑證"
   },
   "settings_compress_needs_key": {
-    "message": "要開啟這個,請先到設定頁填入 TinyPNG key。"
+    "message": "需要 TinyPNG key —— 到設定頁填入。"
   },
   "toast_share_empty": {
     "message": "還沒有東西可以分享 —— 先做一筆改動。"
@@ -889,12 +889,21 @@
     "message": "下次上傳前再問我一次"
   },
   "aria_forget_consent": {
-    "message": "下次上傳前重新徵求同意"
+    "message": "收回上傳許可,下次上傳會重新詢問"
   },
   "toast_consent_withdrawn": {
-    "message": "下次上傳前會再問你一次。"
+    "message": "已收回,下次上傳會再問你一次。"
   },
   "toast_transfer_declined": {
     "message": "沒有上傳任何東西,圖片改成夾在裡面送出。"
+  },
+  "settings_upload_count": {
+    "message": "$2 項中有 $1 項會上傳"
+  },
+  "settings_consent_given": {
+    "message": "已允許上傳到「$1」。"
+  },
+  "settings_withdraw": {
+    "message": "收回"
   }
 }

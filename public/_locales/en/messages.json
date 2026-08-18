@@ -781,13 +781,13 @@
     "message": "Upload images"
   },
   "settings_upload_images_hint": {
-    "message": "A picked image is stored on this machine as data. These hand-offs can lift it into your bucket and carry a URL instead — which a share link needs to work at all, and which keeps a pasted summary readable. Needs the bucket above."
+    "message": "A picked image is only data until it exists somewhere else. Uploading keeps shares small enough to open and summaries short enough to read."
   },
   "settings_compress": {
     "message": "Compress with TinyPNG first"
   },
   "settings_compress_hint": {
-    "message": "Sends the image to tinify.com before it is uploaded. Needs a key; if the month’s free quota runs out, the original is uploaded instead."
+    "message": "Each image goes to tinify.com before it is uploaded."
   },
   "aria_upload_images": {
     "message": "Upload images to your bucket for $1"
@@ -826,7 +826,7 @@
     "message": "$1 — $2 image(s) travelled inside it"
   },
   "settings_upload_all": {
-    "message": "All hand-offs"
+    "message": "Upload for all four"
   },
   "aria_upload_images_all": {
     "message": "Upload images for every hand-off"
@@ -847,7 +847,7 @@
     "message": "Open the extension’s settings page to enter credentials"
   },
   "settings_compress_needs_key": {
-    "message": "Add a TinyPNG key on the settings page to switch this on."
+    "message": "Needs a TinyPNG key — add one on the settings page."
   },
   "toast_share_empty": {
     "message": "Nothing to share yet — make an edit first."
@@ -889,12 +889,21 @@
     "message": "Ask me again before uploading"
   },
   "aria_forget_consent": {
-    "message": "Ask for permission again before the next upload"
+    "message": "Withdraw permission to upload, so the next one asks again"
   },
   "toast_consent_withdrawn": {
-    "message": "You will be asked again before the next upload."
+    "message": "Withdrawn. The next upload will ask again."
   },
   "toast_transfer_declined": {
     "message": "Nothing was uploaded. The images travelled inside it instead."
+  },
+  "settings_upload_count": {
+    "message": "$1 of $2 upload"
+  },
+  "settings_consent_given": {
+    "message": "Uploading to “$1” is allowed."
+  },
+  "settings_withdraw": {
+    "message": "Withdraw"
   }
 }
