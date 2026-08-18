@@ -1,11 +1,19 @@
 import { fakeBrowser } from 'wxt/testing';
 import { beforeEach, expect, test, vi } from 'vitest';
-import { putShared } from './transfer';
+import { hostImages, putShared } from './transfer';
 import type { PageEdits } from '../edits/types';
 
-/** putShared serialises the page itself now, so tests hand it one. */
+/** putShared serialises the page itself now, so tests hand it one — with an edit in
+ * it, because a share of nothing is refused before any of this runs. */
 function pageWith(title: string): PageEdits {
-  return { version: 1, url: 'https://a.com/p', title, updatedAt: 'n', records: [] };
+  return {
+    version: 1, url: 'https://a.com/p', title, updatedAt: 'n',
+    records: [{
+      id: 'r1', selector: 'h1', fallbackSelectors: [], elementLabel: 'h1',
+      type: 'text', property: 'textContent', oldValue: 'Old', newValue: 'New',
+      enabled: true, createdAt: 'n', updatedAt: 'n',
+    }],
+  };
 }
 
 const SETTINGS = {
@@ -80,4 +88,56 @@ test('the check is made the way a stranger would make it', async () => {
   await putShared('abcdefghijklmnopqrstuv', pageWith('{}'));
   const head = calls.find((c) => c.method === 'HEAD');
   expect(head, 'unsigned, so it proves what an anonymous reader gets').toBeTruthy();
+});
+
+test('a share with nothing in it is refused before it reaches S3', async () => {
+  const calls = bucket({ publicByPolicy: true });
+  await fakeBrowser.storage.local.set({ 'tweakpage:share-settings': SETTINGS });
+  const empty: PageEdits = { version: 1, url: 'https://a.com/p', title: 'T', updatedAt: 'n', records: [] };
+
+  const result = await putShared('a'.repeat(22), empty);
+  expect(result, 'the recipient is written to reject this; do not hand it over').toEqual({
+    ok: false, reason: 'empty',
+  });
+  expect(calls, 'and nothing was uploaded').toHaveLength(0);
+});
+
+test('a share of only switched-off edits is empty too', async () => {
+  bucket({ publicByPolicy: true });
+  await fakeBrowser.storage.local.set({ 'tweakpage:share-settings': SETTINGS });
+  const page = pageWith('T');
+  const result = await putShared('a'.repeat(22), {
+    ...page,
+    records: page.records.map((r) => ({ ...r, enabled: false })),
+  });
+  expect(result.ok).toBe(false);
+});
+
+test('a cached image that TinyPNG refused keeps saying it was not compressed', async () => {
+  // Reported as F-05: the second share read "compressed" off the request's intent.
+  let tinifyCalls = 0;
+  vi.stubGlobal('fetch', async (url: string, init: RequestInit = {}) => {
+    if (String(url).includes('tinify')) {
+      tinifyCalls++;
+      return new Response('', { status: 429 }); // out of quota
+    }
+    return new Response('', { status: 200 });
+  });
+  await fakeBrowser.storage.local.set({
+    'tweakpage:share-settings': { ...SETTINGS, tinypngKey: 'k', compressImages: true },
+  });
+  const page: PageEdits = {
+    ...pageWith('T'),
+    records: [{
+      id: 'i1', selector: 'img', fallbackSelectors: [], elementLabel: 'img',
+      type: 'attr', property: 'src', oldValue: '/a.png',
+      newValue: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      enabled: true, createdAt: 'n', updatedAt: 'n',
+    }],
+  };
+  const first = await hostImages(page, 'share');
+  const second = await hostImages(page, 'share');
+  expect(first.report.compressed, 'the quota was gone; nothing was compressed').toBe(0);
+  expect(second.report.compressed, 'and the cache must not invent it').toBe(0);
+  expect(tinifyCalls, 'nor pay for it twice').toBe(1);
 });

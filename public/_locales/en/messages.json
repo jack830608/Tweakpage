@@ -772,7 +772,7 @@
     "message": "Link copied — $1 image(s) uploaded, $2 compressed"
   },
   "toast_share_copied_without_images": {
-    "message": "Link copied, but $1 local image(s) could not be uploaded — whoever opens it will see the original images."
+    "message": "Link copied — $1 image(s) travelled inside it, which makes it a large share."
   },
   "settings_images": {
     "message": "Images"
@@ -823,7 +823,7 @@
     "message": "$1 — $2 image(s) uploaded"
   },
   "toast_with_embedded_images": {
-    "message": "$1 — $2 image(s) went along embedded"
+    "message": "$1 — $2 image(s) travelled inside it"
   },
   "settings_upload_all": {
     "message": "All hand-offs"
@@ -848,5 +848,14 @@
   },
   "settings_compress_needs_key": {
     "message": "Add a TinyPNG key on the settings page to switch this on."
+  },
+  "toast_share_empty": {
+    "message": "Nothing to share yet — make an edit first."
+  },
+  "toast_share_too_large": {
+    "message": "This page is too big to share. Turn on image uploading in Settings, or remove some images."
+  },
+  "tip_share_nothing": {
+    "message": "Make an edit first — a link with no changes has nothing to show"
   }
 }

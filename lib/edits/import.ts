@@ -67,12 +67,26 @@ function withinLimit(value: string, urlLimit: number): boolean {
 }
 const ATTR_PROPERTIES = new Set(['src', 'srcset', 'sizes', 'href', 'alt']);
 const MAX_SELECTOR_LENGTH = 1000;
+const MAX_FALLBACK_SELECTORS = 10;
+const MAX_LABEL_LENGTH = 200;
+const MAX_TIMESTAMP_LENGTH = 40;
+const MAX_URL_LENGTH = 2000;
+const MAX_TITLE_LENGTH = 300;
+/**
+ * The most a share or an export may weigh.
+ *
+ * Whoever controls the object controls its size, so this is both what we refuse to send
+ * and what we refuse to read — one constant, so the two cannot drift. Generous by
+ * design: 500 records, several of them carrying a 1.5MB picture, still fits.
+ */
+export const MAX_SHARE_BYTES = 24 * 1024 * 1024;
 
 export type ParseImportResult =
   | { ok: true; page: PageEdits; skipped: number }
   | { ok: false; error: string };
 
 export function parseImport(json: string): ParseImportResult {
+  if (json.length > MAX_SHARE_BYTES) return { ok: false, error: 'too large' };
   let data: unknown;
   try {
     data = JSON.parse(json);
@@ -82,7 +96,9 @@ export function parseImport(json: string): ParseImportResult {
   if (typeof data !== 'object' || data === null) return { ok: false, error: 'not a Tweakpage export' };
   const page = data as Partial<PageEdits>;
   if (page.version !== 1) return { ok: false, error: 'unsupported version' };
-  if (typeof page.url !== 'string') return { ok: false, error: 'missing url' };
+  if (typeof page.url !== 'string' || page.url.length > MAX_URL_LENGTH) {
+    return { ok: false, error: 'missing url' };
+  }
   let url: string;
   try {
     url = normalizePageUrl(page.url);
@@ -94,6 +110,13 @@ export function parseImport(json: string): ParseImportResult {
   }
   if (!Array.isArray(page.records)) return { ok: false, error: 'missing records' };
   if (page.records.length > MAX_RECORDS) return { ok: false, error: 'too many records' };
+  // Variants carry records too; bounding each list separately bounds nothing.
+  const variantRecords = Array.isArray(page.variants)
+    ? (page.variants as Variant[]).reduce((n, v) => n + (Array.isArray(v?.records) ? v.records.length : 0), 0)
+    : 0;
+  if (page.records.length + variantRecords > MAX_RECORDS * 2) {
+    return { ok: false, error: 'too many records' };
+  }
   const records = page.records.filter(isValidRecord);
   const variants = Array.isArray(page.variants)
     ? page.variants.filter(isValidVariant).slice(0, MAX_VARIANTS)
@@ -104,7 +127,7 @@ export function parseImport(json: string): ParseImportResult {
     page: {
       version: 1,
       url,
-      title: typeof page.title === 'string' ? page.title : '',
+      title: typeof page.title === 'string' ? page.title.slice(0, MAX_TITLE_LENGTH) : '',
       records,
       ...(variants && variants.length > 0 ? { variants } : {}),
       updatedAt: typeof page.updatedAt === 'string' ? page.updatedAt : '',
@@ -152,6 +175,13 @@ function isValidRecord(value: unknown): value is EditRecord {
   if (r.absent !== undefined && typeof r.absent !== 'boolean') return false;
   if (r.note !== undefined && (typeof r.note !== 'string' || r.note.length > 500)) return false;
   if (!Array.isArray(r.fallbackSelectors) || !r.fallbackSelectors.every((s) => typeof s === 'string')) {
+    return false;
+  }
+  // Every string in a record is attacker-controlled once it arrives over a link.
+  if (r.fallbackSelectors.length > MAX_FALLBACK_SELECTORS) return false;
+  if (r.elementLabel.length > MAX_LABEL_LENGTH) return false;
+  if ((r.textFingerprint?.length ?? 0) > MAX_LABEL_LENGTH) return false;
+  if (r.createdAt.length > MAX_TIMESTAMP_LENGTH || r.updatedAt.length > MAX_TIMESTAMP_LENGTH) {
     return false;
   }
   if (r.selector.length > MAX_SELECTOR_LENGTH) return false;
