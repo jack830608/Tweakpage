@@ -290,7 +290,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-switch-set { margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--r-card); overflow: hidden; }
 .twk-switch-set .twk-switch-grid { padding: 8px 10px; }
 .twk-switch--all { width: 100%; padding: 7px 10px; background: var(--sunken); border-bottom: 1px solid var(--border); font-weight: 600; color: var(--ink); }
-.twk-settings-note--tight { margin-top: -8px; margin-bottom: 14px; }
+/* Help belonging to one switch, indented to start where that switch's label starts
+   (15px box + 8px gap). It was pulled up by a negative margin instead, which collided
+   with the switch above it because an inline-flex label carries no space of its own. */
+.twk-settings-note--tight { margin-top: 5px; margin-bottom: 14px; padding-left: 23px; }
 /* A decision already taken, shown as one: what was allowed, and the way to undo it. */
 .twk-settings-consent { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--ink-2); }
 .twk-settings-consent button { flex: none; padding: 3px 10px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11.5px; cursor: pointer; }
