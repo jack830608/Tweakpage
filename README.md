@@ -50,6 +50,9 @@ DevTools for a copy tweak. Every edit is recorded as a structured diff
   saved on their machine until they choose **Keep**. Images you picked from your own
   machine go up with it — optionally compressed through TinyPNG first.
 - **Undo everything** — `⌘Z`/`⇧⌘Z`, per-edit toggles, per-element resets, revert all.
+- **Nothing leaves quietly** — edits live on your machine. The first time a hand-off
+  would upload anything, Tweakpage says what is about to go where and waits. Credentials
+  are entered on the extension's own page, never in the site you are editing.
 - **Keyboard-first friendly** — pick, navigate, resize, and edit without a mouse;
   visible text and screen-reader labels ship in English and Traditional Chinese.
 
@@ -268,9 +271,11 @@ pnpm dev         # WXT dev mode with HMR
 pnpm test        # typecheck, then unit/component tests (vitest)
 pnpm typecheck   # tsc --noEmit alone
 pnpm e2e         # builds, then drives the real extension in Chromium (Playwright)
+pnpm shots       # regenerates the store screenshots from the built extension
 ```
 
-The [release QA checklist](docs/qa-checklist.md) runs before each release. Issues and
+[Privacy policy](PRIVACY.md) · [store submission notes](docs/store-listing.md) ·
+[release QA checklist](docs/qa-checklist.md), which runs before each release. Issues and
 PRs welcome — please keep both
 locales in step (tests enforce it) and anchor E2E assertions on `data-testid`, never on
 translated text.
