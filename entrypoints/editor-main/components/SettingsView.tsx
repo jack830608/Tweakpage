@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   EMPTY_SETTINGS,
   HAND_OFFS,
@@ -170,9 +170,24 @@ function ImagesGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
       onToggle={() => setOpen((current) => !current)}
     >
       <p className="twk-settings-note">{t('settings_upload_images_hint')}</p>
-      {HAND_OFFS.map((handOff) => (
-        <Row key={handOff} label={t(`hand_off_${handOff}`)}>
+      <AllSwitch
+        checked={HAND_OFFS.every((k) => settings.uploadImages[k])}
+        mixed={
+          HAND_OFFS.some((k) => settings.uploadImages[k]) &&
+          !HAND_OFFS.every((k) => settings.uploadImages[k])
+        }
+        onChange={(on) =>
+          commit({
+            ...settings,
+            uploadImages: Object.fromEntries(HAND_OFFS.map((k) => [k, on])) as typeof settings.uploadImages,
+          })
+        }
+      />
+      <div className="twk-switch-grid">
+        {HAND_OFFS.map((handOff) => (
           <Switch
+            key={handOff}
+            label={t(`hand_off_${handOff}`)}
             ariaLabel={t('aria_upload_images', [t(`hand_off_${handOff}`)])}
             testId={`upload-images-${handOff}`}
             checked={settings.uploadImages[handOff]}
@@ -180,8 +195,8 @@ function ImagesGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
               commit({ ...settings, uploadImages: { ...settings.uploadImages, [handOff]: on } })
             }
           />
-        </Row>
-      ))}
+        ))}
+      </div>
 
       <Row label="TINYPNG_API_KEY">
         <input
@@ -209,12 +224,15 @@ function ImagesGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
 }
 
 function Switch({
+  label,
   ariaLabel,
   testId,
   checked,
   disabled,
   onChange,
 }: {
+  /** Shown beside the box. Without one the switch says On or Off about itself. */
+  label?: string;
   ariaLabel: string;
   testId: string;
   checked: boolean;
@@ -231,7 +249,41 @@ function Switch({
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
       />
-      <span>{checked ? t('on') : t('off')}</span>
+      <span>{label ?? (checked ? t('on') : t('off'))}</span>
+    </label>
+  );
+}
+
+/**
+ * The one control for all four.
+ *
+ * Half-on is a real state and the box says so: an indeterminate tick reads as "some",
+ * where an unticked box would claim they are all off.
+ */
+function AllSwitch({
+  checked,
+  mixed,
+  onChange,
+}: {
+  checked: boolean;
+  mixed: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  const box = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (box.current) box.current.indeterminate = mixed;
+  }, [mixed]);
+  return (
+    <label className="twk-switch twk-switch--all">
+      <input
+        ref={box}
+        type="checkbox"
+        aria-label={t('aria_upload_images_all')}
+        data-testid="upload-images-all"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span>{t('settings_upload_all')}</span>
     </label>
   );
 }

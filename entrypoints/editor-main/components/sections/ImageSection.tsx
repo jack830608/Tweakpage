@@ -12,6 +12,20 @@ interface SectionProps {
 
 const IMAGE_URL = /^(https?:\/\/|data:image\/|\/)/;
 
+/**
+ * What a picked file looks like in the field.
+ *
+ * Its bytes are hundreds of kilobytes of base64: as a value in a text input it is an
+ * unreadable wall you cannot edit anyway. The field describes it instead and stays
+ * empty, so typing a URL still replaces it and the picker still sits underneath.
+ */
+function describeEmbedded(value: string): string | null {
+  if (!value.startsWith('data:image/')) return null;
+  const mediaType = value.slice('data:'.length, value.indexOf(';'));
+  const kb = Math.max(1, Math.round((value.length * 3) / 4 / 1024));
+  return t('image_embedded', [mediaType, String(kb)]);
+}
+
 export function ImageSection({ element, controller }: SectionProps) {
   const src = useFieldDraft(controller, element, 'src', element.getAttribute('src') ?? '');
   const alt = useFieldDraft(controller, element, 'alt', element.getAttribute('alt') ?? '');
@@ -37,6 +51,7 @@ export function ImageSection({ element, controller }: SectionProps) {
     applySrc(url);
   };
 
+  const embedded = describeEmbedded(src.value);
   return (
     <section className="twk-section">
       <Field name="src" property="src" controller={controller} element={element} error={src.error}>
@@ -44,8 +59,8 @@ export function ImageSection({ element, controller }: SectionProps) {
           type="text"
           aria-label={t('aria_image_url')}
           data-testid="image-url"
-          placeholder={t('image_url_placeholder')}
-          value={src.value}
+          placeholder={embedded ?? t('image_url_placeholder')}
+          value={embedded ? '' : src.value}
           onChange={(e) => src.setDraft(e.target.value)}
           onBlur={commit}
           onKeyDown={(e) => {

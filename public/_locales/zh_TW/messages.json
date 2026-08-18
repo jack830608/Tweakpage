@@ -824,5 +824,14 @@
   },
   "toast_with_embedded_images": {
     "message": "$1 —— $2 張圖片以內嵌方式帶著"
+  },
+  "settings_upload_all": {
+    "message": "全部交付方式"
+  },
+  "aria_upload_images_all": {
+    "message": "所有交付方式都上傳圖片"
+  },
+  "image_embedded": {
+    "message": "本機檔案 · $1 · $2 KB"
   }
 }
