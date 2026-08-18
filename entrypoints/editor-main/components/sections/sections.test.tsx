@@ -179,3 +179,32 @@ test('an unreadable declaration is refused with the line named, and records noth
   expect(screen.getByRole('alert').textContent).toContain('width: 10px}');
   expect(controller.getPage().records, 'nothing half-applies').toHaveLength(0);
 });
+
+test('a picked image is described in the field, not printed into it', () => {
+  document.body.innerHTML = '<img id="pic" src="/a.png">';
+  const controller = new EditsController(null, document, NOW);
+  render(<ImageSection element={document.getElementById('pic')!} controller={controller} />);
+  const field = screen.getByTestId('image-url') as HTMLInputElement;
+
+  const picked = 'data:image/png;base64,' + 'A'.repeat(300_000);
+  fireEvent.change(field, { target: { value: picked } });
+  fireEvent.blur(field);
+
+  expect(field.value, 'the bytes are not a value you can read or edit').toBe('');
+  expect(field.placeholder, 'so the field says what it is holding').toMatch(/image\/png/);
+  // 300k base64 characters decode to about 220KB — the size shown is the real one.
+  expect(field.placeholder).toMatch(/2[12][0-9] KB/);
+  expect(document.getElementById('pic')!.getAttribute('src'), 'and the edit still happened').toBe(picked);
+});
+
+test('typing a URL over a picked image replaces it', () => {
+  document.body.innerHTML = '<img id="pic" src="data:image/png;base64,AAAA">';
+  const controller = new EditsController(null, document, NOW);
+  render(<ImageSection element={document.getElementById('pic')!} controller={controller} />);
+  const field = screen.getByTestId('image-url') as HTMLInputElement;
+  expect(field.value).toBe('');
+
+  fireEvent.change(field, { target: { value: 'https://cdn.example.com/b.png' } });
+  fireEvent.blur(field);
+  expect(document.getElementById('pic')!.getAttribute('src')).toBe('https://cdn.example.com/b.png');
+});

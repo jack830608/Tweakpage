@@ -153,8 +153,14 @@ so the policy below covers both — and sends a URL in its place. The local edit
 bytes, so your own page still works offline.
 
 Under gear icon → **Images**, one switch per hand-off — Copy summary, Copy JSON,
-Download JSON, Share link. All on by default; with no bucket configured nothing uploads,
-so "on" means "upload when there is somewhere to upload to".
+Download JSON, Share link — with **All hand-offs** above them to set the lot. All on by
+default; with no bucket configured nothing uploads, so "on" means "upload when there is
+somewhere to upload to".
+
+An image is named after its own content and remembered once uploaded, so sharing the
+same picture again costs neither a second upload nor a slice of the TinyPNG quota. The
+remembered URL is checked before it is reused — an emptied bucket means a fresh upload,
+not a broken link.
 
 - Switch one off to keep that hand-off self-contained: the images travel embedded and
   the toast says how many did. A JSON export that carries its own bytes needs no AWS

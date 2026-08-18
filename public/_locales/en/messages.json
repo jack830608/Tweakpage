@@ -824,5 +824,14 @@
   },
   "toast_with_embedded_images": {
     "message": "$1 — $2 image(s) went along embedded"
+  },
+  "settings_upload_all": {
+    "message": "All hand-offs"
+  },
+  "aria_upload_images_all": {
+    "message": "Upload images for every hand-off"
+  },
+  "image_embedded": {
+    "message": "Picked file · $1 · $2 KB"
   }
 }

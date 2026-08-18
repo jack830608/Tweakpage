@@ -1,4 +1,5 @@
 import { compressImage } from './compress';
+import { forget, hostedKey, remember, rememberedUrl } from './hosted';
 import { embeddedImages, imageKey, withHostedImages, type EmbeddedImage } from './images';
 import { imageUrl, objectUrl, type ShareRef } from './link';
 import type { PageEdits } from '../edits/types';
@@ -60,15 +61,35 @@ async function hostOne(
   image: EmbeddedImage,
   settings: ShareSettings,
 ): Promise<{ url: string; compressed: boolean } | null> {
-  const shrunk = settings.compressImages
+  const compress = settings.compressImages && settings.tinypngKey !== '';
+  const remembered = hostedKey(await imageKey(image), settings.bucket, compress);
+
+  // Already up there? Confirm it is still readable — buckets get emptied — and skip
+  // both the upload and, with compression on, a slice of the month's quota.
+  const known = await rememberedUrl(remembered);
+  if (known && (await isReadable(known))) return { url: known, compressed: compress };
+  if (known) await forget(remembered);
+
+  const shrunk = compress
     ? await compressImage(image.bytes, image.mediaType, settings.tinypngKey)
     : { bytes: image.bytes, compressed: false };
-  // Named after its own content, so the same picture uploads once however often it is
-  // shared — and the name changes when compression changes the bytes.
+  // Named after its own content, so the same picture lands on the same object however
+  // often it is shared — and the name changes when compression changes the bytes.
   const key = await imageKey({ ...image, bytes: shrunk.bytes });
   const url = imageUrl(settings.bucket, settings.region, key);
   const written = await putBytes(settings, url, shrunk.bytes, image.mediaType);
-  return written ? { url: url.toString(), compressed: shrunk.compressed } : null;
+  if (!written) return null;
+  await remember(remembered, url.toString());
+  return { url: url.toString(), compressed: shrunk.compressed };
+}
+
+/** Asks the way a recipient would: no credentials. */
+async function isReadable(url: string): Promise<boolean> {
+  try {
+    return (await fetch(url, { method: 'HEAD' })).ok;
+  } catch {
+    return false;
+  }
 }
 
 async function putBytes(
