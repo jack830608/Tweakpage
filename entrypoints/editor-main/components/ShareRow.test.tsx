@@ -27,11 +27,12 @@ test('export json sends the exported page as a data-url download message', async
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
   render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: /Export JSON/ }));
-  await Promise.resolve();
-  expect(received).toHaveLength(1);
-  expect(received[0].type).toBe('tweakpage:download');
-  expect(received[0].filename).toMatch(/^tweakpage-localhost-\d{8}\.json$/);
-  const base64 = received[0].url!.split(',')[1]!;
+  // Every hand-off asks the worker what to do about images first, so the download is
+  // the message after that one.
+  await waitFor(() => expect(received.some((m) => m.type === 'tweakpage:download')).toBe(true));
+  const download = received.find((m) => m.type === 'tweakpage:download')!;
+  expect(download.filename).toMatch(/^tweakpage-localhost-\d{8}\.json$/);
+  const base64 = download.url!.split(',')[1]!;
   const decoded = JSON.parse(Buffer.from(base64, 'base64').toString('utf8'));
   expect(decoded.records).toHaveLength(1);
 });
@@ -43,8 +44,7 @@ test('copy summary writes the change list to the clipboard', async () => {
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
   render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: /Copy summary/ }));
-  await Promise.resolve();
-  expect(writeText).toHaveBeenCalledTimes(1);
+  await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
   expect(writeText.mock.calls[0][0]).toContain('# Page edits —');
   expect(writeText.mock.calls[0][0]).toContain('"Original" → "Changed"');
 });
@@ -57,9 +57,9 @@ test('copy summary reports success via toast', async () => {
   const onToast = vi.fn();
   render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: /Copy summary/ }));
-  await Promise.resolve();
-  await Promise.resolve();
-  expect(onToast).toHaveBeenCalledWith({ message: 'Summary copied to clipboard', kind: 'success' });
+  await waitFor(() =>
+    expect(onToast).toHaveBeenCalledWith({ message: 'Summary copied to clipboard', kind: 'success' }),
+  );
 });
 
 test('snap button triggers the snapshot flow', () => {

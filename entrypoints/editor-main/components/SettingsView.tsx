@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   EMPTY_SETTINGS,
+  HAND_OFFS,
   getShareSettings,
   isConfigured,
   saveShareSettings,
@@ -168,15 +169,19 @@ function ImagesGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
       open={open}
       onToggle={() => setOpen((current) => !current)}
     >
-      <Row label={t('settings_upload_images')}>
-        <Switch
-          ariaLabel={t('aria_upload_images')}
-          testId="upload-images"
-          checked={settings.uploadImages}
-          onChange={(uploadImages) => commit({ ...settings, uploadImages })}
-        />
-      </Row>
       <p className="twk-settings-note">{t('settings_upload_images_hint')}</p>
+      {HAND_OFFS.map((handOff) => (
+        <Row key={handOff} label={t(`hand_off_${handOff}`)}>
+          <Switch
+            ariaLabel={t('aria_upload_images', [t(`hand_off_${handOff}`)])}
+            testId={`upload-images-${handOff}`}
+            checked={settings.uploadImages[handOff]}
+            onChange={(on) =>
+              commit({ ...settings, uploadImages: { ...settings.uploadImages, [handOff]: on } })
+            }
+          />
+        </Row>
+      ))}
 
       <Row label="TINYPNG_API_KEY">
         <input

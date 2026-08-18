@@ -778,10 +778,10 @@
     "message": "Images"
   },
   "settings_upload_images": {
-    "message": "Upload images when sharing"
+    "message": "Upload images"
   },
   "settings_upload_images_hint": {
-    "message": "A picked image is stored on this machine as data. Sharing lifts it into your bucket so the link works for someone else; without this, local images do not travel."
+    "message": "A picked image is stored on this machine as data. These hand-offs can lift it into your bucket and carry a URL instead — which a share link needs to work at all, and which keeps a pasted summary readable. Needs the bucket above."
   },
   "settings_compress": {
     "message": "Compress with TinyPNG first"
@@ -790,7 +790,7 @@
     "message": "Sends the image to tinify.com before it is uploaded. Needs a key; if the month’s free quota runs out, the original is uploaded instead."
   },
   "aria_upload_images": {
-    "message": "Upload images to your bucket when sharing"
+    "message": "Upload images to your bucket for $1"
   },
   "aria_compress_images": {
     "message": "Compress images with TinyPNG before uploading"
@@ -800,5 +800,29 @@
   },
   "off": {
     "message": "Off"
+  },
+  "hand_off_summary": {
+    "message": "Copy summary"
+  },
+  "hand_off_json": {
+    "message": "Copy JSON"
+  },
+  "hand_off_download": {
+    "message": "Download JSON"
+  },
+  "hand_off_share": {
+    "message": "Share link"
+  },
+  "preparing": {
+    "message": "Preparing…"
+  },
+  "copied": {
+    "message": "Copied"
+  },
+  "toast_with_images": {
+    "message": "$1 — $2 image(s) uploaded"
+  },
+  "toast_with_embedded_images": {
+    "message": "$1 — $2 image(s) went along embedded"
   }
 }

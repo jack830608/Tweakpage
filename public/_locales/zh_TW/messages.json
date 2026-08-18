@@ -778,10 +778,10 @@
     "message": "圖片"
   },
   "settings_upload_images": {
-    "message": "分享時上傳圖片"
+    "message": "上傳圖片"
   },
   "settings_upload_images_hint": {
-    "message": "挑選的圖片是以資料形式存在這台電腦上。分享時會把它送進你的 bucket,連結才對別人有效;關閉的話本機圖片不會隨連結送出。"
+    "message": "挑選的圖片是以資料形式存在這台電腦上。以下交付方式可以把它送進你的 bucket、改帶網址 —— 分享連結需要這樣才有效,貼出去的摘要也才讀得下去。需要上面的 bucket 設定。"
   },
   "settings_compress": {
     "message": "上傳前用 TinyPNG 壓縮"
@@ -790,7 +790,7 @@
     "message": "會把圖片送到 tinify.com 再上傳。需要 API key;當月免費額度用完時,改為上傳原圖。"
   },
   "aria_upload_images": {
-    "message": "分享時將圖片上傳到你的 bucket"
+    "message": "$1 時將圖片上傳到你的 bucket"
   },
   "aria_compress_images": {
     "message": "上傳前用 TinyPNG 壓縮圖片"
@@ -800,5 +800,29 @@
   },
   "off": {
     "message": "關"
+  },
+  "hand_off_summary": {
+    "message": "複製摘要"
+  },
+  "hand_off_json": {
+    "message": "複製 JSON"
+  },
+  "hand_off_download": {
+    "message": "下載 JSON"
+  },
+  "hand_off_share": {
+    "message": "分享連結"
+  },
+  "preparing": {
+    "message": "準備中…"
+  },
+  "copied": {
+    "message": "已複製"
+  },
+  "toast_with_images": {
+    "message": "$1 —— 一併上傳 $2 張圖片"
+  },
+  "toast_with_embedded_images": {
+    "message": "$1 —— $2 張圖片以內嵌方式帶著"
   }
 }

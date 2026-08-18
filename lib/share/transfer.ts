@@ -2,7 +2,7 @@ import { compressImage } from './compress';
 import { embeddedImages, imageKey, withHostedImages, type EmbeddedImage } from './images';
 import { imageUrl, objectUrl, type ShareRef } from './link';
 import type { PageEdits } from '../edits/types';
-import { getShareSettings, isConfigured, type ShareSettings } from './settings';
+import { getShareSettings, isConfigured, type HandOff, type ShareSettings } from './settings';
 import { signRequest } from './sigv4';
 
 export type TransferFailure =
@@ -31,13 +31,14 @@ export interface ImageReport {
  * failing the share, and compression is skipped rather than blocking. What actually
  * happened is reported so the toast can say it instead of guessing.
  */
-export async function hostImages(page: PageEdits, settings: ShareSettings): Promise<{
+export async function hostImages(page: PageEdits, handOff: HandOff): Promise<{
   page: PageEdits;
   report: ImageReport;
 }> {
   const images = embeddedImages(page);
   if (images.length === 0) return { page, report: { uploaded: 0, compressed: 0, embedded: 0 } };
-  if (!settings.uploadImages) {
+  const settings = await getShareSettings();
+  if (!settings.uploadImages[handOff] || !isConfigured(settings)) {
     return { page, report: { uploaded: 0, compressed: 0, embedded: images.length } };
   }
 
@@ -117,7 +118,7 @@ export async function putShared(id: string, page: PageEdits): Promise<TransferRe
 
   // Images first: a page whose pictures are hosted is small enough to survive the import
   // limits on arrival, which embedded ones are not.
-  const { page: hosted, report } = await hostImages(page, settings);
+  const { page: hosted, report } = await hostImages(page, 'share');
   const body = JSON.stringify(hosted);
 
   const ref = { id, bucket: settings.bucket, region: settings.region };

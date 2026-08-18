@@ -24,6 +24,20 @@ export function toMarkdown(page: PageEdits, exportedAt: string): string {
   return lines.join('\n');
 }
 
+/**
+ * What an image value looks like in a ticket.
+ *
+ * A data: URL is hundreds of kilobytes of base64. Pasted into Slack it buries the change
+ * list it was supposed to explain, so it is named and measured instead. When the image
+ * was uploaded it is already a URL by the time this runs, and stays one.
+ */
+function readable(value: string): string {
+  if (!value.startsWith('data:image/')) return value;
+  const mediaType = value.slice('data:'.length, value.indexOf(';'));
+  const kb = Math.max(1, Math.round((value.length * 3) / 4 / 1024));
+  return `[${mediaType}, ${kb} KB — embedded, not uploaded]`;
+}
+
 function viewportNote(record: EditRecord): string {
   return record.viewport ? ` _(at ${record.viewport}px)_` : '';
 }
@@ -42,9 +56,9 @@ function formatLine(record: EditRecord): string {
   if (record.type === 'clone') {
     return `- **duplicated**: a copy of this element, inserted right after it${note}${why}`;
   }
+  const from = readable(record.oldValue);
+  const to = readable(record.newValue);
   if (record.type === 'text') return `- text: "${record.oldValue}" → "${record.newValue}"${note}${why}`;
-  if (record.type === 'attr') {
-    return `- ${record.property}: \`${record.oldValue}\` → \`${record.newValue}\`${note}${why}`;
-  }
-  return `- ${cssPropertyName(record.property)}: \`${record.oldValue}\` → \`${record.newValue}\`${note}${why}`;
+  if (record.type === 'attr') return `- ${record.property}: \`${from}\` → \`${to}\`${note}${why}`;
+  return `- ${cssPropertyName(record.property)}: \`${from}\` → \`${to}\`${note}${why}`;
 }

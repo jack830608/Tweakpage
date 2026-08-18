@@ -1327,3 +1327,58 @@ test('a locally picked image travels with the link instead of being dropped', as
     .toContain('/tweakpage/images/');
   await reader.context.close();
 });
+
+test('each hand-off obeys its own image switch', async ({ context }) => {
+  const uploads: string[] = [];
+  await context.route('https://**.amazonaws.com/**', async (route) => {
+    const request = route.request();
+    if (request.method() === 'PUT') {
+      uploads.push(new URL(request.url()).pathname);
+      return route.fulfill({ status: 200, body: '' });
+    }
+    return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  await worker.evaluate(async () => {
+    await (globalThis as any).chrome.storage.local.set({
+      'tweakpage:share-settings': {
+        bucket: 'demo-bucket', region: 'ap-northeast-1',
+        accessKeyId: 'AKIAIOSFODNN7EXAMPLE', secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+        tinypngKey: '', compressImages: false,
+        // Summary uploads, Copy JSON does not — the point of the setting.
+        uploadImages: { summary: true, json: false, download: false, share: true },
+      },
+    });
+  });
+  await activateEditor(context);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+
+  await page.locator('#hero').click();
+  await page.locator('[data-testid="image-file"]').setInputFiles({
+    name: 'local.png', mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPk+89QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    ),
+  });
+  await expect.poll(() => page.locator('#hero').getAttribute('src')).toContain('data:image/png');
+
+  // Copy JSON: switched off, so nothing is uploaded and the file carries the bytes.
+  await page.locator('[data-testid="copy-json"]').click();
+  await expect(page.locator('[data-testid="toast"]')).toBeVisible();
+  expect(uploads, 'a hand-off with its switch off uploads nothing').toHaveLength(0);
+  const json: string = await page.evaluate(() => navigator.clipboard.readText());
+  expect(json, 'and stays self-contained').toContain('data:image/png;base64');
+
+  // Copy summary: switched on, so the image goes up and the Markdown points at it.
+  await page.locator('[data-testid="copy-summary"]').click();
+  await expect.poll(() => uploads.length, { timeout: 5000 }).toBe(1);
+  expect(uploads[0]).toMatch(/^\/tweakpage\/images\/[0-9a-f]{64}\.png$/);
+  const markdown: string = await page.evaluate(() => navigator.clipboard.readText());
+  expect(markdown, 'a ticket gets a URL, not 300KB of base64').not.toContain('base64');
+  expect(markdown).toContain('/tweakpage/images/');
+});

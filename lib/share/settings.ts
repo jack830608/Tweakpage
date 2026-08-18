@@ -9,8 +9,14 @@ export interface ShareSettings {
   secretAccessKey: string;
   /** tinify.com key. Empty means images are uploaded as they were picked. */
   tinypngKey: string;
-  /** Lift embedded images out to the bucket when sharing. */
-  uploadImages: boolean;
+  /**
+   * Which hand-offs lift embedded images out to the bucket.
+   *
+   * Per destination because they want different things. A share link is a public object
+   * and a hosted URL is what makes it work at all; a JSON export's virtue is being
+   * self-contained and needing no AWS account, so it stays embedded unless asked.
+   */
+  uploadImages: Record<HandOff, boolean>;
   /**
    * Compress before uploading. Separate from holding a key on purpose: this sends the
    * user's images to a third party, which is a decision, not a side effect of pasting.
@@ -18,13 +24,17 @@ export interface ShareSettings {
   compressImages: boolean;
 }
 
+/** The four buttons that can carry an image somewhere. */
+export const HAND_OFFS = ['summary', 'json', 'download', 'share'] as const;
+export type HandOff = (typeof HAND_OFFS)[number];
+
 export const EMPTY_SETTINGS: ShareSettings = {
   bucket: '',
   region: '',
   accessKeyId: '',
   secretAccessKey: '',
   tinypngKey: '',
-  uploadImages: true,
+  uploadImages: { summary: true, json: false, download: false, share: true },
   compressImages: false,
 };
 
@@ -72,9 +82,7 @@ export async function getShareSettings(): Promise<ShareSettings> {
       accessKeyId: str(value.accessKeyId),
       secretAccessKey: str(value.secretAccessKey),
       tinypngKey: str(value.tinypngKey),
-      // Absent means "written before this existed": uploading is the behaviour that
-      // makes a share work, so it is the default; sending images to a third party is not.
-      uploadImages: value.uploadImages !== false,
+      uploadImages: handOffs(value.uploadImages),
       compressImages: value.compressImages === true,
     };
   } catch {
@@ -108,6 +116,26 @@ export function watchShareSettings(onChange: (settings: ShareSettings) => void):
       // context invalidated — the listener went with it
     }
   };
+}
+
+/**
+ * Reads the per-hand-off switches, tolerating what earlier versions stored.
+ *
+ * A boolean is what the first version wrote, when the choice was share-only; it means
+ * that answer for every destination. Anything unreadable falls back to the defaults,
+ * where a share uploads (a link that drops its images is broken) and a JSON export does
+ * not (being self-contained is the reason to use it).
+ */
+function handOffs(value: unknown): Record<HandOff, boolean> {
+  const defaults = EMPTY_SETTINGS.uploadImages;
+  if (typeof value === 'boolean') {
+    return Object.fromEntries(HAND_OFFS.map((k) => [k, value])) as Record<HandOff, boolean>;
+  }
+  if (typeof value !== 'object' || value === null) return { ...defaults };
+  const stored = value as Partial<Record<HandOff, unknown>>;
+  return Object.fromEntries(
+    HAND_OFFS.map((k) => [k, typeof stored[k] === 'boolean' ? stored[k] : defaults[k]]),
+  ) as Record<HandOff, boolean>;
 }
 
 function str(value: unknown): string {
