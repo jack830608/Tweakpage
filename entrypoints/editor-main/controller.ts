@@ -212,6 +212,20 @@ export class EditsController {
     return this.doc.querySelector(`[${CLONE_ATTRIBUTE}="${record.id}"]`);
   }
 
+  /** Notes explain, they don't change the page — no undo step, no reapply. */
+  setNote(id: string, note: string): void {
+    const trimmed = note.trim().slice(0, 500);
+    this.page = {
+      ...this.page,
+      records: this.page.records.map((r) =>
+        r.id === id ? { ...r, note: trimmed === '' ? undefined : trimmed, updatedAt: this.now() } : r,
+      ),
+      updatedAt: this.now(),
+    };
+    this.persist();
+    this.listeners.forEach((fn) => fn());
+  }
+
   deleteRecord(id: string): void {
     if (this.previewing) this.setPreviewOriginal(false);
     this.lastEditTarget = null;

@@ -129,6 +129,23 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
               <div className="twk-change-diff">
                 <s>{shorten(record.oldValue)}</s> → <b>{shorten(record.newValue)}</b>
               </div>
+              <input
+                type="text"
+                className="twk-change-note"
+                aria-label={t('aria_note')}
+                data-testid={`note-${record.id}`}
+                placeholder={t('note_placeholder')}
+                defaultValue={record.note ?? ''}
+                onClick={(e) => e.stopPropagation()}
+                onBlur={(e) => {
+                  if (e.target.value.trim() !== (record.note ?? '')) {
+                    controller.setNote(record.id, e.target.value);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                }}
+              />
               {record.viewport !== undefined && farFromNow(record.viewport) && (
                 <div className="twk-change-viewport">{t('made_at_width', [record.viewport])}</div>
               )}

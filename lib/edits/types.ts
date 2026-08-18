@@ -27,6 +27,8 @@ export interface EditRecord {
   scope?: EditScope;
   /** Viewport width when the edit was made — an engineer needs it to place the change. */
   viewport?: number;
+  /** Why this change: written by the author, read by whoever receives the hand-off. */
+  note?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -162,3 +162,30 @@ test('an edit made on the copy replays against the copy, never the original', ()
     /^\[data-tweakpage-clone="[A-Za-z0-9_-]+"\]$/,
   );
 });
+
+test('a note explains a change without becoming one', async () => {
+  document.body.innerHTML = '<h1>Original</h1>';
+  const c = new EditsController(null, document, NOW);
+  c.recordEdit(document.querySelector('h1')!, 'text', 'textContent', 'Original', 'Edited');
+  const id = c.getPage().records[0].id;
+
+  c.setNote(id, '  Legal requires this wording  ');
+  expect(c.getPage().records[0].note).toBe('Legal requires this wording');
+  expect(c.canRedo(), 'a note is not an edit — it must not touch the undo machinery').toBe(false);
+
+  c.undo();
+  expect(c.getPage().records, 'undo undoes the edit, not the note bookkeeping').toHaveLength(0);
+
+  const saved = await loadPageEdits(location.href);
+  expect(saved, 'the note was persisted before the undo').toBeDefined();
+});
+
+test('clearing a note removes it instead of keeping an empty string', () => {
+  document.body.innerHTML = '<h1>Original</h1>';
+  const c = new EditsController(null, document, NOW);
+  c.recordEdit(document.querySelector('h1')!, 'text', 'textContent', 'Original', 'Edited');
+  const id = c.getPage().records[0].id;
+  c.setNote(id, 'why');
+  c.setNote(id, '   ');
+  expect(c.getPage().records[0].note).toBeUndefined();
+});

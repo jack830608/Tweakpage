@@ -770,5 +770,11 @@
   },
   "custom_css_error": {
     "message": "看不懂「$1」—— 格式是 屬性: 值;"
+  },
+  "note_placeholder": {
+    "message": "加個備註 —— 為什麼改這裡?"
+  },
+  "aria_note": {
+    "message": "這筆改動的備註"
   }
 }

@@ -30,9 +30,11 @@ function viewportNote(record: EditRecord): string {
 
 function formatLine(record: EditRecord): string {
   const note = viewportNote(record);
-  if (record.type === 'text') return `- text: "${record.oldValue}" → "${record.newValue}"${note}`;
+  // The author's why, right under the what — it turns a change list into a brief.
+  const why = record.note ? `\n  - ${record.note}` : '';
+  if (record.type === 'text') return `- text: "${record.oldValue}" → "${record.newValue}"${note}${why}`;
   if (record.type === 'attr') {
-    return `- ${record.property}: \`${record.oldValue}\` → \`${record.newValue}\`${note}`;
+    return `- ${record.property}: \`${record.oldValue}\` → \`${record.newValue}\`${note}${why}`;
   }
-  return `- ${cssPropertyName(record.property)}: \`${record.oldValue}\` → \`${record.newValue}\`${note}`;
+  return `- ${cssPropertyName(record.property)}: \`${record.oldValue}\` → \`${record.newValue}\`${note}${why}`;
 }
