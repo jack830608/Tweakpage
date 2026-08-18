@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   EMPTY_SETTINGS,
+  TINYPNG_FIELD,
   getShareSettings,
   isConfigured,
   saveShareSettings,
@@ -38,7 +39,7 @@ export function OptionsApp() {
           });
         }}
       >
-        {SHARE_FIELDS.map(({ key, label, env, secret, hint }) => (
+        {[...SHARE_FIELDS, TINYPNG_FIELD].map(({ key, label, env, secret, hint }) => (
           <label key={key}>
             <span>
               {label} <code>{env}</code>

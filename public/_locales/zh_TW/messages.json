@@ -836,5 +836,17 @@
   },
   "image_picked": {
     "message": "本機檔案"
+  },
+  "settings_credentials_elsewhere": {
+    "message": "你的 AWS 與 TinyPNG 金鑰存在擴充功能自己的頁面,你正在編輯的網站碰不到。"
+  },
+  "settings_open_secure": {
+    "message": "開啟安全設定頁 →"
+  },
+  "aria_open_secure_settings": {
+    "message": "開啟擴充功能的設定頁以輸入憑證"
+  },
+  "settings_compress_needs_key": {
+    "message": "要開啟這個,請先到設定頁填入 TinyPNG key。"
   }
 }

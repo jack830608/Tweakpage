@@ -41,6 +41,10 @@ export function boot(): void {
   // and takes the whole editor with it. Inline !important is the one declaration a page
   // stylesheet cannot outrank.
   applyHostDefences(host);
+  // Deliberately open. A closed root looks like a boundary and is not one — a site that
+  // patched attachShadow before we ran holds the root either way — while it does blind
+  // every real-browser test we have of this panel. The boundary that matters is what we
+  // put in here: nothing a site could want. Credentials live on the options page.
   const shadow = host.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
   style.textContent = css;

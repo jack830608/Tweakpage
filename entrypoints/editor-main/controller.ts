@@ -13,6 +13,7 @@ import {
   type PageEdits,
   type Variant,
 } from '../../lib/edits/types';
+import { isOurs } from '../../lib/applier/handshake';
 import { CLONE_ATTRIBUTE, elementIndex, isTweakpageNode, pageSiblings } from '../../lib/edits/dom';
 import { generateSelector, type GeneratedSelector } from '../../lib/selector/generate';
 import { resolveRecord } from '../../lib/selector/resolve';
@@ -49,8 +50,10 @@ export class EditsController {
     // The applier retires stale baselines when the site rewrites an edited value; the
     // panel's copy of the records has to follow, or its reset buttons write history.
     doc.addEventListener('tweakpage:baseline', (e) => {
-      const updates = (e as CustomEvent<{ updates?: Array<{ id: string; oldValue: string }> }>)
-        .detail?.updates;
+      const detail = (e as CustomEvent<{ updates?: Array<{ id: string; oldValue: string }> }>).detail;
+      // A page can dispatch this event too, and it decides what a reset restores.
+      if (!isOurs(detail)) return;
+      const updates = detail?.updates;
       if (!updates?.length) return;
       const byId = new Map(updates.map((u) => [u.id, u.oldValue]));
       this.page = {

@@ -67,6 +67,20 @@ export const SHARE_FIELDS: ReadonlyArray<{
 /** The four that have to be there before S3 will answer at all. */
 const REQUIRED = ['bucket', 'region', 'accessKeyId', 'secretAccessKey'] as const;
 
+/**
+ * The TinyPNG key, asked for beside the AWS ones.
+ *
+ * Not part of SHARE_FIELDS because it is optional and sharing works without it, but it
+ * is a credential and belongs in the same place: the extension's own page.
+ */
+export const TINYPNG_FIELD = {
+  key: 'tinypngKey' as const,
+  label: 'TinyPNG key',
+  env: 'TINYPNG_API_KEY',
+  secret: true,
+  hint: undefined as string | undefined,
+};
+
 /** Sharing is offered only when a whole set is present — a partial one just fails at S3. */
 export function isConfigured(settings: ShareSettings): boolean {
   return REQUIRED.every((key) => settings[key] !== '');
@@ -88,6 +102,38 @@ export async function getShareSettings(): Promise<ShareSettings> {
   } catch {
     return EMPTY_SETTINGS;
   }
+}
+
+/**
+ * What the in-page panel is allowed to know.
+ *
+ * The panel is rendered inside whatever site the user is on, so anything it holds is
+ * readable by that site's own JavaScript. Credentials therefore never reach it — it
+ * gets the answers it needs to draw itself and nothing that could be stolen.
+ */
+export interface ShareStatus {
+  configured: boolean;
+  compressionAvailable: boolean;
+  compressImages: boolean;
+  uploadImages: Record<HandOff, boolean>;
+}
+
+export async function getShareStatus(): Promise<ShareStatus> {
+  const settings = await getShareSettings();
+  return {
+    configured: isConfigured(settings),
+    compressionAvailable: settings.tinypngKey !== '',
+    compressImages: settings.compressImages,
+    uploadImages: settings.uploadImages,
+  };
+}
+
+/** The preferences the panel may change. Credentials are not among them. */
+export async function saveSharePreferences(
+  preferences: Pick<ShareSettings, 'uploadImages' | 'compressImages'>,
+): Promise<void> {
+  const settings = await getShareSettings();
+  await saveShareSettings({ ...settings, ...preferences });
 }
 
 export async function saveShareSettings(settings: ShareSettings): Promise<void> {
