@@ -187,3 +187,66 @@ describe('the session', () => {
     expect(c.getPage().records).toHaveLength(1);
   });
 });
+
+describe('live sync while typing', () => {
+  test('each input lands in the records before the session ends', () => {
+    document.body.innerHTML = '<h1 id="t">Hello</h1>';
+    const el = document.getElementById('t')!;
+    const c = controller();
+    startInlineEdit(el, c);
+
+    el.textContent = 'Hello w';
+    el.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    // The panel renders from records; without this, it goes stale until blur.
+    expect(c.recordFor(el, 'textContent')?.newValue).toBe('Hello w');
+
+    el.textContent = 'Hello world';
+    el.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    expect(c.recordFor(el, 'textContent')?.newValue).toBe('Hello world');
+  });
+
+  test('a typing run is one undo step, exactly like typing in the panel', () => {
+    document.body.innerHTML = '<h1 id="t">Hello</h1>';
+    const el = document.getElementById('t')!;
+    const c = controller();
+    const session = startInlineEdit(el, c);
+    for (const text of ['Hello w', 'Hello wo', 'Hello wor']) {
+      el.textContent = text;
+      el.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    }
+    session.finish();
+
+    c.undo();
+    expect(c.getPage().records, 'one undo undoes the whole run').toHaveLength(0);
+    expect(el.textContent).toBe('Hello');
+  });
+
+  test('half-composed IME text never reaches the records', () => {
+    document.body.innerHTML = '<h1 id="t">你好</h1>';
+    const el = document.getElementById('t')!;
+    const c = controller();
+    startInlineEdit(el, c);
+
+    // Mid-composition: the visible text is an unfinished syllable.
+    el.textContent = '你好ㄕ';
+    el.dispatchEvent(new InputEvent('input', { bubbles: true, isComposing: true }));
+    expect(c.recordFor(el, 'textContent'), 'unfinished syllables are not edits').toBeUndefined();
+
+    // The composition commits.
+    el.textContent = '你好世界';
+    el.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }));
+    expect(c.recordFor(el, 'textContent')?.newValue).toBe('你好世界');
+  });
+
+  test('input listeners do not outlive the session', () => {
+    document.body.innerHTML = '<h1 id="t">Hello</h1>';
+    const el = document.getElementById('t')!;
+    const c = controller();
+    const session = startInlineEdit(el, c);
+    session.finish();
+
+    el.textContent = 'Mutated by the page later';
+    el.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    expect(c.getPage().records, 'a finished session stops listening').toHaveLength(0);
+  });
+});

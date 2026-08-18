@@ -1030,3 +1030,21 @@ test('inline editing keeps inline markup and records only the changed run', asyn
   const color = await page.locator('#promo span').evaluate((el) => getComputedStyle(el).color);
   expect(color, 'markup and styling intact after replay').toBe('rgb(0, 128, 0)');
 });
+
+test('the panel follows inline typing live, before any blur', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click(); // panel shows the text section for the h1
+
+  await page.locator('h1').dblclick();
+  await page.keyboard.press('End');
+  await page.keyboard.type(' live');
+  // No blur, no click-away: the element is still being edited.
+  await expect(page.locator('h1')).toHaveAttribute('contenteditable', 'plaintext-only');
+  await expect(
+    page.locator('[data-testid="text"]'),
+    'the panel text box mirrors the typing as it happens',
+  ).toHaveValue('Original Headline live');
+  await expect(page.locator('[data-testid="review-changes"]')).toContainText('1');
+});
