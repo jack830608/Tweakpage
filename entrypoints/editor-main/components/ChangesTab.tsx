@@ -196,5 +196,12 @@ function labelFor(record: EditRecord): string {
 }
 
 function shorten(value: string): string {
+  // Embedded bytes are not a value to truncate — the first 28 characters of base64 say
+  // nothing. Name the picture and its size, the way the hand-off does.
+  if (value.startsWith('data:image/')) {
+    const mediaType = value.slice('data:'.length, value.indexOf(';'));
+    const kb = Math.max(1, Math.round((value.length * 3) / 4 / 1024));
+    return t('image_embedded', [mediaType, String(kb)]);
+  }
   return value.length > 28 ? `${value.slice(0, 28)}…` : value;
 }

@@ -152,3 +152,19 @@ test('clicking a change brings its element into view before selecting it', async
   expect(onSelectRecord).toHaveBeenCalledWith(title);
   vi.restoreAllMocks();
 });
+
+test('an embedded image is named in the change list, not spelled out', () => {
+  document.body.innerHTML = '<img id="pic" src="/a.png">';
+  const controller = new EditsController(null, document, NOW);
+  controller.recordEdit(
+    document.getElementById('pic')!, 'attr', 'src', '/a.png',
+    'data:image/png;base64,' + 'A'.repeat(300_000),
+  );
+  render(
+    <ChangesTab controller={controller} onToast={vi.fn()} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />,
+  );
+  const diff = document.querySelector('.twk-change-diff')!;
+  expect(diff.textContent, 'the first 28 characters of base64 say nothing').not.toContain('base64');
+  expect(diff.textContent).toMatch(/image\/png/);
+  expect(diff.textContent).toMatch(/2[12][0-9] KB/);
+});

@@ -157,14 +157,20 @@ Download JSON, Share link — with **All hand-offs** above them to set the lot. 
 default; with no bucket configured nothing uploads, so "on" means "upload when there is
 somewhere to upload to".
 
+Once an image is hosted, the local edit points at it too: the bytes were only ever the
+right answer while the picture existed nowhere else. Storage stops carrying them, the
+change list reads as a URL instead of a wall of base64, and this page describes the
+image the same way the shared one does.
+
 An image is named after its own content and remembered once uploaded, so sharing the
 same picture again costs neither a second upload nor a slice of the TinyPNG quota. The
 remembered URL is checked before it is reused — an emptied bucket means a fresh upload,
 not a broken link.
 
 - Switch one off to keep that hand-off self-contained: the images travel embedded and
-  the toast says how many did. A JSON export that carries its own bytes needs no AWS
-  account to open and survives the bucket being emptied.
+  the toast says how many did, and the local edit keeps its bytes. A JSON export that
+  carries its own bytes needs no AWS account to open and survives the bucket being
+  emptied.
 - A summary that could not upload names each image and its size rather than pasting
   hundreds of kilobytes of base64 into your ticket.
 - **TinyPNG** — paste a [tinify.com](https://tinypng.com/developers) key and switch on
