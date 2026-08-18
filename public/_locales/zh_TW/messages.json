@@ -743,5 +743,20 @@
   },
   "snap_done": {
     "message": "已儲存"
+  },
+  "duplicate": {
+    "message": "複製"
+  },
+  "aria_duplicate_element": {
+    "message": "在此元素後插入一份複本"
+  },
+  "tip_duplicate": {
+    "message": "在這個元素後面插入一份可編輯的複本"
+  },
+  "tip_hide": {
+    "message": "隱藏選取的元素"
+  },
+  "tip_unhide": {
+    "message": "重新顯示這個元素"
   }
 }

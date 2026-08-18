@@ -13,7 +13,7 @@ import {
   type PageEdits,
   type Variant,
 } from '../../lib/edits/types';
-import { elementIndex, pageSiblings } from '../../lib/edits/dom';
+import { CLONE_ATTRIBUTE, elementIndex, isTweakpageNode, pageSiblings } from '../../lib/edits/dom';
 import { generateSelector, type GeneratedSelector } from '../../lib/selector/generate';
 import { resolveRecord } from '../../lib/selector/resolve';
 import { similarSelector } from '../../lib/selector/similar';
@@ -180,6 +180,36 @@ export class EditsController {
     if (!this.canMove(el, direction)) return;
     const from = elementIndex(el);
     this.recordEdit(el, 'move', 'domIndex', String(from), String(from + direction));
+  }
+
+  canClone(el: Element): boolean {
+    return el.parentElement !== null && el !== this.doc.body && !isTweakpageNode(el);
+  }
+
+  /**
+   * Inserts an editable copy right after the element.
+   *
+   * Not routed through recordEdit: its coalescing is keyed on (selector, property), and
+   * a second Duplicate must be a second copy, not an update of the first.
+   */
+  cloneElement(el: Element): Element | null {
+    if (!this.canClone(el)) return null;
+    const gen = this.genFor(el);
+    const record: EditRecord = {
+      id: makeId(),
+      ...gen,
+      type: 'clone',
+      property: 'clone',
+      oldValue: '',
+      newValue: '',
+      enabled: true,
+      viewport: this.viewportWidth(),
+      createdAt: this.now(),
+      updatedAt: this.now(),
+    };
+    this.lastEditTarget = null;
+    this.setRecords([...this.page.records, record]);
+    return this.doc.querySelector(`[${CLONE_ATTRIBUTE}="${record.id}"]`);
   }
 
   deleteRecord(id: string): void {

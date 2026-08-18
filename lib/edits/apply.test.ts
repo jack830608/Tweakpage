@@ -198,3 +198,59 @@ describe('moves and the records around them', () => {
     expect(order()).toBe('abcd');
   });
 });
+
+describe('clone records through applyAll', () => {
+  const base = { fallbackSelectors: [] as string[], enabled: true, createdAt: 'n', updatedAt: 'n' };
+
+  test('a clone shifting nth positions cannot steal a sibling record on reapply', () => {
+    // Images on purpose: no fingerprint rescue. Pass 1 resolves against the pristine
+    // page; the clone then makes img:nth-of-type(2) mean a different element. From the
+    // first apply on, the mark is every record's identity, so pass 2 follows it.
+    document.body.innerHTML = '<div><img id="a"><img id="b"></div>';
+    const records: Parameters<typeof applyAll>[0] = [
+      { ...base, id: 'cl9', selector: 'img:nth-of-type(1)', elementLabel: 'img',
+        type: 'clone', property: 'clone', oldValue: '', newValue: '' },
+      { ...base, id: 'at9', selector: 'img:nth-of-type(2)', elementLabel: 'img',
+        type: 'attr', property: 'alt', oldValue: '', newValue: 'edited alt', absent: true },
+    ];
+    applyAll(records, document);
+    expect(document.getElementById('b')!.getAttribute('alt'), 'pass 1: pristine resolution').toBe('edited alt');
+    expect(document.querySelectorAll('img'), 'the copy exists').toHaveLength(3);
+
+    // Pass 2 — what the mutation observer triggers right after the insertion.
+    applyAll(records, document);
+    const clone = document.querySelector('[data-tweakpage-clone="cl9"]')!;
+    expect(clone.getAttribute('alt'), 'the clone (now nth 2) must not inherit the edit').toBeNull();
+    expect(document.getElementById('b')!.getAttribute('alt')).toBe('edited alt');
+  });
+
+  test('a record can target the copy itself once it exists', () => {
+    document.body.innerHTML = '<div><p id="src">Original</p></div>';
+    const records: Parameters<typeof applyAll>[0] = [
+      { ...base, id: 'cl10', selector: '#src', elementLabel: 'p',
+        type: 'clone', property: 'clone', oldValue: '', newValue: '' },
+      { ...base, id: 'tx10', selector: '[data-tweakpage-clone="cl10"]', elementLabel: 'p',
+        type: 'text', property: 'textContent', oldValue: 'Original', newValue: 'The copy, edited' },
+    ];
+    // Fresh load: the copy does not exist when the text record resolves — the reapply
+    // pass the insertion itself triggers is what lands it.
+    const first = applyAll(records, document);
+    expect(first.get('tx10')).toBe('not-found');
+    const second = applyAll(records, document);
+    expect(second.get('tx10')).toBe('applied');
+    expect(document.querySelector('[data-tweakpage-clone="cl10"]')!.textContent).toBe('The copy, edited');
+    expect(document.getElementById('src')!.textContent, 'the original is untouched').toBe('Original');
+  });
+
+  test('revertAll takes the copy away with everything else', () => {
+    document.body.innerHTML = '<div><p id="src">Original</p></div>';
+    const records: Parameters<typeof applyAll>[0] = [
+      { ...base, id: 'cl11', selector: '#src', elementLabel: 'p',
+        type: 'clone', property: 'clone', oldValue: '', newValue: '' },
+    ];
+    applyAll(records, document);
+    expect(document.querySelectorAll('p')).toHaveLength(2);
+    revertAll(records, document);
+    expect(document.querySelectorAll('p')).toHaveLength(1);
+  });
+});

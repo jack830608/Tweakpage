@@ -173,6 +173,7 @@ function groupByElement(records: EditRecord[]): Array<[string, EditRecord[]]> {
 function labelFor(record: EditRecord): string {
   if (record.type === 'text') return 'text';
   if (record.type === 'move') return 'order';
+  if (record.type === 'clone') return 'duplicate';
   if (record.type === 'attr') return record.property;
   return cssPropertyName(record.property);
 }

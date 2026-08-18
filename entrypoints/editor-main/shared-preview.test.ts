@@ -127,3 +127,38 @@ test('two moves of the same element coalesce into one record with the true origi
   expect(c.getPage().records[0].oldValue, 'undo target is the pristine position').toBe('2');
   expect(c.getPage().records[0].newValue).toBe('0');
 });
+
+test('duplicating an element records once per press and undoes cleanly', () => {
+  document.body.innerHTML = '<ul><li id="one">First</li></ul>';
+  const c = new EditsController(null, document, NOW);
+  const el = document.getElementById('one')!;
+
+  const copy = c.cloneElement(el);
+  expect(copy, 'the copy is returned, ready to select').toBeTruthy();
+  expect(document.querySelectorAll('li')).toHaveLength(2);
+
+  // A second press is a third item, not an update of the first copy.
+  c.cloneElement(el);
+  expect(document.querySelectorAll('li')).toHaveLength(3);
+  expect(c.getPage().records).toHaveLength(2);
+
+  c.undo();
+  expect(document.querySelectorAll('li')).toHaveLength(2);
+  c.undo();
+  expect(document.querySelectorAll('li')).toHaveLength(1);
+});
+
+test('an edit made on the copy replays against the copy, never the original', () => {
+  document.body.innerHTML = '<ul><li id="one">First</li></ul>';
+  const c = new EditsController(null, document, NOW);
+  const copy = c.cloneElement(document.getElementById('one')!)!;
+
+  c.recordEdit(copy, 'text', 'textContent', 'First', 'Second');
+  expect(copy.textContent).toBe('Second');
+  expect(document.getElementById('one')!.textContent).toBe('First');
+
+  const record = c.getPage().records.find((r) => r.property === 'textContent')!;
+  expect(record.selector, 'the copy is addressed by its stamp, nothing positional').toMatch(
+    /^\[data-tweakpage-clone="[A-Za-z0-9_-]+"\]$/,
+  );
+});

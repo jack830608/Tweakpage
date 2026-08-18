@@ -1,9 +1,15 @@
+import { MARK_ATTRIBUTE } from './css';
 import { textNodeAt, textNodeIndex } from './text-nodes';
 import type { EditRecord } from './types';
+
+/** Marks an element as the copy a clone record created — its identity across reapplies. */
+export const CLONE_ATTRIBUTE = 'data-tweakpage-clone';
 
 export function applyDomEdit(el: Element, record: EditRecord): void {
   if (record.type === 'text') {
     writeText(el, record, record.newValue);
+  } else if (record.type === 'clone') {
+    cloneAfter(el, record.id);
   } else if (record.type === 'move') {
     moveToIndex(el, Number(record.newValue));
   } else if (record.type === 'attr') {
@@ -16,6 +22,8 @@ export function applyDomEdit(el: Element, record: EditRecord): void {
 export function revertDomEdit(el: Element, record: EditRecord): void {
   if (record.type === 'text') {
     writeText(el, record, record.oldValue);
+  } else if (record.type === 'clone') {
+    el.ownerDocument.querySelector(`[${CLONE_ATTRIBUTE}="${record.id}"]`)?.remove();
   } else if (record.type === 'move') {
     moveToIndex(el, Number(record.oldValue));
   } else if (record.type === 'attr') {
@@ -64,6 +72,27 @@ export function moveToIndex(el: Element, index: number): void {
   if (elementIndex(el) === index) return;
   const others = pageSiblings(parent).filter((sibling) => sibling !== el);
   parent.insertBefore(el, others[index] ?? null);
+}
+
+/**
+ * Inserts a copy of the element right after it, stamped with the record's id.
+ *
+ * The copy sheds every id and every tweakpage mark in its subtree: a copied id breaks
+ * uniqueness for records resolving the ORIGINAL by it, and a copied mark would put one
+ * record's style on two elements. Already-stamped copies make reapply a no-op — the
+ * reapply loop runs on every mutation, this insertion included.
+ */
+function cloneAfter(el: Element, id: string): void {
+  const doc = el.ownerDocument;
+  if (doc.querySelector(`[${CLONE_ATTRIBUTE}="${id}"]`)) return;
+  const copy = el.cloneNode(true) as Element;
+  for (const node of [copy, ...Array.from(copy.querySelectorAll(`[id], [${MARK_ATTRIBUTE}], [${CLONE_ATTRIBUTE}]`))]) {
+    node.removeAttribute('id');
+    node.removeAttribute(MARK_ATTRIBUTE);
+    node.removeAttribute(CLONE_ATTRIBUTE);
+  }
+  copy.setAttribute(CLONE_ATTRIBUTE, id);
+  el.after(copy);
 }
 
 export function pageSiblings(parent: Element): Element[] {

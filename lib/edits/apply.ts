@@ -33,7 +33,7 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
       statuses.set(record.id, 'disabled');
       continue;
     }
-    if ((record.type === 'style' || record.type === 'move') && !isSafeRecordId(record.id)) {
+    if (record.type !== 'text' && record.type !== 'attr' && !isSafeRecordId(record.id)) {
       statuses.set(record.id, 'not-found');
       continue;
     }
@@ -54,11 +54,11 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
   for (const { record, targets } of resolved) {
     if (record.type === 'move') continue;
     for (const el of targets) {
-      if (record.type === 'style') {
-        marks.set(el, [...(marks.get(el) ?? []), record.id]);
-      } else {
-        applyDomEdit(el, record);
-      }
+      if (record.type !== 'style') applyDomEdit(el, record);
+      // Every applied record is mark-bound to its node from here on (see resolveTarget):
+      // a clone inserting a sibling shifts every nth position after it, and on the next
+      // pass only the mark still says which element each record meant.
+      marks.set(el, [...(marks.get(el) ?? []), record.id]);
     }
   }
   // Moves run last, lowest target index first: placing an element never disturbs the
@@ -66,7 +66,6 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
   for (const { record, targets } of byIndex(resolved, (r) => r.newValue)) {
     for (const el of targets) {
       applyDomEdit(el, record);
-      // The mark is the move's identity from here on — see resolveTarget.
       marks.set(el, [...(marks.get(el) ?? []), record.id]);
     }
   }
@@ -86,13 +85,14 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
 }
 
 /**
- * A moved element is exactly the node the previous apply stamped: its selector was
- * minted against the order the move itself destroyed, and an element with no text has
- * no fingerprint to be recognised by. The mark is checked first for that reason; a
- * fresh page has no marks, and there the selector still speaks for the original order.
+ * The node the previous apply stamped is exactly the element the record meant: moves
+ * and clones rearrange the order every positional selector was minted against, and an
+ * element with no text has no fingerprint to be recognised by. The mark is checked
+ * first for that reason; a fresh page has no marks, and there the selector still
+ * speaks for the original arrangement.
  */
 function resolveTarget(record: Record, doc: Document): Element | null {
-  if (record.type === 'move') {
+  if (isSafeRecordId(record.id)) {
     const marked = matchAll(doc, `[${MARK_ATTRIBUTE}~="${record.id}"]`);
     if (marked.length === 1) return marked[0];
   }
@@ -138,8 +138,12 @@ function syncMarks(doc: Document, marks: Map<Element, string[]>): void {
 export function revertRemoved(previous: EditRecord[], next: EditRecord[], doc: Document): void {
   const doomed = previous.filter((record) => {
     if (record.type === 'style' || !record.enabled) return false;
-    return !next.some(
-      (r) => r.selector === record.selector && r.property === record.property && r.enabled,
+    return !next.some((r) =>
+      // Two copies of one element share a selector and a property; only the id says
+      // which copy a clone record is.
+      record.type === 'clone'
+        ? r.id === record.id && r.enabled
+        : r.selector === record.selector && r.property === record.property && r.enabled,
     );
   });
   revertInOrder(doomed, doc);
