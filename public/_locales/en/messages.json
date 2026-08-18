@@ -728,5 +728,8 @@
   },
   "marker_title_min": {
     "message": "Tweakpage is minimized. Click to reopen the editor."
+  },
+  "toast_inline_unrecorded": {
+    "message": "That change couldn't be recorded — the element's structure changed while editing."
   }
 }

@@ -728,5 +728,8 @@
   },
   "marker_title_min": {
     "message": "Tweakpage 已縮小,點一下重新開啟編輯器。"
+  },
+  "toast_inline_unrecorded": {
+    "message": "這次修改沒有記錄下來 —— 編輯途中元素結構被改變了。"
   }
 }

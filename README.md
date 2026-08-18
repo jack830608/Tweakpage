@@ -23,6 +23,8 @@ DevTools for a copy tweak. Every edit is recorded as a structured diff
 
 ## Features
 
+- **Edit text where it lives** — double-click any text and type; inline markup (the link
+  or coloured span inside a heading) survives, paste arrives as plain text.
 - **Edit almost anything** — text (inline markup preserved, one box per run), typography,
   colors with an eyedropper and alpha, backgrounds, images (local file or URL), links,
   size, spacing, layout, borders, shadows, opacity.
@@ -76,6 +78,10 @@ temporary Browse. Use the breadcrumb in the selection card to reach parents and
 children, or `⌥` + arrow keys to walk the DOM without a mouse.
 
 ### Editing
+
+**Double-click text to edit it in place** — the element itself becomes a plain-text
+input; blur, `Esc`, or clicking away commits, and the change lands in the same records
+as the panel's text boxes. Long rewrites are still comfortable in the panel.
 
 Fields are named after the CSS property they write — an edited one shows a ↺ reset
 beside it, and reset restores what the page holds *now*, not a stale snapshot, even if

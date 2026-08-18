@@ -10,9 +10,11 @@ interface OverlayProps {
   /** Whether the selected element can swap with a sibling in that direction. */
   canMove?: (el: Element, direction: -1 | 1) => boolean;
   onMove?: (el: Element, direction: -1 | 1) => void;
+  /** The element currently being edited in place, if any. */
+  editing?: Element | null;
 }
 
-export function Overlay({ hovered, selected, edited = [], canMove, onMove }: OverlayProps) {
+export function Overlay({ hovered, selected, edited = [], canMove, onMove, editing }: OverlayProps) {
   const [, setTick] = useState(0);
   useEffect(() => {
     const update = () => setTick((t) => t + 1);
@@ -38,8 +40,8 @@ export function Overlay({ hovered, selected, edited = [], canMove, onMove }: Ove
       )}
       {hovered && hovered !== selected && <OutlineBox el={hovered} kind="hover" />}
       {selected && (
-        <OutlineBox el={selected} kind="selected">
-          {onMove && canMove && (canMove(selected, -1) || canMove(selected, 1)) && (
+        <OutlineBox el={selected} kind={selected === editing ? 'editing' : 'selected'}>
+          {selected !== editing && onMove && canMove && (canMove(selected, -1) || canMove(selected, 1)) && (
             <span className="twk-move-buttons">
               <button
                 type="button"
@@ -74,7 +76,7 @@ function boxOf(el: Element) {
   return { top: r.top, left: r.left, width: r.width, height: r.height };
 }
 
-function OutlineBox({ el, kind, children }: { el: Element; kind: 'hover' | 'selected'; children?: ReactNode }) {
+function OutlineBox({ el, kind, children }: { el: Element; kind: 'hover' | 'selected' | 'editing'; children?: ReactNode }) {
   const r = el.getBoundingClientRect();
   const label =
     el.tagName === 'IFRAME'
