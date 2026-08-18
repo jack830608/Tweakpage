@@ -9,9 +9,21 @@ import type { EditsController } from '../controller';
 import type { PageEdits } from '../../../lib/edits/types';
 import type { ImageReport } from '../../../lib/share/transfer';
 import type { ToastContent } from './Toast';
+import { hasConsented, recordConsent } from '../../../lib/share/consent';
+import { embeddedImages } from '../../../lib/share/images';
+import { getShareStatus, type HandOff } from '../../../lib/share/settings';
 import { AsyncButton } from './AsyncButton';
+import { TransferConsent } from './TransferConsent';
 import { CameraIcon, CopyIcon, DownloadIcon, LinkIcon } from './icons';
 import { t } from '../../../lib/i18n';
+
+/** A hand-off waiting on the one question worth interrupting for. */
+interface Pending {
+  bucket: string;
+  images: number;
+  compressing: boolean;
+  run: (allowUpload: boolean) => Promise<unknown>;
+}
 
 interface ShareRowProps {
   controller: EditsController;
@@ -32,6 +44,43 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
 
   // A share of nothing is a link the recipient is written to reject.
   const hasEdits = controller.getPage().records.some((r) => r.enabled);
+  const [pending, setPending] = useState<Pending | null>(null);
+
+  /**
+   * Asks before anything leaves the machine, once per bucket.
+   *
+   * The question comes first and the work happens once: doing it and then offering to
+   * do it again would leave two shares behind, and one of them already public. Saying
+   * "not now" is not a failure — the hand-off runs with the images inside it, which is
+   * what it did before uploading existed.
+   */
+  const withConsent = async (handOff: HandOff, run: (allowUpload: boolean) => Promise<unknown>) => {
+    const status = await getShareStatus();
+    const images = embeddedImages(controller.getPage()).length;
+    const uploads = status.configured && status.uploadImages[handOff] && images > 0;
+    if (!uploads || (await hasConsented(status.bucket))) return run(true);
+
+    return new Promise<unknown>((resolve) => {
+      setPending({
+        bucket: status.bucket,
+        images,
+        compressing: status.compressImages && status.compressionAvailable,
+        run: async (allowUpload) => {
+          setPending(null);
+          if (allowUpload) {
+            safeSendMessage({ type: 'tweakpage:transfer-consent', bucket: status.bucket });
+            // The worker reads consent from storage, so wait for the write to land.
+            await recordConsent(status.bucket);
+          } else {
+            onToast({ message: t('toast_transfer_declined'), kind: 'info' });
+          }
+          const result = await run(allowUpload);
+          resolve(result);
+          return result;
+        },
+      });
+    });
+  };
 
   const copy = async (text: string, message: string) => {
     try {
@@ -49,21 +98,21 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
    * answers both. A failure here is never fatal — the page goes as it is, and the
    * message says the images stayed embedded.
    */
-  const prepare = async (handOff: 'summary' | 'json' | 'download') => {
+  const prepare = async (handOff: HandOff, allowUpload: boolean) => {
     const page = controller.getPage();
     const result = (await browser.runtime
-      .sendMessage({ type: 'tweakpage:host-images', page, handOff })
+      .sendMessage({ type: 'tweakpage:host-images', page, handOff, allowUpload })
       .catch(() => null)) as { page?: PageEdits; report?: ImageReport } | null;
     // An image that now has an address does not need its bytes kept here as well.
     if (result?.page) controller.adoptHostedImages(result.page.records);
     return { page: result?.page ?? page, report: result?.report };
   };
 
-  const onShareLink = async () => {
+  const onShareLink = async (allowUpload = true) => {
     const page = controller.getPage();
     const id = makeShareId();
     const result = (await browser.runtime
-      .sendMessage({ type: 'tweakpage:share-put', id, page })
+      .sendMessage({ type: 'tweakpage:share-put', id, page, allowUpload })
       .catch(() => null)) as
       | {
           ok?: boolean;
@@ -112,13 +161,23 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
       : t('toast_share_copied_images', [images.uploaded]);
   };
 
-  const onJsonFile = async () => {
-    const { page, report } = await prepare('download');
+  const onJsonFile = async (allowUpload = true) => {
+    const { page, report } = await prepare('download', allowUpload);
     downloadFile(exportFilename(page.url, today().replaceAll('-', '')), toJson(page));
     onToast({ message: imageMessage(t('toast_exported'), report), kind: 'success' });
   };
 
   return (
+    <>
+      {pending && (
+        <TransferConsent
+          bucket={pending.bucket}
+          images={pending.images}
+          compressing={pending.compressing}
+          onAgree={() => void pending.run(true)}
+          onCancel={() => void pending.run(false)}
+        />
+      )}
     <div className="twk-share">
       <span className="twk-share-label">{t('share')}</span>
       <div className="twk-share-buttons">
@@ -130,10 +189,12 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           ariaLabel={t('aria_copy_summary')}
           testId="copy-summary"
           title={t('tip_copy_summary')}
-          run={async () => {
-            const { page, report } = await prepare('summary');
-            await copy(toMarkdown(page, today()), imageMessage(t('toast_copied'), report));
-          }}
+          run={() =>
+            withConsent('summary', async (allowUpload) => {
+              const { page, report } = await prepare('summary', allowUpload);
+              await copy(toMarkdown(page, today()), imageMessage(t('toast_copied'), report));
+            })
+          }
         />
         <AsyncButton
           icon={<CameraIcon />}
@@ -154,10 +215,12 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           ariaLabel={t('aria_copy_json')}
           testId="copy-json"
           title={t('tip_copy_json')}
-          run={async () => {
-            const { page, report } = await prepare('json');
-            await copy(toJson(page), imageMessage(t('toast_copied_json'), report));
-          }}
+          run={() =>
+            withConsent('json', async (allowUpload) => {
+              const { page, report } = await prepare('json', allowUpload);
+              await copy(toJson(page), imageMessage(t('toast_copied_json'), report));
+            })
+          }
         />
         <AsyncButton
           icon={<DownloadIcon />}
@@ -167,7 +230,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           ariaLabel={t('aria_export_json')}
           testId="export-json"
           title={t('tip_export')}
-          run={onJsonFile}
+          run={() => withConsent('download', onJsonFile)}
         />
         <AsyncButton
           icon={<LinkIcon />}
@@ -180,10 +243,11 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           title={
             !canShare ? t('tip_share_unset') : !hasEdits ? t('tip_share_nothing') : t('tip_share_link')
           }
-          run={onShareLink}
+          run={() => withConsent('share', onShareLink)}
         />
       </div>
     </div>
+    </>
   );
 }
 

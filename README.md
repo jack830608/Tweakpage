@@ -171,6 +171,13 @@ page too big to survive the import limits and the recipient would quietly see th
 original picture. A hand-off that uploads lifts each image into
 `tweakpage/images/<sha256>.<ext>` and points at it instead.
 
+The first time a hand-off would actually upload something, Tweakpage stops and says
+what is about to leave: how many images, which bucket, that uploaded images are readable
+by anyone with the link, that the local edit will point at the uploaded file afterwards,
+and — if compression is on — that each image goes to tinify.com first. Saying "not now"
+still completes the hand-off, with the images inside it. The answer is remembered per
+bucket, and **Ask me again before uploading** in Settings takes it back.
+
 Under gear icon → **Images**, one switch per hand-off — Copy summary, Copy JSON,
 Download JSON, Share link — with **All hand-offs** above them to set the lot. All on by
 default; with no bucket configured nothing uploads, so "on" means "upload when there is

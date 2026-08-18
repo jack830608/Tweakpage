@@ -1285,6 +1285,8 @@ test('a locally picked image travels with the link instead of being dropped', as
         accessKeyId: 'AKIAIOSFODNN7EXAMPLE', secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
         tinypngKey: '', uploadImages: true, compressImages: false,
       },
+      // Uploading asks once per bucket; this test is about what happens after.
+      'tweakpage:transfer-consent': ['demo-bucket'],
     });
   });
   await activateEditor(context);
@@ -1361,6 +1363,7 @@ test('each hand-off obeys its own image switch', async ({ context }) => {
         // Summary uploads, Copy JSON does not — the point of the setting.
         uploadImages: { summary: true, json: false, download: false, share: true },
       },
+      'tweakpage:transfer-consent': ['demo-bucket'],
     });
   });
   await activateEditor(context);
@@ -1421,6 +1424,8 @@ test('after a share the panel and storage point at the uploaded image, not at by
         tinypngKey: '', compressImages: false,
         uploadImages: { summary: true, json: true, download: true, share: true },
       },
+      // Uploading asks once per bucket; these tests are about what happens after.
+      'tweakpage:transfer-consent': ['demo-bucket'],
     });
   });
   await activateEditor(context);
@@ -1510,4 +1515,72 @@ test('a page cannot read the credentials out of the editor', async ({ context })
     return { reachableShadow: !!root, hits };
   });
   expect(found.hits, 'no credential may be readable from the page').toEqual([]);
+});
+
+test('nothing leaves the machine before the question is answered', async ({ context }) => {
+  const requests: string[] = [];
+  await context.route('https://**.amazonaws.com/**', async (route) => {
+    requests.push(route.request().method());
+    return route.fulfill({ status: 200, body: '' });
+  });
+
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  await worker.evaluate(async () => {
+    await (globalThis as any).chrome.storage.local.set({
+      'tweakpage:share-settings': {
+        bucket: 'demo-bucket', region: 'ap-northeast-1',
+        accessKeyId: 'AKIAIOSFODNN7EXAMPLE', secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+        tinypngKey: '', compressImages: false,
+        uploadImages: { summary: true, json: true, download: true, share: true },
+      },
+    });
+  });
+  await activateEditor(context);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+
+  await page.locator('#hero').click();
+  await page.locator('[data-testid="image-file"]').setInputFiles({
+    name: 'local.png', mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPk+89QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    ),
+  });
+  await expect.poll(() => page.locator('#hero').getAttribute('src')).toContain('data:image/png');
+
+  // The button refuses re-entry while busy and while showing its confirmation, so the
+  // way back to a clickable button is to wait for its own idle label to return.
+  const summary = page.locator('[data-testid="copy-summary"]');
+  const idleLabel = (await summary.textContent())?.trim();
+  const clickWhenReady = async () => {
+    await expect.poll(async () => (await summary.textContent())?.trim(), { timeout: 6000 }).toBe(idleLabel);
+    await summary.click();
+  };
+
+  // Copy summary would upload — so it asks, and waits.
+  await summary.click();
+  const consent = page.locator('[data-testid="transfer-consent"]');
+  await expect(consent).toBeVisible();
+  await expect(consent, 'it names the bucket').toContainText('demo-bucket');
+  expect(requests, 'nothing has left the machine yet').toHaveLength(0);
+
+  // Declining still hands off, with the image inside it.
+  await page.locator('[data-testid="consent-cancel"]').click();
+  await expect(consent).toHaveCount(0);
+  await expect.poll(() => requests.length, { timeout: 3000 }).toBe(0);
+  const declined: string = await page.evaluate(() => navigator.clipboard.readText());
+  expect(declined, 'the summary was still copied').toContain('# Page edits');
+
+  // Agreeing uploads, and is remembered.
+  await clickWhenReady();
+  await expect(consent).toBeVisible();
+  await page.locator('[data-testid="consent-agree"]').click();
+  await expect.poll(() => requests.filter((m) => m === 'PUT').length, { timeout: 5000 }).toBeGreaterThan(0);
+
+  requests.length = 0;
+  await page.locator('[data-testid="copy-json"]').click();
+  await expect(page.locator('[data-testid="transfer-consent"]'), 'asked once, not once per button').toHaveCount(0);
 });

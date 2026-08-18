@@ -124,6 +124,8 @@ export async function getShareSettings(): Promise<ShareSettings> {
  */
 export interface ShareStatus {
   configured: boolean;
+  /** Named in the consent prompt. A bucket name is not a secret; the keys to it are. */
+  bucket: string;
   compressionAvailable: boolean;
   compressImages: boolean;
   uploadImages: Record<HandOff, boolean>;
@@ -133,6 +135,7 @@ export async function getShareStatus(): Promise<ShareStatus> {
   const settings = await getShareSettings();
   return {
     configured: isConfigured(settings),
+    bucket: settings.bucket,
     compressionAvailable: settings.tinypngKey !== '',
     compressImages: settings.compressImages,
     uploadImages: settings.uploadImages,

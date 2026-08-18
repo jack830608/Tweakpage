@@ -857,5 +857,44 @@
   },
   "tip_share_nothing": {
     "message": "Make an edit first — a link with no changes has nothing to show"
+  },
+  "consent_title": {
+    "message": "This will upload to your bucket"
+  },
+  "consent_where": {
+    "message": "$1 image(s) will be uploaded to your S3 bucket “$2”."
+  },
+  "consent_public": {
+    "message": "Uploaded images are readable by anyone with the link."
+  },
+  "consent_local": {
+    "message": "The edits here will point at the uploaded image instead of the file you picked."
+  },
+  "consent_tinify": {
+    "message": "Compression is on, so each image is sent to tinify.com first."
+  },
+  "consent_agree": {
+    "message": "Upload"
+  },
+  "consent_cancel": {
+    "message": "Not now"
+  },
+  "consent_revoke": {
+    "message": "Asked once per bucket. You can take it back in Settings."
+  },
+  "settings_transfer": {
+    "message": "Uploading"
+  },
+  "settings_forget_consent": {
+    "message": "Ask me again before uploading"
+  },
+  "aria_forget_consent": {
+    "message": "Ask for permission again before the next upload"
+  },
+  "toast_consent_withdrawn": {
+    "message": "You will be asked again before the next upload."
+  },
+  "toast_transfer_declined": {
+    "message": "Nothing was uploaded. The images travelled inside it instead."
   }
 }
