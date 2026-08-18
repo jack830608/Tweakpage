@@ -226,7 +226,7 @@
     "message": "Copy the edits so a teammate can import them"
   },
   "tip_export": {
-    "message": "Download the edits as JSON"
+    "message": "Save the edits as a file a teammate can import"
   },
   "choose_file": {
     "message": "Choose file…"
@@ -553,7 +553,7 @@
     "message": "Upload and copy a share link"
   },
   "tip_share_link": {
-    "message": "Upload these edits and copy a link. Whoever opens it needs Tweakpage and the same bucket."
+    "message": "Upload these edits and copy a link. Whoever opens it needs Tweakpage and nothing else."
   },
   "toast_share_copied": {
     "message": "Link copied — it opens this page with your edits"
