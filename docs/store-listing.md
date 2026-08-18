@@ -118,16 +118,18 @@ you control.
 
 Sizes the dashboard requires. Every screenshot must be the shipping UI.
 
-- [ ] Store icon 128×128 — have it (`public/icon/128.png`), but it is still the red-ish
-      original while the UI is emerald. Redraw before submitting.
+- [x] Store icon 128×128 (`public/icon/128.png`), artwork inset to 96×96 as the grid
+      expects. `pnpm icons` redraws it and the three toolbar sizes from one source.
 - [ ] Screenshots 1280×800 (or 640×400), 1–5 of them. Suggested: select and edit; before
       and after; the change list with a note; duplicate and reorder; the share link
       preview as the recipient sees it.
-- [ ] Small promo tile 440×280.
+- [x] Small promo tile 440×280 (`docs/assets/store/promo-440x280.png`), also from
+      `pnpm icons`.
 - [ ] Marquee 1400×560 — only if the dashboard asks for it.
 
 `pnpm shots` regenerates the screenshots from the live extension so they cannot drift
-from the product.
+from the product. `pnpm icons` regenerates the icon set and the promo tile; the drawing
+itself lives in `scripts/icon.mjs`, with `docs/assets/icon.svg` as its vector output.
 
 ## Before pressing submit
 
