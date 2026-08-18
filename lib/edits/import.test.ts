@@ -1,5 +1,5 @@
 import { fakeBrowser } from 'wxt/testing';
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { importPageEdits, mergeRecords, parseImport } from './import';
 import { loadPageEdits, savePageEdits } from './storage';
 import { emptyPageEdits, type EditRecord } from './types';
@@ -178,4 +178,45 @@ test('a selector that could never be a selector is refused', () => {
     const result = parseImport(body(ordinary));
     expect(result.ok && result.skipped, ordinary).toBe(0);
   }
+});
+
+describe('a picked image inside a record', () => {
+  const shared = (newValue: string, property = 'src') =>
+    parseImport(JSON.stringify({
+      version: 1, url: 'https://a.com/p', title: '', updatedAt: 'n',
+      records: [{
+        id: 'i1', selector: 'img#hero', fallbackSelectors: [], elementLabel: 'img',
+        type: property === 'backgroundImage' ? 'style' : 'attr',
+        property, oldValue: 'none', newValue,
+        enabled: true, createdAt: 'n', updatedAt: 'n',
+      }],
+    }));
+  const image = (chars: number) => 'data:image/png;base64,' + 'A'.repeat(chars);
+  /** How many records the import threw away. */
+  const dropped = (value: string, property?: string) => {
+    const result = shared(value, property);
+    return result.ok ? result.skipped : 'parse failed';
+  };
+
+  test('survives export and import — the path that needs no setup', () => {
+    // Every real photo used to be dropped here, silently, on both routes.
+    expect(dropped(image(300_000))).toBe(0);
+    expect(dropped(`url("${image(300_000)}")`, 'backgroundImage')).toBe(0);
+  });
+
+  test('but not one larger than the picker itself allows', () => {
+    expect(dropped(image(3_000_000)), 'the bound is the picker’s, not unlimited').toBe(1);
+  });
+
+  test('an ordinary URL keeps its tight limit', () => {
+    expect(dropped('https://cdn.example.com/' + 'a'.repeat(3000))).toBe(1);
+    expect(dropped('https://cdn.example.com/a.png')).toBe(0);
+  });
+
+  test('a long data: URL that is not an image is still refused', () => {
+    expect(
+      dropped('data:text/html;base64,' + 'A'.repeat(300_000)),
+      'the exemption is for pictures, not for size',
+    ).toBe(1);
+  });
 });

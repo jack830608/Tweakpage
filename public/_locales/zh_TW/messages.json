@@ -226,7 +226,7 @@
     "message": "複製這些改動,同事可以直接匯入"
   },
   "tip_export": {
-    "message": "把改動下載成 JSON"
+    "message": "把改動存成檔案,同事可以匯入"
   },
   "choose_file": {
     "message": "選擇檔案…"
@@ -553,7 +553,7 @@
     "message": "上傳並複製分享連結"
   },
   "tip_share_link": {
-    "message": "把這些改動上傳並複製連結。對方需要裝 Tweakpage 並設定同一個 bucket。"
+    "message": "上傳這些改動並複製連結。開啟連結的人只需要裝 Tweakpage,不需要其他設定。"
   },
   "toast_share_copied": {
     "message": "連結已複製 — 打開它就會看到你的改動"
