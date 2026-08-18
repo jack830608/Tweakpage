@@ -42,13 +42,13 @@ DevTools for a copy tweak. Every edit is recorded as a structured diff
   footer carries the count; minimize or close and the chip takes over in the same spot.
 - **Proposals** — save the current edits under a name and switch between directions
   without rebuilding either. They travel with exports.
-- **Hand-off** — copy a Markdown change list for Slack/Jira, copy a pasteable CSS
-  stylesheet, export/import JSON, or snap one image with the original and edited page
-  side by side. Each change can carry a note — the why under the what — which travels
+- **Hand-off** — copy a Markdown change list for Slack/Jira, export/import JSON, or snap
+  one image with the original and edited page side by side. Each change can carry a note — the why under the what — which travels
   with exports and share links.
 - **Share links** — upload a page's edits to your own S3 bucket and send a URL.
   The recipient needs Tweakpage and nothing else. Opening a link previews; nothing is
-  saved on their machine until they choose **Keep**.
+  saved on their machine until they choose **Keep**. Images you picked from your own
+  machine go up with it — optionally compressed through TinyPNG first.
 - **Undo everything** — `⌘Z`/`⇧⌘Z`, per-edit toggles, per-element resets, revert all.
 - **Keyboard-first friendly** — pick, navigate, resize, and edit without a mouse;
   visible text and screen-reader labels ship in English and Traditional Chinese.
@@ -103,9 +103,8 @@ back to where it started removes the edit.
 hover to highlight its element, click to scroll to it. **Import JSON** merges a
 teammate's edits — edits for other pages wait until you open those pages.
 
-Hand off with **Copy summary** (Markdown), **Copy CSS** (a pasteable stylesheet),
-**Screenshot** (original and edited side by side in one image), or **Copy / Download
-JSON**. **Proposals** saves the current set under a name so two directions can be
+Hand off with **Copy summary** (Markdown), **Screenshot** (original and edited side by
+side in one image), or **Copy / Download JSON**. **Proposals** saves the current set under a name so two directions can be
 compared live.
 
 ### The panel
@@ -143,6 +142,25 @@ as it was.
 Gear icon → **Share links** → fill in bucket, region, access key id and secret. They
 save as you type; until all four are set, the Share link button stays disabled. This
 repo ships no defaults.
+
+### Images
+
+An image picked from your machine is stored locally as data, which is right for this
+machine and useless in a share: the bytes make the page too big to survive the import
+limits, so the recipient would quietly see the original picture. Sharing therefore
+lifts each image into `tweakpage/images/<sha256>.<ext>` — the same prefix as the shares,
+so the policy below covers both — and sends a URL in its place. The local edit keeps its
+bytes, so your own page still works offline.
+
+Under gear icon → **Images**:
+
+- **Upload images when sharing** — on by default. Turn it off and local images stay
+  embedded, and the share tells you they will not travel.
+- **TinyPNG** — paste a [tinify.com](https://tinypng.com/developers) key and switch on
+  **Compress with TinyPNG first** to shrink images before they are uploaded. It sends
+  the image to a third party, which is why the switch is separate from the key. If the
+  month's free quota runs out or the service is down, the original is uploaded instead —
+  a share is never blocked by it.
 
 The key needs to write, and to be allowed to mark what it writes as readable:
 

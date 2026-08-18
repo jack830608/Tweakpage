@@ -213,20 +213,11 @@
   "err_image_url": {
     "message": "Needs to start with https:// — or pick a file"
   },
-  "share_css": {
-    "message": "Copy CSS"
-  },
-  "toast_copied_css": {
-    "message": "CSS copied to clipboard"
-  },
   "toast_copied_json": {
     "message": "JSON copied — paste it to a teammate"
   },
   "tip_copy_summary": {
     "message": "Copy a Markdown summary for engineers"
-  },
-  "tip_copy_css": {
-    "message": "Copy the changes as a stylesheet"
   },
   "tip_snap": {
     "message": "Save before & after screenshots"
@@ -275,9 +266,6 @@
   },
   "aria_close": {
     "message": "Close"
-  },
-  "aria_copy_css": {
-    "message": "Copy CSS"
   },
   "aria_copy_json": {
     "message": "Copy JSON"
@@ -776,5 +764,41 @@
   },
   "aria_note": {
     "message": "Note for this change"
+  },
+  "toast_share_copied_images": {
+    "message": "Link copied — $1 image(s) uploaded with it"
+  },
+  "toast_share_copied_images_compressed": {
+    "message": "Link copied — $1 image(s) uploaded, $2 compressed"
+  },
+  "toast_share_copied_without_images": {
+    "message": "Link copied, but $1 local image(s) could not be uploaded — whoever opens it will see the original images."
+  },
+  "settings_images": {
+    "message": "Images"
+  },
+  "settings_upload_images": {
+    "message": "Upload images when sharing"
+  },
+  "settings_upload_images_hint": {
+    "message": "A picked image is stored on this machine as data. Sharing lifts it into your bucket so the link works for someone else; without this, local images do not travel."
+  },
+  "settings_compress": {
+    "message": "Compress with TinyPNG first"
+  },
+  "settings_compress_hint": {
+    "message": "Sends the image to tinify.com before it is uploaded. Needs a key; if the month’s free quota runs out, the original is uploaded instead."
+  },
+  "aria_upload_images": {
+    "message": "Upload images to your bucket when sharing"
+  },
+  "aria_compress_images": {
+    "message": "Compress images with TinyPNG before uploading"
+  },
+  "on": {
+    "message": "On"
+  },
+  "off": {
+    "message": "Off"
   }
 }

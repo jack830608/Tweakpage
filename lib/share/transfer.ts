@@ -1,4 +1,7 @@
-import { objectUrl, type ShareRef } from './link';
+import { compressImage } from './compress';
+import { embeddedImages, imageKey, withHostedImages, type EmbeddedImage } from './images';
+import { imageUrl, objectUrl, type ShareRef } from './link';
+import type { PageEdits } from '../edits/types';
 import { getShareSettings, isConfigured, type ShareSettings } from './settings';
 import { signRequest } from './sigv4';
 
@@ -10,8 +13,90 @@ export type TransferFailure =
   | 'offline';
 
 export type TransferResult =
-  | { ok: true; body: string; ref?: ShareRef }
+  | { ok: true; body: string; ref?: ShareRef; images?: ImageReport }
   | { ok: false; reason: TransferFailure };
+
+/** What happened to the page's embedded images on the way up. */
+export interface ImageReport {
+  uploaded: number;
+  compressed: number;
+  /** Images that had to travel embedded — no bucket, or the upload was refused. */
+  embedded: number;
+}
+
+/**
+ * Lifts embedded images out to the bucket and hands back a page that points at them.
+ *
+ * Best-effort by design: an image that will not upload stays embedded rather than
+ * failing the share, and compression is skipped rather than blocking. What actually
+ * happened is reported so the toast can say it instead of guessing.
+ */
+export async function hostImages(page: PageEdits, settings: ShareSettings): Promise<{
+  page: PageEdits;
+  report: ImageReport;
+}> {
+  const images = embeddedImages(page);
+  if (images.length === 0) return { page, report: { uploaded: 0, compressed: 0, embedded: 0 } };
+  if (!settings.uploadImages) {
+    return { page, report: { uploaded: 0, compressed: 0, embedded: images.length } };
+  }
+
+  const hosted = new Map<string, string>();
+  let compressed = 0;
+  for (const image of images) {
+    const result = await hostOne(image, settings);
+    if (!result) continue;
+    hosted.set(image.dataUrl, result.url);
+    if (result.compressed) compressed++;
+  }
+  return {
+    page: withHostedImages(page, hosted),
+    report: { uploaded: hosted.size, compressed, embedded: images.length - hosted.size },
+  };
+}
+
+async function hostOne(
+  image: EmbeddedImage,
+  settings: ShareSettings,
+): Promise<{ url: string; compressed: boolean } | null> {
+  const shrunk = settings.compressImages
+    ? await compressImage(image.bytes, image.mediaType, settings.tinypngKey)
+    : { bytes: image.bytes, compressed: false };
+  // Named after its own content, so the same picture uploads once however often it is
+  // shared — and the name changes when compression changes the bytes.
+  const key = await imageKey({ ...image, bytes: shrunk.bytes });
+  const url = imageUrl(settings.bucket, settings.region, key);
+  const written = await putBytes(settings, url, shrunk.bytes, image.mediaType);
+  return written ? { url: url.toString(), compressed: shrunk.compressed } : null;
+}
+
+async function putBytes(
+  settings: ShareSettings,
+  url: URL,
+  bytes: Uint8Array,
+  contentType: string,
+): Promise<boolean> {
+  for (const acl of [undefined, 'public-read'] as const) {
+    const { headers } = await signRequest({
+      method: 'PUT',
+      url,
+      region: settings.region,
+      accessKeyId: settings.accessKeyId,
+      secretAccessKey: settings.secretAccessKey,
+      body: bytes,
+      headers: { 'content-type': contentType, ...(acl ? { 'x-amz-acl': acl } : {}) },
+    });
+    try {
+      const response = await fetch(url.toString(), { method: 'PUT', headers, body: bytes as unknown as BodyInit });
+      if (!response.ok) continue;
+      // The recipient reads it with no credentials, so that is how it gets checked.
+      if ((await fetch(url.toString(), { method: 'HEAD' })).ok) return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
 
 /**
  * Uploads, then checks that the link it produced can actually be opened.
@@ -26,19 +111,24 @@ export type TransferResult =
  * where the object has to ask for it — so that is the second attempt rather than the
  * first, because a bucket-owner-enforced bucket rejects the ACL outright.
  */
-export async function putShared(id: string, body: string): Promise<TransferResult> {
+export async function putShared(id: string, page: PageEdits): Promise<TransferResult> {
   const settings = await getShareSettings();
   if (!isConfigured(settings)) return { ok: false, reason: 'not-configured' };
+
+  // Images first: a page whose pictures are hosted is small enough to survive the import
+  // limits on arrival, which embedded ones are not.
+  const { page: hosted, report } = await hostImages(page, settings);
+  const body = JSON.stringify(hosted);
 
   const ref = { id, bucket: settings.bucket, region: settings.region };
   const written = await upload(settings, ref, body);
   if (!written.ok) return written;
-  if (await isPubliclyReadable(ref)) return { ok: true, body: '', ref };
+  if (await isPubliclyReadable(ref)) return { ok: true, body: '', ref, images: report };
 
   const retried = await upload(settings, ref, body, 'public-read');
   if (!retried.ok) return { ok: false, reason: 'not-readable' };
   return (await isPubliclyReadable(ref))
-    ? { ok: true, body: '', ref }
+    ? { ok: true, body: '', ref, images: report }
     : { ok: false, reason: 'not-readable' };
 }
 

@@ -17,7 +17,8 @@ export interface SigningInput {
   accessKeyId: string;
   secretAccessKey: string;
   /** Empty for GET. */
-  body?: string;
+  /** Text or raw bytes — an image is signed over exactly the bytes that are sent. */
+  body?: string | Uint8Array;
   /** Extra headers to sign, lower-cased by the signer. */
   headers?: Record<string, string>;
   now?: Date;
@@ -120,8 +121,9 @@ async function hmac(key: Uint8Array, message: string): Promise<ArrayBuffer> {
   return crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(message));
 }
 
-async function sha256Hex(value: string): Promise<string> {
-  return toHex(await crypto.subtle.digest('SHA-256', encoder.encode(value)));
+async function sha256Hex(value: string | Uint8Array): Promise<string> {
+  const bytes = typeof value === 'string' ? encoder.encode(value) : value;
+  return toHex(await crypto.subtle.digest('SHA-256', bytes as unknown as ArrayBuffer));
 }
 
 function toHex(buffer: ArrayBuffer): string {

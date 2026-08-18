@@ -1,5 +1,6 @@
 import { browser } from 'wxt/browser';
 import { getShared, putShared } from '../lib/share/transfer';
+import type { PageEdits } from '../lib/edits/types';
 
 export default defineBackground(() => {
   browser.runtime.onMessage.addListener(
@@ -12,6 +13,7 @@ export default defineBackground(() => {
         url?: string;
         id?: string;
         body?: string;
+        page?: unknown;
         ref?: { id: string; bucket: string; region: string };
       },
       sender,
@@ -41,8 +43,8 @@ export default defineBackground(() => {
       }
       // Hands the pixels back instead of downloading them, so the editor can put the
       // two captures side by side before anything reaches the downloads folder.
-      if (message?.type === 'tweakpage:share-put' && typeof message.id === 'string' && typeof message.body === 'string') {
-        return putShared(message.id, message.body);
+      if (message?.type === 'tweakpage:share-put' && typeof message.id === 'string' && message.page) {
+        return putShared(message.id, message.page as PageEdits);
       }
       if (message?.type === 'tweakpage:open-options') {
         void browser.runtime.openOptionsPage();

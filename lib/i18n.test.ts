@@ -102,7 +102,11 @@ test('accessible names are never hard-coded English', () => {
       for (const m of line.matchAll(/(aria-label|ariaLabel|title)=(?:"([^"]*)"|\{'([^']*)'\}|\{`([^`]*)`\})/g)) {
         const literal = (m[2] ?? m[3] ?? m[4] ?? '').replace(/\$\{[^}]*\}/g, '');
         if (!/[A-Za-z]{3,}/.test(literal)) continue;
-        if (/^[a-z-]+$/.test(literal.trim())) continue; // a CSS property name is the label
+        const bare = literal.trim();
+        if (/^[a-z-]+$/.test(bare)) continue; // a CSS property name is the label
+        // SCREAMING_SNAKE names an environment variable the user pastes from elsewhere;
+        // translating it would stop it matching what they are copying from.
+        if (/^[A-Z][A-Z0-9_]*$/.test(bare)) continue;
         offenders.push(`${file}:${i + 1} ${m[0]}`);
       }
     }
