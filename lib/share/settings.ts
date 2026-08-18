@@ -34,7 +34,7 @@ export const EMPTY_SETTINGS: ShareSettings = {
   accessKeyId: '',
   secretAccessKey: '',
   tinypngKey: '',
-  uploadImages: { summary: true, json: false, download: false, share: true },
+  uploadImages: { summary: true, json: true, download: true, share: true },
   compressImages: false,
 };
 
@@ -123,8 +123,8 @@ export function watchShareSettings(onChange: (settings: ShareSettings) => void):
  *
  * A boolean is what the first version wrote, when the choice was share-only; it means
  * that answer for every destination. Anything unreadable falls back to the defaults,
- * where a share uploads (a link that drops its images is broken) and a JSON export does
- * not (being self-contained is the reason to use it).
+ * which are on: with no bucket configured nothing uploads anyway, so "on" reads as
+ * "upload when there is somewhere to upload to".
  */
 function handOffs(value: unknown): Record<HandOff, boolean> {
   const defaults = EMPTY_SETTINGS.uploadImages;
