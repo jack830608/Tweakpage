@@ -8,13 +8,15 @@ import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
 import type { ToastContent } from './Toast';
+import { AsyncButton } from './AsyncButton';
 import { CameraIcon, CopyIcon, DownloadIcon, LinkIcon } from './icons';
 import { t } from '../../../lib/i18n';
 
 interface ShareRowProps {
   controller: EditsController;
   onToast: (toast: ToastContent) => void;
-  onSnapshot: () => void;
+  /** Resolves when the captures are composed and saved; false on failure. */
+  onSnapshot: () => Promise<boolean>;
 }
 
 export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
@@ -30,7 +32,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
   const copy = async (text: string, message: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      onToast({ message });
+      onToast({ message, kind: 'success' });
     } catch {
       window.prompt('Copy the text below:', text);
     }
@@ -49,16 +51,18 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
       // A link nobody can open is the failure worth naming precisely.
       onToast({
         message: t(result?.reason === 'not-readable' ? 'toast_share_private' : 'toast_share_failed'),
+        kind: 'error',
       });
-      return;
+      return false;
     }
     await copy(shareLink(page.url, result.ref), t('toast_share_copied'));
+    return true;
   };
 
   const onJsonFile = () => {
     const page = controller.getPage();
     downloadFile(exportFilename(page.url, today().replaceAll('-', '')), toJson(page));
-    onToast({ message: t('toast_exported') });
+    onToast({ message: t('toast_exported'), kind: 'success' });
   };
 
   return (
@@ -81,14 +85,16 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
         >
           <CopyIcon /> {t('share_css')}
         </button>
-        <button
-          type="button"
-          aria-label={t('aria_snapshot')} data-testid="snapshot-before-and-after"
+        <AsyncButton
+          icon={<CameraIcon />}
+          label={t('share_snap')}
+          busyLabel={t('snap_busy')}
+          doneLabel={t('snap_done')}
+          ariaLabel={t('aria_snapshot')}
+          testId="snapshot-before-and-after"
           title={t('tip_snap')}
-          onClick={onSnapshot}
-        >
-          <CameraIcon /> {t('share_snap')}
-        </button>
+          run={onSnapshot}
+        />
 
         <button
           type="button"
@@ -101,16 +107,17 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
         <button type="button" aria-label={t('aria_export_json')} data-testid="export-json" title={t('tip_export')} onClick={onJsonFile}>
           <DownloadIcon /> {t('share_download')}
         </button>
-        <button
-          type="button"
-          aria-label={t('aria_share_link')}
-          data-testid="share-link"
+        <AsyncButton
+          icon={<LinkIcon />}
+          label={t('share_link')}
+          busyLabel={t('share_link_busy')}
+          doneLabel={t('share_link_done')}
+          ariaLabel={t('aria_share_link')}
+          testId="share-link"
           disabled={!canShare}
           title={canShare ? t('tip_share_link') : t('tip_share_unset')}
-          onClick={() => void onShareLink()}
-        >
-          <LinkIcon /> {t('share_link')}
-        </button>
+          run={onShareLink}
+        />
       </div>
     </div>
   );

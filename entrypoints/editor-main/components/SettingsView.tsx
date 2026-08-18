@@ -10,6 +10,7 @@ import {
 import type { PanelPrefs, ThemeChoice } from '../panel-position';
 import { CollapsibleSection } from './CollapsibleSection';
 import { ModeSwitch } from './ModeSwitch';
+import type { ToastContent } from './Toast';
 import { t } from '../../../lib/i18n';
 
 /**
@@ -26,7 +27,7 @@ import { t } from '../../../lib/i18n';
 interface SettingsViewProps {
   prefs: PanelPrefs;
   onPrefs: (next: PanelPrefs) => void;
-  onToast: (toast: { message: string }) => void;
+  onToast: (toast: ToastContent) => void;
 }
 
 const THEME_OPTIONS = [
@@ -69,7 +70,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function ShareGroup({ onToast }: { onToast: (toast: { message: string }) => void }) {
+function ShareGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
   const [settings, setSettings] = useState<ShareSettings | null>(null);
   // Decided once, when the stored settings arrive — a default computed during render
   // cannot be turned off, because the click that should close it has nothing to write to.
@@ -128,7 +129,7 @@ function ShareGroup({ onToast }: { onToast: (toast: { message: string }) => void
           data-testid="clear-share-settings"
           onClick={() => {
             commit(EMPTY_SETTINGS);
-            onToast({ message: t('toast_share_cleared') });
+            onToast({ message: t('toast_share_cleared'), kind: 'info' });
           }}
         >
           {t('opt_clear')}
@@ -153,12 +154,12 @@ function PermissionsHelp({
 }: {
   open: boolean;
   onToggle: () => void;
-  onToast: (toast: { message: string }) => void;
+  onToast: (toast: ToastContent) => void;
 }) {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(POLICY);
-      onToast({ message: t('toast_policy_copied') });
+      onToast({ message: t('toast_policy_copied'), kind: 'success' });
     } catch {
       window.prompt('Copy the text below:', POLICY);
     }

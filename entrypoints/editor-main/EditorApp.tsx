@@ -78,14 +78,14 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
       .then((result: unknown) => {
         const transfer = result as { ok?: boolean; body?: string } | null;
         if (!transfer?.ok || typeof transfer.body !== 'string') {
-          setToast({ message: t('shared_missing') });
+          setToast({ message: t('shared_missing'), kind: 'error' });
           return;
         }
         // Still validated like any imported file — a link is not a reason to trust what
         // it points at.
         const parsed = parseImport(transfer.body);
         if (!parsed.ok || parsed.page.records.length === 0) {
-          setToast({ message: t('shared_missing') });
+          setToast({ message: t('shared_missing'), kind: 'error' });
           return;
         }
         // Shown, not saved: whoever opens the link is looking at someone else's proposal,
@@ -93,7 +93,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         controller.previewShared(parsed.page.records);
         setToast({ message: plural(parsed.page.records.length, 'toast_shared_preview_one', 'toast_shared_preview') });
       })
-      .catch(() => setToast({ message: t('shared_missing') }));
+      .catch(() => setToast({ message: t('shared_missing'), kind: 'error' }));
   }, [controller]);
 
   useEffect(() => {
@@ -108,7 +108,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   }, [controller]);
 
   useEffect(() => {
-    const onSaveFailed = () => setToast({ message: t('toast_save_failed') });
+    const onSaveFailed = () => setToast({ message: t('toast_save_failed'), kind: 'error' });
     document.addEventListener('tweakpage:save-failed', onSaveFailed);
     return () => document.removeEventListener('tweakpage:save-failed', onSaveFailed);
   }, []);
@@ -118,12 +118,20 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     safeStorageSet({ [ONBOARDED_KEY]: true });
   }, []);
 
-  const onSnapshot = useCallback(() => {
-    captureBeforeAfter(controller, host, document).then(
-      () => setToast({ message: t('toast_snapshots') }),
-      () => setToast({ message: t('toast_snapshot_failed') }),
-    );
-  }, [controller, host]);
+  const onSnapshot = useCallback(
+    () =>
+      captureBeforeAfter(controller, host, document).then(
+        () => {
+          setToast({ message: t('toast_snapshots'), kind: 'success' });
+          return true;
+        },
+        () => {
+          setToast({ message: t('toast_snapshot_failed'), kind: 'error' });
+          return false;
+        },
+      ),
+    [controller, host],
+  );
 
   const onModeChange = useCallback((next: InteractionMode) => {
     setMode(next);
@@ -152,7 +160,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
       setSelected(target);
       setHovered(null);
       inlineSession.current = startInlineEdit(target, controller, () =>
-        setToast({ message: t('toast_inline_unrecorded') }),
+        setToast({ message: t('toast_inline_unrecorded'), kind: 'error' }),
       );
       setEditingEl(target);
     };

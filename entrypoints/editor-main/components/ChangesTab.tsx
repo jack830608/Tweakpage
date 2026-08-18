@@ -31,17 +31,17 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
   const onImportFile = async (file: File) => {
     const result = parseImport(await file.text());
     if (!result.ok) {
-      onToast({ message: t('toast_import_failed', [result.error]) });
+      onToast({ message: t('toast_import_failed', [result.error]), kind: 'error' });
       return;
     }
     const suffix = result.skipped > 0 ? t('toast_skipped', [result.skipped]) : '';
     if (result.page.url === normalizePageUrl(location.href)) {
       controller.importRecords(result.page.records);
-      onToast({ message: t('toast_imported', [result.page.records.length, suffix]) });
+      onToast({ message: t('toast_imported', [result.page.records.length, suffix]), kind: 'success' });
     } else {
       await importPageEdits(result.page);
       const host = new URL(result.page.url).hostname;
-      onToast({ message: t('toast_imported_for', [result.page.records.length, host, suffix]) });
+      onToast({ message: t('toast_imported_for', [result.page.records.length, host, suffix]), kind: 'success' });
     }
   };
 

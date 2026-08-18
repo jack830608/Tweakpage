@@ -308,9 +308,25 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- page-level surfaces ---------- */
 .twk-badge { position: fixed; left: 16px; bottom: 16px; z-index: 2147483647; display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border: none; border-radius: 999px; background: var(--dark); color: #fff; font: 500 12px/1.4 var(--sans); cursor: pointer; box-shadow: var(--shadow-pop); }
-.twk-toast { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 2147483647; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 10px; background: var(--dark); color: #fff; font: 400 12px/1.4 var(--sans); box-shadow: var(--shadow-pop); }
+/* An outcome the user must not miss: bigger than body copy, an icon coloured by kind,
+   and an entrance — a static bar at the page's edge read as part of the page. */
+.twk-toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 2147483647; display: flex; align-items: center; gap: 10px; max-width: min(480px, calc(100vw - 32px)); padding: 12px 18px; border-radius: 12px; background: var(--dark); color: #fff; font: 500 13px/1.45 var(--sans); box-shadow: 0 2px 6px rgba(0,0,0,.25), 0 12px 32px rgba(0,0,0,.35); animation: twk-toast-in 0.18s ease-out; }
+.twk-toast-icon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; }
+.twk-toast[data-kind='success'] .twk-toast-icon { background: rgba(52, 211, 153, 0.18); color: #34d399; }
+.twk-toast[data-kind='error'] .twk-toast-icon { background: rgba(251, 191, 36, 0.18); color: #fbbf24; }
+.twk-toast[data-kind='info'] .twk-toast-icon { background: rgba(165, 180, 252, 0.18); color: #a5b4fc; }
 .twk-toast button { border: none; background: none; color: #a5b4fc; font-weight: 700; cursor: pointer; }
 .twk-toast button:hover { color: #c7d2fe; }
+@keyframes twk-toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* The work is happening; the button says so and shows the result where the click was. */
+.twk-spin { animation: twk-rotate 0.8s linear infinite; }
+@keyframes twk-rotate { to { transform: rotate(360deg); } }
+.twk-share-buttons button.twk-done { border-color: var(--accent); color: var(--accent-ink); }
+@media (prefers-reduced-motion: reduce) {
+  .twk-toast { animation: none; }
+  .twk-spin { animation: none; }
+}
 
 /* An explicit choice in the panel header beats the OS setting, both ways. */
 :host([data-theme="dark"]) {
