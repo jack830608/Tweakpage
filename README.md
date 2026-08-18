@@ -67,7 +67,8 @@ pnpm install && pnpm build   # output in .output/chrome-mv3/
 ## Quick start
 
 1. Click the **Tweakpage** toolbar icon → **Edit this page**.
-2. Hover to outline, click to select. Edit in the panel's sections.
+2. Hover to outline, click to select. Edit in the panel's sections — or double-click
+   text and type straight on the page.
 3. Reload the page — your edits replay. Footer **Review ›** lists every change.
 4. Done? **Copy summary** and paste the change list into Slack or Jira.
 
@@ -84,7 +85,10 @@ children, or `⌥` + arrow keys to walk the DOM without a mouse.
 
 **Double-click text to edit it in place** — the element itself becomes a plain-text
 input; blur, `Esc`, or clicking away commits, and the change lands in the same records
-as the panel's text boxes. Long rewrites are still comfortable in the panel.
+as the panel's text boxes. Long rewrites are still comfortable in the panel. An element
+broken into more than twelve runs of text is not offered either way: past that there is
+no field to record a change under, and typing that records nothing is worse than a
+field that isn't there.
 
 Fields are named after the CSS property they write — an edited one shows a ↺ reset
 beside it, and reset restores what the page holds *now*, not a stale snapshot, even if
@@ -111,9 +115,10 @@ compared live.
 
 Drag it anywhere; resize by dragging its left edge or focusing the edge and using the
 arrow keys — both remembered. Idle, it turns slightly translucent so the page shows
-through, and solidifies when you reach for it. The gear opens Settings: theme
-(system/light/dark) and the share-link credentials. The popup on the toolbar icon lists
-every page holding saved edits — open or clear them from there.
+through, and solidifies when you reach for it. The gear opens Settings: appearance
+(system/light/dark theme), share-link credentials, and what happens to images on the way
+out. The popup on the toolbar icon lists every page holding saved edits — open or clear
+them from there.
 
 ### Keyboard shortcuts
 
@@ -154,11 +159,11 @@ tweakpage/
 
 ### Images
 
-An image picked from your machine is stored locally as data, which is right for this
-machine and useless in a share: the bytes make the page too big to survive the import
-limits, so the recipient would quietly see the original picture. Sharing therefore
-lifts each image into `tweakpage/images/<sha256>.<ext>` and sends a URL in its place. The local edit keeps its
-bytes, so your own page still works offline.
+An image picked from your machine (up to 1.5MB) is stored as data until it exists
+somewhere else — right for this machine and useless in a share, where the bytes make the
+page too big to survive the import limits and the recipient would quietly see the
+original picture. A hand-off that uploads lifts each image into
+`tweakpage/images/<sha256>.<ext>` and points at it instead.
 
 Under gear icon → **Images**, one switch per hand-off — Copy summary, Copy JSON,
 Download JSON, Share link — with **All hand-offs** above them to set the lot. All on by
@@ -213,7 +218,10 @@ credentials, exactly as a recipient would, and refuses to hand you a link that w
   never leaves the machine — requests carry a signature derived from it.
 - The object name is 113 bits of randomness, so the link is the permission — but the
   file is readable by anyone holding it. Don't share pages whose content is
-  confidential. A lifecycle rule on the `tweakpage/` prefix expires old shares.
+  confidential. A lifecycle rule on `tweakpage/shares/` expires old links; one on
+  `tweakpage/images/` expires pictures, which are content-addressed and therefore shared
+  between every link that used the same image — expire them and older links lose their
+  pictures, not just the one you had in mind.
 - A link carries an id, bucket and region as separate validated parts — never a URL —
   so it can only resolve to an address Tweakpage builds itself, and what arrives is
   validated exactly like an imported file.
@@ -226,9 +234,11 @@ credentials, exactly as a recipient would, and refuses to hand you a link that w
 - Style edits go through one injected stylesheet targeting a `data-tweakpage` marker
   stamped on the resolved element — a selector can never fan out to elements you didn't
   pick.
-- Selectors prove uniqueness, not identity: a hit is held against the remembered text
+- Selectors prove uniqueness, not identity. A hit is held against the remembered text
   before it is believed, so a site inserting a sibling can't get the wrong element
-  edited.
+  edited — and a selector minted after Tweakpage's own reorder or duplicate waits until
+  those are replayed, because it describes the page as it looked then, not as the site
+  serves it.
 - Everything lives in `chrome.storage.local`, keyed by normalized URL. Nothing leaves
   the machine unless you export or share.
 
