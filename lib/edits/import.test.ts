@@ -127,3 +127,28 @@ test('move records import, and a forged index does not', () => {
     expect(result.ok && result.skipped, JSON.stringify(bad)).toBe(1);
   }
 });
+
+test('custom style properties import under the custom gate', () => {
+  const page = (record: object) =>
+    JSON.stringify({
+      version: 1, url: 'https://a.com/p', title: '', updatedAt: 'n',
+      records: [{
+        id: 'cc1', selector: '#x', fallbackSelectors: [], elementLabel: 'div',
+        enabled: true, createdAt: 'n', updatedAt: 'n',
+        type: 'style', property: 'transform', oldValue: 'none', newValue: 'rotate(3deg)',
+        ...record,
+      }],
+    });
+  const good = parseImport(page({}));
+  expect(good.ok && good.page.records).toHaveLength(1);
+
+  for (const bad of [
+    { newValue: '10px} body{display:none' },
+    { property: 'Transform' },
+    { property: '--brand' },
+    { newValue: 'expression(alert(1))' },
+  ]) {
+    const result = parseImport(page(bad));
+    expect(result.ok && result.skipped, JSON.stringify(bad)).toBe(1);
+  }
+});

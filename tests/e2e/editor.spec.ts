@@ -1085,3 +1085,29 @@ test('duplicate an element, edit the copy, and it all survives a reload', async 
   // The original was never touched.
   await expect(page.locator('#perk-b')).toHaveText('Free returns');
 });
+
+test('custom CSS applies, replays, and toggles like any other edit', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+
+  const advanced = page.locator('[data-section="advanced"]');
+  if ((await advanced.getAttribute('aria-expanded')) !== 'true') await advanced.click();
+  await page.locator('[data-testid="custom-css"]').fill('letter-spacing: 4px; text-decoration: underline;');
+  await page.locator('[data-testid="custom-css"]').blur();
+
+  const decoration = () =>
+    page.locator('h1').evaluate((el) => getComputedStyle(el).textDecorationLine);
+  await expect.poll(decoration, { timeout: 3000 }).toBe('underline');
+
+  // Replays like anything else.
+  await page.reload();
+  await expect.poll(decoration, { timeout: 3000 }).toBe('underline');
+
+  // And each declaration is its own change in Review, individually revocable.
+  await activateEditor(context);
+  await page.locator('[data-testid="review-changes"]').click();
+  const toggles = page.locator('.twk-change-switch');
+  await expect(toggles).toHaveCount(2);
+});

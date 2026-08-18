@@ -27,7 +27,8 @@ DevTools for a copy tweak. Every edit is recorded as a structured diff
   or coloured span inside a heading) survives, paste arrives as plain text.
 - **Edit almost anything** — text (inline markup preserved, one box per run), typography,
   colors with an eyedropper and alpha, backgrounds, images (local file or URL), links,
-  size, spacing, layout, borders, shadows, opacity.
+  size, spacing, layout, borders, shadows, opacity — and an **Advanced** box for any CSS
+  the fields don't cover, one declaration per line.
 - **Reorder, duplicate, hide** — ▲▼ on the selection outline swap an element with its
   siblings; Duplicate inserts an editable copy right after it; Hide removes it
   non-destructively.

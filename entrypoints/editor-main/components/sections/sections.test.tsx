@@ -2,6 +2,7 @@ import { fakeBrowser } from 'wxt/testing';
 import { beforeEach, expect, test } from 'vitest';
 import { t } from '../../../../lib/i18n';
 import { fireEvent, render, screen } from '@testing-library/react';
+import { AdvancedSection } from './AdvancedSection';
 import { AppearanceSection } from './AppearanceSection';
 import { BackgroundSection } from './BackgroundSection';
 import { ImageSection } from './ImageSection';
@@ -147,4 +148,34 @@ test('border width auto-adds a solid style when none, and border color records',
   expect(records.find((r) => r.property === 'borderStyle')!.newValue).toBe('solid');
   fireEvent.change(screen.getByLabelText(t('aria_hex', ['Border color'])), { target: { value: '#112233' } });
   expect(controller.getPage().records.find((r) => r.property === 'borderColor')!.newValue).toBe('#112233');
+});
+
+test('custom CSS declarations become one record per line and clear when removed', () => {
+  document.body.innerHTML = '<div id="box">x</div>';
+  const controller = new EditsController(null, document, NOW);
+  render(<AdvancedSection element={document.getElementById('box')!} controller={controller} />);
+  const box = screen.getByTestId('custom-css') as HTMLTextAreaElement;
+
+  fireEvent.change(box, { target: { value: 'transform: rotate(3deg);\nfilter: blur(2px);' } });
+  fireEvent.blur(box);
+  const styles = () => document.querySelector('style[data-tweakpage-style]')?.textContent ?? '';
+  expect(styles()).toContain('transform: rotate(3deg) !important');
+  expect(styles()).toContain('filter: blur(2px) !important');
+
+  // Deleting a line deletes its record; the other stays.
+  fireEvent.change(box, { target: { value: 'transform: rotate(3deg);' } });
+  fireEvent.blur(box);
+  expect(styles()).toContain('transform');
+  expect(styles()).not.toContain('filter');
+});
+
+test('an unreadable declaration is refused with the line named, and records nothing', () => {
+  document.body.innerHTML = '<div id="box">x</div>';
+  const controller = new EditsController(null, document, NOW);
+  render(<AdvancedSection element={document.getElementById('box')!} controller={controller} />);
+  const box = screen.getByTestId('custom-css') as HTMLTextAreaElement;
+  fireEvent.change(box, { target: { value: 'width: 10px} body{display:none' } });
+  fireEvent.blur(box);
+  expect(screen.getByRole('alert').textContent).toContain('width: 10px}');
+  expect(controller.getPage().records, 'nothing half-applies').toHaveLength(0);
 });

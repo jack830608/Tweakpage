@@ -31,6 +31,7 @@ import { isLink, LinkSection } from './sections/LinkSection';
 import { LayoutSection } from './sections/LayoutSection';
 import { SizeSection } from './sections/SizeSection';
 import { SpacingSection } from './sections/SpacingSection';
+import { AdvancedSection } from './sections/AdvancedSection';
 import { TextSection, hasDirectText } from './sections/TextSection';
 import { TypographySection } from './sections/TypographySection';
 
@@ -84,6 +85,7 @@ const SECTION_DEFS: Array<{
   { id: 'size', render: (el, c) => <SizeSection element={el} controller={c} /> },
   { id: 'layout', render: (el, c) => <LayoutSection element={el} controller={c} /> },
   { id: 'spacing', render: (el, c) => <SpacingSection element={el} controller={c} /> },
+  { id: 'advanced', render: (el, c) => <AdvancedSection element={el} controller={c} /> },
 ];
 
 export function Panel(props: PanelProps) {

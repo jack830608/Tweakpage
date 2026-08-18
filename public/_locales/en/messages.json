@@ -758,5 +758,17 @@
   },
   "tip_unhide": {
     "message": "Show the element again"
+  },
+  "sec_advanced": {
+    "message": "Advanced"
+  },
+  "aria_custom_css": {
+    "message": "Custom CSS declarations"
+  },
+  "custom_css_hint": {
+    "message": "One declaration per line, like a stylesheet. Each becomes its own change in Review."
+  },
+  "custom_css_error": {
+    "message": "Couldn't read “$1” — expected property: value;"
   }
 }

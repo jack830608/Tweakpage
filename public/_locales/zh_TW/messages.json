@@ -758,5 +758,17 @@
   },
   "tip_unhide": {
     "message": "重新顯示這個元素"
+  },
+  "sec_advanced": {
+    "message": "進階"
+  },
+  "aria_custom_css": {
+    "message": "自訂 CSS 宣告"
+  },
+  "custom_css_hint": {
+    "message": "一行一條宣告,寫法跟樣式表一樣。每條會成為「檢視」裡獨立的一筆改動。"
+  },
+  "custom_css_error": {
+    "message": "看不懂「$1」—— 格式是 屬性: 值;"
   }
 }
