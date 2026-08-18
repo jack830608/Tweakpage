@@ -48,7 +48,12 @@ export function startInlineEdit(
   const runIndexByPosition = runPositions(el);
 
   const hadAttribute = el.getAttribute('contenteditable');
+  // Our editing outline is the affordance; the browser's focus ring on top of it reads
+  // as a second, unexplained selection. Saved and restored via the style attribute so a
+  // page's own inline outline comes back exactly as it was.
+  const hadStyle = el.getAttribute('style');
   el.setAttribute('contenteditable', 'plaintext-only');
+  (el as HTMLElement).style.outline = 'none';
   // The applier reapplies records on every mutation — with a keystroke being a
   // mutation, it would rewrite the element under the user's caret.
   doc.dispatchEvent(new CustomEvent('tweakpage:editing', { detail: { on: true } }));
@@ -60,6 +65,8 @@ export function startInlineEdit(
     finished = true;
     if (hadAttribute === null) el.removeAttribute('contenteditable');
     else el.setAttribute('contenteditable', hadAttribute);
+    if (hadStyle === null) el.removeAttribute('style');
+    else el.setAttribute('style', hadStyle);
     // Diff and record BEFORE releasing the applier: the moment it wakes it reapplies
     // records over this element, and a release-then-diff read a page that no longer
     // held the typing.
