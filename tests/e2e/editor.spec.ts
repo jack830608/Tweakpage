@@ -1205,3 +1205,43 @@ test("restyling inside a copy survives the share round-trip — the recipient's 
   expect(await bg(originalItem), 'the original stays unpainted').not.toBe('rgb(67, 65, 149)');
   await reader.context.close();
 });
+
+
+const HOSTILE = `* { all: revert !important; visibility: hidden !important; opacity: 0 !important; }
+                 div, aside, button { display: none !important; position: static !important;
+                                      transform: scale(0) !important; }`;
+
+test('a page stylesheet cannot hide the editor', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await page.addStyleTag({ content: HOSTILE });
+  await activateEditor(context);
+
+  const panel = page.locator('#tweakpage-host aside');
+  await expect(panel).toBeVisible();
+  const box = (await panel.boundingBox())!;
+  expect(box.width, 'the panel keeps its own width').toBeGreaterThan(200);
+  expect(box.height, 'and its own height').toBeGreaterThan(100);
+
+  // Usable, not merely present.
+  await page.locator('[data-testid="open-settings"]').click();
+  await expect(page.locator('.twk-settings')).toBeVisible();
+});
+
+test("a page stylesheet cannot silence the marker that says the page is edited", async ({
+  context,
+}) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited headline');
+  await page.locator('[data-testid="close"]').click();
+  await expect(page.locator('#tweakpage-marker button')).toBeVisible();
+
+  // The honesty guarantee is worth nothing if the site can switch it off.
+  await page.addStyleTag({ content: HOSTILE });
+  await expect(page.locator('#tweakpage-marker button')).toBeVisible();
+  const box = (await page.locator('#tweakpage-marker button').boundingBox())!;
+  expect(box.width, 'still a real, readable chip').toBeGreaterThan(60);
+});

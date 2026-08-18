@@ -45,3 +45,16 @@ test('text and attribute edits come through as comments, not fake CSS', () => {
 test('disabled records are left out', () => {
   expect(toCss(page([record({ enabled: false })]), 'n')).not.toContain('font-size');
 });
+
+test('a copy-scoped rule is written so an engineer can act on it', () => {
+  const css = toCss({
+    version: 1, url: 'https://a.com/p', title: 'T', updatedAt: 'n',
+    records: [{
+      id: 'r1', selector: '[data-tweakpage-clone="x1"] > span:nth-child(1)',
+      fallbackSelectors: [], elementLabel: 'span', type: 'style', property: 'color',
+      oldValue: '#000', newValue: '#f00', enabled: true, createdAt: 'n', updatedAt: 'n',
+    }],
+  }, '2026-08-18');
+  expect(css, 'the stamp only exists while the extension runs').not.toContain('data-tweakpage-clone');
+  expect(css, 'and the engineer is told why').toMatch(/duplicat/i);
+});

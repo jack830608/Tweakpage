@@ -250,3 +250,19 @@ describe('live sync while typing', () => {
     expect(c.getPage().records, 'a finished session stops listening').toHaveLength(0);
   });
 });
+
+test('a run the panel cannot show is not editable in place either', () => {
+  // The panel caps its boxes at 12 runs on purpose. Inline editing gave no such signal:
+  // you typed into the 13th, it looked edited, and it was gone on reload. If a run
+  // cannot be recorded it must not be editable.
+  const runs = Array.from({ length: 14 }, (_, i) => `<span>r${i}</span>`).join(' ');
+  document.body.innerHTML = `<p id="t">Lead ${runs}</p>`;
+  const el = document.getElementById('t')!;
+  expect(canEditInline(el), 'more runs than we can address is not editable').toBe(false);
+});
+
+test('an element within the run limit is still editable', () => {
+  const runs = Array.from({ length: 3 }, (_, i) => `<span>r${i}</span>`).join(' ');
+  document.body.innerHTML = `<p id="t">Lead ${runs}</p>`;
+  expect(canEditInline(document.getElementById('t')!)).toBe(true);
+});

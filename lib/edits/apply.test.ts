@@ -295,3 +295,40 @@ test('a fingerprint must not smuggle a copy-scoped record onto the original', ()
   expect(copySpan.getAttribute('data-tweakpage'), 'styled: the copy').toContain('st30');
   expect(originalSpan.getAttribute('data-tweakpage') ?? '', 'untouched: the original').not.toContain('st30');
 });
+
+describe('selectors minted after our own structural edits', () => {
+  const base = { fallbackSelectors: [] as string[], enabled: true };
+
+  test('an edit made after a move lands on the element the user clicked', () => {
+    // The user moved #c up, then edited the image that had shifted into third place.
+    // That selector describes the rearranged page — resolving it against the pristine
+    // one silently picks a different image.
+    document.body.innerHTML = '<div><img id="a"><img id="b"><img id="c"></div>';
+    const records: Parameters<typeof applyAll>[0] = [
+      { ...base, id: 'mv40', selector: 'img:nth-of-type(3)', fallbackSelectors: ['#c'],
+        elementLabel: 'img', type: 'move', property: 'domIndex', oldValue: '2', newValue: '1',
+        createdAt: '2026-08-18T10:00:00.000Z', updatedAt: 'n' },
+      { ...base, id: 'at40', selector: 'img:nth-of-type(3)', fallbackSelectors: ['#b'],
+        elementLabel: 'img', type: 'attr', property: 'alt', oldValue: '', newValue: 'edited',
+        createdAt: '2026-08-18T10:00:05.000Z', updatedAt: 'n' },
+    ];
+    applyAll(records, document);
+    expect(document.getElementById('b')!.getAttribute('alt'), 'the clicked image').toBe('edited');
+    expect(document.getElementById('c')!.getAttribute('alt'), 'not its neighbour').toBeNull();
+  });
+
+  test('an edit made before a move still resolves against the page as loaded', () => {
+    // The other direction, which the two-phase design already protected.
+    document.body.innerHTML = '<div><img id="a"><img id="b"><img id="c"></div>';
+    const records: Parameters<typeof applyAll>[0] = [
+      { ...base, id: 'at41', selector: 'img:nth-of-type(3)', fallbackSelectors: [],
+        elementLabel: 'img', type: 'attr', property: 'alt', oldValue: '', newValue: 'edited',
+        createdAt: '2026-08-18T10:00:00.000Z', updatedAt: 'n' },
+      { ...base, id: 'mv41', selector: '#a', fallbackSelectors: [],
+        elementLabel: 'img', type: 'move', property: 'domIndex', oldValue: '0', newValue: '2',
+        createdAt: '2026-08-18T10:00:05.000Z', updatedAt: 'n' },
+    ];
+    applyAll(records, document);
+    expect(document.getElementById('c')!.getAttribute('alt'), 'the image that was third on load').toBe('edited');
+  });
+});

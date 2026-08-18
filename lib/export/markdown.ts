@@ -32,6 +32,16 @@ function formatLine(record: EditRecord): string {
   const note = viewportNote(record);
   // The author's why, right under the what — it turns a change list into a brief.
   const why = record.note ? `\n  - ${record.note}` : '';
+  // Structural changes are work an engineer has to do; leaving them out of the list
+  // reads as "nothing to build here".
+  if (record.type === 'move') {
+    const from = Number(record.oldValue) + 1;
+    const to = Number(record.newValue) + 1;
+    return `- **moved**: position ${from} → position ${to} among its siblings${note}${why}`;
+  }
+  if (record.type === 'clone') {
+    return `- **duplicated**: a copy of this element, inserted right after it${note}${why}`;
+  }
   if (record.type === 'text') return `- text: "${record.oldValue}" → "${record.newValue}"${note}${why}`;
   if (record.type === 'attr') {
     return `- ${record.property}: \`${record.oldValue}\` → \`${record.newValue}\`${note}${why}`;
