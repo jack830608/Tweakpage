@@ -59,6 +59,17 @@ export function startInlineEdit(
   doc.dispatchEvent(new CustomEvent('tweakpage:editing', { detail: { on: true } }));
   (el as HTMLElement).focus({ preventScroll: true });
 
+  // The panel renders from records, so recording on every input keeps its text boxes in
+  // step with the typing instead of going stale until blur. Half-composed IME text is
+  // not an edit — it records when the composition commits.
+  const onInput = (e: Event) => {
+    if ((e as InputEvent).isComposing) return;
+    record({ silent: true });
+  };
+  const onCompositionEnd = () => record({ silent: true });
+  el.addEventListener('input', onInput);
+  el.addEventListener('compositionend', onCompositionEnd);
+
   let finished = false;
   const finish = () => {
     if (finished) return;
@@ -67,20 +78,23 @@ export function startInlineEdit(
     else el.setAttribute('contenteditable', hadAttribute);
     if (hadStyle === null) el.removeAttribute('style');
     else el.setAttribute('style', hadStyle);
+    el.removeEventListener('input', onInput);
+    el.removeEventListener('compositionend', onCompositionEnd);
     // Diff and record BEFORE releasing the applier: the moment it wakes it reapplies
     // records over this element, and a release-then-diff read a page that no longer
     // held the typing.
-    record();
+    record({ silent: false });
     doc.dispatchEvent(new CustomEvent('tweakpage:editing', { detail: { on: false } }));
   };
 
-  const record = () => {
+  const record = ({ silent }: { silent: boolean }) => {
     const now = allTextNodes(el);
     if (markup) {
       if (now.length !== entry.length) {
         // The structure changed despite plaintext-only — an extension or the page
         // itself interfered. Recording positional guesses would edit the wrong runs.
-        onUnrecordable();
+        // Mid-typing this stays quiet; the session's end is when it is reported once.
+        if (!silent) onUnrecordable();
         return;
       }
       for (let position = 0; position < now.length; position++) {
