@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser';
 import { getShared, hostImages, putShared } from '../lib/share/transfer';
 import type { HandOff } from '../lib/share/settings';
+import { recordConsent } from '../lib/share/consent';
 import type { PageEdits } from '../lib/edits/types';
 
 export default defineBackground(() => {
@@ -16,6 +17,8 @@ export default defineBackground(() => {
         body?: string;
         page?: unknown;
         handOff?: string;
+        bucket?: string;
+        allowUpload?: boolean;
         ref?: { id: string; bucket: string; region: string };
       },
       sender,
@@ -46,10 +49,17 @@ export default defineBackground(() => {
       // Hands the pixels back instead of downloading them, so the editor can put the
       // two captures side by side before anything reaches the downloads folder.
       if (message?.type === 'tweakpage:host-images' && message.page && typeof message.handOff === 'string') {
-        return hostImages(message.page as PageEdits, message.handOff as HandOff);
+        return hostImages(message.page as PageEdits, message.handOff as HandOff, {
+          allowUpload: message.allowUpload !== false,
+        });
       }
       if (message?.type === 'tweakpage:share-put' && typeof message.id === 'string' && message.page) {
-        return putShared(message.id, message.page as PageEdits);
+        return putShared(message.id, message.page as PageEdits, {
+          allowUpload: message.allowUpload !== false,
+        });
+      }
+      if (message?.type === 'tweakpage:transfer-consent') {
+        return recordConsent(String(message.bucket ?? '')).then(() => ({ ok: true }));
       }
       if (message?.type === 'tweakpage:open-options') {
         void browser.runtime.openOptionsPage();

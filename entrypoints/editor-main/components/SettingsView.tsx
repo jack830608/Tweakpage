@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { safeSendMessage } from '../../../lib/extension-context';
+import { withdrawConsent } from '../../../lib/share/consent';
 import {
   getShareStatus,
   HAND_OFFS,
@@ -36,7 +37,7 @@ const THEME_OPTIONS = [
   { value: 'dark', label: t('theme_dark'), ariaLabel: t('theme_dark') },
 ] as const;
 
-export function SettingsView({ prefs, onPrefs }: SettingsViewProps) {
+export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
   const [appearanceOpen, setAppearanceOpen] = useState(true);
 
   return (
@@ -56,7 +57,7 @@ export function SettingsView({ prefs, onPrefs }: SettingsViewProps) {
           />
         </Row>
       </CollapsibleSection>
-      <SharingGroup />
+      <SharingGroup onToast={onToast} />
     </div>
   );
 }
@@ -75,7 +76,7 @@ function openSecureSettings(): void {
   safeSendMessage({ type: 'tweakpage:open-options' });
 }
 
-function SharingGroup() {
+function SharingGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
   const [status, setStatus] = useState<ShareStatus | null>(null);
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -165,6 +166,19 @@ function SharingGroup() {
       <p className="twk-settings-note">
         {status.compressionAvailable ? t('settings_compress_hint') : t('settings_compress_needs_key')}
       </p>
+      <div className="twk-settings-actions">
+        <button
+          type="button"
+          aria-label={t('aria_forget_consent')}
+          data-testid="forget-consent"
+          onClick={() => {
+            void withdrawConsent();
+            onToast({ message: t('toast_consent_withdrawn'), kind: 'info' });
+          }}
+        >
+          {t('settings_forget_consent')}
+        </button>
+      </div>
     </CollapsibleSection>
   );
 }

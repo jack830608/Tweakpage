@@ -1,4 +1,5 @@
 import { compressImage } from './compress';
+import { hasConsented } from './consent';
 import { forget, hostedKey, remember, remembered } from './hosted';
 import { embeddedImages, imageKey, withHostedImages, type EmbeddedImage } from './images';
 import { imageUrl, objectUrl, type ShareRef } from './link';
@@ -24,8 +25,10 @@ export type TransferResult =
 export interface ImageReport {
   uploaded: number;
   compressed: number;
-  /** Images that had to travel embedded — no bucket, or the upload was refused. */
+  /** Images that had to travel embedded — no bucket, no consent, or a refused upload. */
   embedded: number;
+  /** Nothing was uploaded because this bucket has not been agreed to yet. */
+  needsConsent?: boolean;
 }
 
 /**
@@ -35,15 +38,27 @@ export interface ImageReport {
  * failing the share, and compression is skipped rather than blocking. What actually
  * happened is reported so the toast can say it instead of guessing.
  */
-export async function hostImages(page: PageEdits, handOff: HandOff): Promise<{
+export async function hostImages(
+  page: PageEdits,
+  handOff: HandOff,
+  { allowUpload = true }: { allowUpload?: boolean } = {},
+): Promise<{
   page: PageEdits;
   report: ImageReport;
 }> {
   const images = embeddedImages(page);
   if (images.length === 0) return { page, report: { uploaded: 0, compressed: 0, embedded: 0 } };
   const settings = await getShareSettings();
-  if (!settings.uploadImages[handOff] || !isConfigured(settings)) {
+  if (!allowUpload || !settings.uploadImages[handOff] || !isConfigured(settings)) {
     return { page, report: { uploaded: 0, compressed: 0, embedded: images.length } };
+  }
+  // Checked here rather than at each button, so a hand-off cannot be added that quietly
+  // skips it. The panel asks first, but this is what makes that unavoidable.
+  if (!(await hasConsented(settings.bucket))) {
+    return {
+      page,
+      report: { uploaded: 0, compressed: 0, embedded: images.length, needsConsent: true },
+    };
   }
 
   const hosted = new Map<string, string>();
@@ -137,7 +152,11 @@ async function putBytes(
  * where the object has to ask for it — so that is the second attempt rather than the
  * first, because a bucket-owner-enforced bucket rejects the ACL outright.
  */
-export async function putShared(id: string, page: PageEdits): Promise<TransferResult> {
+export async function putShared(
+  id: string,
+  page: PageEdits,
+  { allowUpload = true }: { allowUpload?: boolean } = {},
+): Promise<TransferResult> {
   const settings = await getShareSettings();
   if (!isConfigured(settings)) return { ok: false, reason: 'not-configured' };
   // A share of nothing is a link the recipient is written to reject. Refused here as
@@ -147,7 +166,7 @@ export async function putShared(id: string, page: PageEdits): Promise<TransferRe
 
   // Images first: a page whose pictures are hosted is small enough to survive the import
   // limits on arrival, which embedded ones are not.
-  const { page: hosted, report } = await hostImages(page, 'share');
+  const { page: hosted, report } = await hostImages(page, 'share', { allowUpload });
   const body = JSON.stringify(hosted);
   // What we refuse to send is what a recipient refuses to read; the two limits are one
   // constant so they cannot drift.

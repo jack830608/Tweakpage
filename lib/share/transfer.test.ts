@@ -125,6 +125,8 @@ test('a cached image that TinyPNG refused keeps saying it was not compressed', a
   });
   await fakeBrowser.storage.local.set({
     'tweakpage:share-settings': { ...SETTINGS, tinypngKey: 'k', compressImages: true },
+    // Uploading is gated on consent; this test is about what happens after it.
+    'tweakpage:transfer-consent': [SETTINGS.bucket],
   });
   const page: PageEdits = {
     ...pageWith('T'),
@@ -140,4 +142,45 @@ test('a cached image that TinyPNG refused keeps saying it was not compressed', a
   expect(first.report.compressed, 'the quota was gone; nothing was compressed').toBe(0);
   expect(second.report.compressed, 'and the cache must not invent it').toBe(0);
   expect(tinifyCalls, 'nor pay for it twice').toBe(1);
+});
+
+test('nothing is uploaded until this bucket has been agreed to', async () => {
+  const calls = bucket({ publicByPolicy: true });
+  await fakeBrowser.storage.local.set({ 'tweakpage:share-settings': SETTINGS });
+  const page: PageEdits = {
+    ...pageWith('T'),
+    records: [{
+      id: 'i1', selector: 'img', fallbackSelectors: [], elementLabel: 'img',
+      type: 'attr', property: 'src', oldValue: '/a.png',
+      newValue: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      enabled: true, createdAt: 'n', updatedAt: 'n',
+    }],
+  };
+
+  const before = await hostImages(page, 'share');
+  expect(before.report.needsConsent, 'the panel has a question to ask first').toBe(true);
+  expect(before.report.uploaded).toBe(0);
+  expect(calls.filter((c) => c.method === 'PUT'), 'and nothing left the machine').toHaveLength(0);
+
+  await fakeBrowser.storage.local.set({ 'tweakpage:transfer-consent': [SETTINGS.bucket] });
+  const after = await hostImages(page, 'share');
+  expect(after.report.uploaded, 'once agreed, it goes').toBe(1);
+});
+
+test('agreeing to one bucket does not open another', async () => {
+  bucket({ publicByPolicy: true });
+  await fakeBrowser.storage.local.set({
+    'tweakpage:share-settings': { ...SETTINGS, bucket: 'a-different-bucket' },
+    'tweakpage:transfer-consent': ['demo'],
+  });
+  const page: PageEdits = {
+    ...pageWith('T'),
+    records: [{
+      id: 'i1', selector: 'img', fallbackSelectors: [], elementLabel: 'img',
+      type: 'attr', property: 'src', oldValue: '/a.png',
+      newValue: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      enabled: true, createdAt: 'n', updatedAt: 'n',
+    }],
+  };
+  expect((await hostImages(page, 'share')).report.needsConsent).toBe(true);
 });
