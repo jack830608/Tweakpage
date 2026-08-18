@@ -836,5 +836,17 @@
   },
   "image_picked": {
     "message": "Picked file"
+  },
+  "settings_credentials_elsewhere": {
+    "message": "Your AWS and TinyPNG keys live on the extension’s own page, where the sites you edit cannot reach them."
+  },
+  "settings_open_secure": {
+    "message": "Open secure settings →"
+  },
+  "aria_open_secure_settings": {
+    "message": "Open the extension’s settings page to enter credentials"
+  },
+  "settings_compress_needs_key": {
+    "message": "Add a TinyPNG key on the settings page to switch this on."
   }
 }

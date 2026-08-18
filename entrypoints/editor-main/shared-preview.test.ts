@@ -1,6 +1,7 @@
 import { fakeBrowser } from 'wxt/testing';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { EditsController } from './controller';
+import { sign } from '../../lib/applier/handshake';
 import { loadPageEdits } from '../../lib/edits/storage';
 import type { EditRecord } from '../../lib/edits/types';
 
@@ -79,9 +80,10 @@ test("the panel's reset also honours a baseline the applier retired", async () =
   c.recordEdit(document.querySelector('h1')!, 'text', 'textContent', 'Original', 'Edited');
   const id = c.getPage().records[0].id;
 
-  // The applier saw the site rewrite this value and announced the new baseline.
+  // The applier saw the site rewrite this value and announced the new baseline. Signed,
+  // because an unsigned one is exactly what a hostile page would send.
   document.dispatchEvent(
-    new CustomEvent('tweakpage:baseline', { detail: { updates: [{ id, oldValue: 'Live price' }] } }),
+    new CustomEvent('tweakpage:baseline', { detail: sign({ updates: [{ id, oldValue: 'Live price' }] }) }),
   );
 
   c.deleteRecord(id);
@@ -188,4 +190,20 @@ test('clearing a note removes it instead of keeping an empty string', () => {
   c.setNote(id, 'why');
   c.setNote(id, '   ');
   expect(c.getPage().records[0].note).toBeUndefined();
+});
+
+
+test('a page cannot decide what a reset restores', () => {
+  document.body.innerHTML = '<h1>Original</h1>';
+  const c = new EditsController(null, document, NOW);
+  c.recordEdit(document.querySelector('h1')!, 'text', 'textContent', 'Original', 'Edited');
+  const id = c.getPage().records[0]!.id;
+
+  // Any script on the page can dispatch this; only ours carries the token.
+  document.dispatchEvent(
+    new CustomEvent('tweakpage:baseline', {
+      detail: { updates: [{ id, oldValue: 'Planted by the page' }] },
+    }),
+  );
+  expect(c.getPage().records[0]!.oldValue, 'the site does not get to write history').toBe('Original');
 });

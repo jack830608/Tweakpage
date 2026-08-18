@@ -3,30 +3,41 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Panel } from './Panel';
 import { EditsController } from '../controller';
-import { getShareSettings, SHARE_FIELDS } from '../../../lib/share/settings';
+import { getShareSettings, HAND_OFFS, SHARE_FIELDS, TINYPNG_FIELD } from '../../../lib/share/settings';
 import { t } from '../../../lib/i18n';
 
 /**
  * One rule, checked against every setting.
  *
  * Settings are expected to keep arriving, and the way a settings screen goes wrong is
- * one row at a time: a control with no label, a secret rendered in plain text, a group
- * with no heading. So rather than listing the settings that exist today, these tests
- * sweep whatever the view renders and hold all of it to the same rules — a new row is
- * covered the moment it is added, whether or not anyone remembered this file.
+ * one row at a time: a control with no label, a group with no heading — or a secret
+ * rendered where the page being edited can read it. So rather than listing the settings
+ * that exist today, these tests sweep whatever the view renders and hold all of it to
+ * the same rules; a new row is covered the moment it is added.
  */
-const NOW = () => '2026-08-17T10:00:00.000Z';
+const NOW = () => '2026-08-19T10:00:00.000Z';
+
+const CREDENTIALS = {
+  bucket: 'demo-bucket',
+  region: 'us-east-1',
+  accessKeyId: 'AKIA_SENTINEL',
+  secretAccessKey: 'SECRET_SENTINEL',
+  tinypngKey: 'TINIFY_SENTINEL',
+  compressImages: true,
+  uploadImages: { summary: true, json: true, download: true, share: true },
+};
 
 afterEach(cleanup);
 
-beforeEach(() => {
+beforeEach(async () => {
   fakeBrowser.reset();
   document.head.innerHTML = '';
   document.body.innerHTML = '<div id="target">Hello</div>';
   history.replaceState({}, '', '/page');
+  await fakeBrowser.storage.local.set({ 'tweakpage:share-settings': CREDENTIALS });
 });
 
-function openSettings() {
+async function openSettings() {
   render(
     <Panel
       controller={new EditsController(null, document, NOW)}
@@ -38,14 +49,14 @@ function openSettings() {
       onSelect={vi.fn()}
       onHighlight={vi.fn()}
       onToast={vi.fn()}
-      onSnapshot={vi.fn()}
+      onSnapshot={vi.fn().mockResolvedValue(true)}
       onMinimize={vi.fn()}
       onClose={vi.fn()}
     />,
   );
   fireEvent.click(screen.getByTestId('open-settings'));
-  // Groups collapse, and one of them is nested — a child header does not exist until its
-  // parent is open — so keep opening until there is nothing left closed.
+  await waitFor(() => expect(screen.getByTestId('share-status')).toBeTruthy());
+  // Groups collapse, so open everything before checking what a row looks like.
   for (let pass = 0; pass < 5; pass++) {
     const closed = [...document.querySelectorAll<HTMLButtonElement>('.twk-settings [data-section]')]
       .filter((header) => header.getAttribute('aria-expanded') !== 'true');
@@ -54,30 +65,59 @@ function openSettings() {
   }
 }
 
+const rows = () => [...document.querySelectorAll('.twk-setting')];
 const groups = () => [...document.querySelectorAll('.twk-settings .twk-disclosure')];
 
-const rows = () => [...document.querySelectorAll('.twk-setting')];
+describe('what the page is allowed to see', () => {
+  test('no credential appears anywhere in the panel', async () => {
+    // The panel is rendered inside the site being edited. Anything here is one
+    // querySelector away from that site's own JavaScript.
+    await openSettings();
+    const html = document.body.innerHTML;
+    for (const secret of ['SECRET_SENTINEL', 'TINIFY_SENTINEL', 'AKIA_SENTINEL']) {
+      expect(html, `${secret} must not be in the page`).not.toContain(secret);
+    }
+    for (const value of [...document.querySelectorAll('input')].map((i) => i.value)) {
+      expect(value).not.toContain('SENTINEL');
+    }
+  });
+
+  test('no credential field is offered here at all', async () => {
+    await openSettings();
+    for (const field of [...SHARE_FIELDS, TINYPNG_FIELD]) {
+      expect(screen.queryByTestId(`setting-${field.key}`), field.key).toBeNull();
+    }
+  });
+
+  test('but it can still say whether sharing will work', async () => {
+    await openSettings();
+    expect(screen.getByTestId('share-status').textContent).toBe(t('settings_share_on'));
+  });
+
+  test('and it points at the one place credentials can be entered', async () => {
+    await openSettings();
+    const messages: Array<{ type?: string }> = [];
+    fakeBrowser.runtime.onMessage.addListener((m: unknown) => {
+      messages.push(m as { type?: string });
+    });
+    fireEvent.click(screen.getByTestId('open-secure-settings'));
+    await waitFor(() => expect(messages.some((m) => m.type === 'tweakpage:open-options')).toBe(true));
+  });
+});
 
 describe('the settings view', () => {
-  test('is reached from the panel, not from a menu outside it', () => {
-    openSettings();
+  test('is reached from the panel, not from a menu outside it', async () => {
+    await openSettings();
     expect(document.querySelector('.twk-settings')).toBeTruthy();
     expect(screen.getByTestId('back-from-settings')).toBeTruthy();
   });
 
-  test('renders every row it is given', () => {
-    openSettings();
-    // Theme, plus one per share field. A new setting shifts this number, which is the
-    // point: the count is a reminder to check the rules below still hold.
-    expect(rows()).toHaveLength(1 + SHARE_FIELDS.length);
-  });
-
-  test('every group can be collapsed, and says so', () => {
-    openSettings();
+  test('every group can be collapsed, and says so', async () => {
+    await openSettings();
     // Closed and opened again one at a time: closing a group unmounts anything nested
     // inside it, so leaving one shut would take the next group off the screen with it.
     for (let i = 0; i < groups().length; i++) {
-      const header = groups()[i].querySelector('.twk-disclosure-header')!;
+      const header = groups()[i]!.querySelector('.twk-disclosure-header')!;
       const name = header.textContent ?? '';
       expect(header.getAttribute('aria-expanded'), name).toBe('true');
       fireEvent.click(header);
@@ -87,8 +127,8 @@ describe('the settings view', () => {
     }
   });
 
-  test('every row has a visible label and exactly one control', () => {
-    openSettings();
+  test('every row has a visible label and exactly one control', async () => {
+    await openSettings();
     for (const row of rows()) {
       const label = row.querySelector('.twk-setting-label')?.textContent ?? '';
       expect(label.trim(), 'a row without a label is a control nobody can name').not.toBe('');
@@ -97,70 +137,52 @@ describe('the settings view', () => {
     }
   });
 
-  test('every control says what it is to a screen reader', () => {
-    openSettings();
-    for (const row of rows()) {
-      const control = row.querySelector('input, select, [role="group"]')!;
-      expect(control.getAttribute('aria-label'), row.textContent ?? '').toBeTruthy();
+  test('every control says what it is to a screen reader', async () => {
+    await openSettings();
+    for (const control of document.querySelectorAll(
+      '.twk-settings input, .twk-settings [role="group"]',
+    )) {
+      expect(control.getAttribute('aria-label'), control.outerHTML.slice(0, 80)).toBeTruthy();
     }
   });
 
-  test('every group announces itself with a heading', () => {
-    openSettings();
+  test('every group announces itself with a heading', async () => {
+    await openSettings();
     expect(groups().length).toBeGreaterThan(1);
     for (const group of groups()) {
       expect(group.querySelector('.twk-disclosure-header')?.textContent?.trim()).toBeTruthy();
     }
   });
-
-  test('the permissions a bucket needs are here, not a page away', () => {
-    openSettings();
-    expect(screen.getByTestId('copy-policy')).toBeTruthy();
-    expect(document.querySelector('.twk-policy')?.textContent).toContain('s3:GetObject');
-  });
 });
 
-describe('share credentials', () => {
-  test('the secret is never rendered as readable text', () => {
-    openSettings();
-    for (const field of SHARE_FIELDS) {
-      const input = screen.getByTestId(`setting-${field.key}`);
-      expect(input.getAttribute('type'), field.label).toBe(field.secret ? 'password' : 'text');
-    }
-  });
-
-  test('typing is enough — there is no submit button to miss', async () => {
-    openSettings();
-    fireEvent.change(screen.getByTestId('setting-bucket'), { target: { value: 'my-bucket' } });
+describe('the preferences the panel may still change', () => {
+  test('an upload switch is written straight through', async () => {
+    await openSettings();
+    fireEvent.click(screen.getByTestId('upload-images-json'));
     await waitFor(async () => {
-      expect((await getShareSettings()).bucket).toBe('my-bucket');
+      expect((await getShareSettings()).uploadImages.json).toBe(false);
     });
   });
 
-  test('sharing stays off until the whole set is there', async () => {
-    openSettings();
-    expect(screen.getByTestId('share-status').textContent).toBe(t('settings_share_off'));
-
-    for (const field of SHARE_FIELDS) {
-      fireEvent.change(screen.getByTestId(`setting-${field.key}`), { target: { value: 'x' } });
-    }
-    await waitFor(() => {
-      expect(screen.getByTestId('share-status').textContent).toBe(t('settings_share_on'));
-    });
-  });
-
-  test('clearing takes the credentials out of storage, not just off the screen', async () => {
-    openSettings();
-    for (const field of SHARE_FIELDS) {
-      fireEvent.change(screen.getByTestId(`setting-${field.key}`), { target: { value: 'x' } });
-    }
-    await waitFor(async () => expect((await getShareSettings()).bucket).toBe('x'));
-
-    fireEvent.click(screen.getByTestId('clear-share-settings'));
+  test('changing a preference leaves the credentials alone', async () => {
+    // The panel writes through a preferences-only path; a full settings write from here
+    // would be a way to clobber keys it is not allowed to read.
+    await openSettings();
+    fireEvent.click(screen.getByTestId('upload-images-all'));
     await waitFor(async () => {
       const settings = await getShareSettings();
-      // The credentials go; the preferences beside them are not secrets to clear.
-      expect(SHARE_FIELDS.map((f) => settings[f.key]).join('')).toBe('');
+      expect(HAND_OFFS.every((k) => settings.uploadImages[k] === false)).toBe(true);
+      expect(settings.secretAccessKey, 'untouched').toBe('SECRET_SENTINEL');
+      expect(settings.tinypngKey, 'untouched').toBe('TINIFY_SENTINEL');
     });
+  });
+
+  test('compression cannot be switched on without a key to use', async () => {
+    await fakeBrowser.storage.local.set({
+      'tweakpage:share-settings': { ...CREDENTIALS, tinypngKey: '', compressImages: false },
+    });
+    await openSettings();
+    const box = screen.getByTestId('compress-images') as HTMLInputElement;
+    expect(box.disabled, 'a switch that cannot do anything must look like it').toBe(true);
   });
 });

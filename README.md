@@ -144,9 +144,15 @@ as it was.
 
 ### Setup
 
-Gear icon → **Share links** → fill in bucket, region, access key id and secret. They
-save as you type; until all four are set, the Share link button stays disabled. This
-repo ships no defaults.
+Credentials are entered on the extension's own settings page — panel gear → **Share
+links** → **Open secure settings**, or right-click the toolbar icon → Options. They are
+deliberately not editable from the panel: that panel is rendered inside whatever site
+you are editing, and anything it displays is one `querySelector` away from that site's
+own JavaScript. The panel shows whether sharing is configured, never with what.
+
+Fill in bucket, region, access key id and secret (and optionally a TinyPNG key). Until
+all four AWS fields are set, the Share link button stays disabled. This repo ships no
+defaults.
 
 Everything Tweakpage writes lives under one prefix, sorted by what it is, so a single
 policy line covers the lot:
@@ -241,6 +247,11 @@ credentials, exactly as a recipient would, and refuses to hand you a link that w
   serves it.
 - Everything lives in `chrome.storage.local`, keyed by normalized URL. Nothing leaves
   the machine unless you export or share.
+- Credentials never enter the page. The editor's Shadow DOM is UI encapsulation, not a
+  security boundary — a site can reach into it — so the AWS and TinyPNG keys are read
+  and written only on the extension's own page, and the panel receives status, never
+  values. The one message that changes stored data carries a per-page token the site
+  cannot guess.
 
 ## Development
 

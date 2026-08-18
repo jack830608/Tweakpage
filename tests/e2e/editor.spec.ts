@@ -743,7 +743,9 @@ test('snapshot saves one image with the two states side by side', async ({ conte
   expect(height).toBeGreaterThan(viewport.height);
 });
 
-test('settings live in the panel, and filling them in switches sharing on', async ({ context }) => {
+test('credentials are entered on the extension page, and the panel notices', async ({
+  context,
+}) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
@@ -751,12 +753,11 @@ test('settings live in the panel, and filling them in switches sharing on', asyn
 
   const share = page.locator('[data-testid="share-link"]');
   const before = await share.evaluate((el) => getComputedStyle(el).opacity);
-
   await page.locator('[data-testid="open-settings"]').click();
   await expect(page.locator('.twk-settings')).toBeVisible();
 
-  // Nothing may push past the panel: the settings labels are long identifiers, and a
-  // row that overflows is invisible until someone opens it on a real page.
+  // Nothing may push past the panel: a row that overflows is invisible until someone
+  // opens it on a real page.
   const panel = (await page.locator('#tweakpage-host aside').boundingBox())!;
   for (const row of await page.locator('.twk-setting').all()) {
     const box = (await row.boundingBox())!;
@@ -764,22 +765,28 @@ test('settings live in the panel, and filling them in switches sharing on', asyn
     expect(box.x + box.width).toBeLessThanOrEqual(panel.x + panel.width + 1);
   }
 
+  // The credentials are typed where the site being edited cannot reach them.
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  const options = await context.newPage();
+  await options.goto(`${worker.url().slice(0, worker.url().lastIndexOf('/'))}/options.html`);
   for (const [key, value] of [
     ['bucket', 'demo-bucket'],
     ['region', 'ap-northeast-1'],
     ['accessKeyId', 'AKIAIOSFODNN7EXAMPLE'],
     ['secretAccessKey', 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'],
   ]) {
-    await page.locator(`[data-testid="setting-${key}"]`).fill(value);
+    await options.locator(`[data-testid="${key}"]`).fill(value);
   }
+  await options.locator('[data-testid="save-settings"]').click();
+  await options.close();
 
+  // Back on the page, the button that needs them wakes up without a reload. (The share
+  // row is part of the editing view, so leave settings first.)
   await page.locator('[data-testid="back-from-settings"]').click();
-  await expect
-    .poll(() => share.evaluate((el) => getComputedStyle(el).opacity))
-    .not.toBe(before);
+  await expect.poll(() => share.evaluate((el) => getComputedStyle(el).opacity)).not.toBe(before);
   expect(Number(await share.evaluate((el) => getComputedStyle(el).opacity))).toBe(1);
 });
-
 test('clearing from the popup puts the open page back, with no reload', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
@@ -1451,4 +1458,54 @@ test('after a share the panel and storage point at the uploaded image, not at by
   await expect
     .poll(() => page.locator('#hero').getAttribute('src'), { timeout: 5000 })
     .toContain('/tweakpage/images/');
+});
+
+test('a page cannot read the credentials out of the editor', async ({ context }) => {
+  // The panel lives in the page's own document. Anything it renders, the site's own
+  // JavaScript can read — which is why credentials must not be rendered there at all.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  await worker.evaluate(async () => {
+    await (globalThis as any).chrome.storage.local.set({
+      'tweakpage:share-settings': {
+        bucket: 'demo-bucket', region: 'us-east-1',
+        accessKeyId: 'AKIA_SENTINEL_ACCESS',
+        secretAccessKey: 'SECRET_SENTINEL_VALUE',
+        tinypngKey: 'TINIFY_SENTINEL_KEY',
+        compressImages: true,
+        uploadImages: { summary: true, json: true, download: true, share: true },
+      },
+    });
+  });
+  await activateEditor(context);
+  await expect(page.locator('#tweakpage-host aside')).toBeVisible();
+
+  const found = await page.evaluate(async () => {
+    const SENTINELS = ['SECRET_SENTINEL_VALUE', 'TINIFY_SENTINEL_KEY', 'AKIA_SENTINEL_ACCESS'];
+    const host = document.getElementById('tweakpage-host') as HTMLElement | null;
+    const root = host?.shadowRoot ?? null;
+    const hits: string[] = [];
+    const scan = (where: string, text: string) => {
+      for (const s of SENTINELS) if (text.includes(s)) hits.push(`${where}:${s}`);
+    };
+    if (host) scan('host', host.outerHTML);
+    if (root) {
+      // A site would not stop at looking: it would open the settings itself.
+      const click = (sel: string) => (root.querySelector(sel) as HTMLElement | null)?.click();
+      click('[data-testid="open-settings"]');
+      await new Promise((r) => setTimeout(r, 300));
+      for (const section of ['set-sharing', 'set-images', 'set-appearance']) {
+        click(`[data-section="${section}"]`);
+      }
+      await new Promise((r) => setTimeout(r, 300));
+      scan('shadow', root.innerHTML);
+      for (const input of root.querySelectorAll('input, textarea')) {
+        scan('input', (input as HTMLInputElement).value ?? '');
+      }
+    }
+    return { reachableShadow: !!root, hits };
+  });
+  expect(found.hits, 'no credential may be readable from the page').toEqual([]);
 });

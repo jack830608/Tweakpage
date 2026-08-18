@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { safeSendMessage } from '../../../lib/extension-context';
 import {
-  EMPTY_SETTINGS,
+  getShareStatus,
   HAND_OFFS,
-  getShareSettings,
-  isConfigured,
-  saveShareSettings,
-  SHARE_FIELDS,
-  type ShareSettings,
+  saveSharePreferences,
+  type ShareStatus,
 } from '../../../lib/share/settings';
 import type { PanelPrefs, ThemeChoice } from '../panel-position';
 import { CollapsibleSection } from './CollapsibleSection';
@@ -15,15 +13,16 @@ import type { ToastContent } from './Toast';
 import { t } from '../../../lib/i18n';
 
 /**
- * Settings, where the work is.
+ * Settings, minus the things a website must never be able to read.
  *
- * They used to live only behind a right-click on the toolbar icon, which is a place
- * nobody finds while editing a page.
+ * This panel is rendered inside the page being edited, which means every value it holds
+ * is one `document.getElementById` away from that site's own JavaScript. Shadow DOM is
+ * UI encapsulation, not a security boundary. So the AWS and TinyPNG credentials live
+ * only on the extension's own options page, and what stands here is their status:
+ * enough to know whether sharing will work, worth nothing to steal.
  *
- * The shape is deliberately plain: collapsible groups of rows, each row a label over one
- * full-width control. A new setting is a new row, not a new layout. Groups collapse
- * because a settings screen is read one concern at a time — sharing is four credentials
- * you set once, and it should not be four fields you scroll past forever after.
+ * The shape is deliberately plain: collapsible groups of rows, each row a label and one
+ * control. A new setting is a new row, not a new layout.
  */
 interface SettingsViewProps {
   prefs: PanelPrefs;
@@ -37,7 +36,7 @@ const THEME_OPTIONS = [
   { value: 'dark', label: t('theme_dark'), ariaLabel: t('theme_dark') },
 ] as const;
 
-export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
+export function SettingsView({ prefs, onPrefs }: SettingsViewProps) {
   const [appearanceOpen, setAppearanceOpen] = useState(true);
 
   return (
@@ -57,8 +56,7 @@ export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
           />
         </Row>
       </CollapsibleSection>
-      <ShareGroup onToast={onToast} />
-      <ImagesGroup onToast={onToast} />
+      <SharingGroup />
     </div>
   );
 }
@@ -72,24 +70,29 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function ShareGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
-  const [settings, setSettings] = useState<ShareSettings | null>(null);
-  // Decided once, when the stored settings arrive — a default computed during render
-  // cannot be turned off, because the click that should close it has nothing to write to.
+/** Opens the extension's own page, the only place credentials exist. */
+function openSecureSettings(): void {
+  safeSendMessage({ type: 'tweakpage:open-options' });
+}
+
+function SharingGroup() {
+  const [status, setStatus] = useState<ShareStatus | null>(null);
   const [open, setOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
   useEffect(() => {
-    void getShareSettings().then((stored) => {
-      setSettings(stored);
-      // Open where there is something to do: nothing filled in means this is why you came.
-      setOpen(!isConfigured(stored));
+    void getShareStatus().then((next) => {
+      setStatus(next);
+      // Open where there is something to do: nothing set up means this is why you came.
+      setOpen(!next.configured);
     });
   }, []);
+  if (!status) return null;
 
-  const ready = settings !== null && isConfigured(settings);
-  const commit = (next: ShareSettings) => {
-    setSettings(next);
-    void saveShareSettings(next);
+  const commit = (next: ShareStatus) => {
+    setStatus(next);
+    void saveSharePreferences({
+      uploadImages: next.uploadImages,
+      compressImages: next.compressImages,
+    });
   };
 
   return (
@@ -100,86 +103,38 @@ function ShareGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
       onToggle={() => setOpen((current) => !current)}
       aside={
         <span
-          className={ready ? 'twk-chip twk-chip-on' : 'twk-chip'}
+          className={status.configured ? 'twk-chip twk-chip-on' : 'twk-chip'}
           data-testid="share-status"
         >
-          {ready ? t('settings_share_on') : t('settings_share_off')}
+          {status.configured ? t('settings_share_on') : t('settings_share_off')}
         </span>
       }
     >
-      <p className="twk-settings-note">{t('settings_sharing_hint')}</p>
-      {SHARE_FIELDS.map(({ key, label, secret, hint }) => (
-        <Row key={key} label={label}>
-          <input
-            type={secret ? 'password' : 'text'}
-            aria-label={label}
-            data-testid={`setting-${key}`}
-            placeholder={hint}
-            autoComplete="off"
-            spellCheck={false}
-            value={settings?.[key] ?? ''}
-            // Saved as you type: there is no submit button to miss, and a half-typed
-            // bucket name simply leaves sharing switched off until it is whole.
-            onChange={(e) => commit({ ...(settings ?? EMPTY_SETTINGS), [key]: e.target.value })}
-          />
-        </Row>
-      ))}
+      <p className="twk-settings-note">{t('settings_credentials_elsewhere')}</p>
       <div className="twk-settings-actions">
         <button
           type="button"
-          aria-label={t('opt_clear')}
-          data-testid="clear-share-settings"
-          onClick={() => {
-            commit(EMPTY_SETTINGS);
-            onToast({ message: t('toast_share_cleared'), kind: 'info' });
-          }}
+          aria-label={t('aria_open_secure_settings')}
+          data-testid="open-secure-settings"
+          onClick={openSecureSettings}
         >
-          {t('opt_clear')}
+          {t('settings_open_secure')}
         </button>
       </div>
-      <PermissionsHelp open={helpOpen} onToggle={() => setHelpOpen((current) => !current)} onToast={onToast} />
-    </CollapsibleSection>
-  );
-}
 
-/**
- * What happens to a picked image when a link is made.
- *
- * Uploading is what makes a share work at all — an embedded image is too big to survive
- * the import limits, so without it the recipient quietly sees the original picture.
- * Compression is a separate decision because it sends the image to a third party.
- */
-function ImagesGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
-  const [settings, setSettings] = useState<ShareSettings | null>(null);
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    void getShareSettings().then(setSettings);
-  }, []);
-  if (!settings) return null;
-
-  const commit = (next: ShareSettings) => {
-    setSettings(next);
-    void saveShareSettings(next);
-  };
-
-  return (
-    <CollapsibleSection
-      title={t('settings_images')}
-      sectionId="set-images"
-      open={open}
-      onToggle={() => setOpen((current) => !current)}
-    >
       <p className="twk-settings-note">{t('settings_upload_images_hint')}</p>
       <AllSwitch
-        checked={HAND_OFFS.every((k) => settings.uploadImages[k])}
+        checked={HAND_OFFS.every((k) => status.uploadImages[k])}
         mixed={
-          HAND_OFFS.some((k) => settings.uploadImages[k]) &&
-          !HAND_OFFS.every((k) => settings.uploadImages[k])
+          HAND_OFFS.some((k) => status.uploadImages[k]) &&
+          !HAND_OFFS.every((k) => status.uploadImages[k])
         }
         onChange={(on) =>
           commit({
-            ...settings,
-            uploadImages: Object.fromEntries(HAND_OFFS.map((k) => [k, on])) as typeof settings.uploadImages,
+            ...status,
+            uploadImages: Object.fromEntries(
+              HAND_OFFS.map((k) => [k, on]),
+            ) as ShareStatus['uploadImages'],
           })
         }
       />
@@ -190,35 +145,26 @@ function ImagesGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
             label={t(`hand_off_${handOff}`)}
             ariaLabel={t('aria_upload_images', [t(`hand_off_${handOff}`)])}
             testId={`upload-images-${handOff}`}
-            checked={settings.uploadImages[handOff]}
+            checked={status.uploadImages[handOff]}
             onChange={(on) =>
-              commit({ ...settings, uploadImages: { ...settings.uploadImages, [handOff]: on } })
+              commit({ ...status, uploadImages: { ...status.uploadImages, [handOff]: on } })
             }
           />
         ))}
       </div>
 
-      <Row label="TINYPNG_API_KEY">
-        <input
-          type="password"
-          aria-label="TINYPNG_API_KEY"
-          data-testid="setting-tinypngKey"
-          autoComplete="off"
-          spellCheck={false}
-          value={settings.tinypngKey}
-          onChange={(e) => commit({ ...settings, tinypngKey: e.target.value })}
-        />
-      </Row>
       <Row label={t('settings_compress')}>
         <Switch
           ariaLabel={t('aria_compress_images')}
           testId="compress-images"
-          checked={settings.compressImages && settings.tinypngKey !== ''}
-          disabled={settings.tinypngKey === ''}
-          onChange={(compressImages) => commit({ ...settings, compressImages })}
+          checked={status.compressImages && status.compressionAvailable}
+          disabled={!status.compressionAvailable}
+          onChange={(compressImages) => commit({ ...status, compressImages })}
         />
       </Row>
-      <p className="twk-settings-note">{t('settings_compress_hint')}</p>
+      <p className="twk-settings-note">
+        {status.compressionAvailable ? t('settings_compress_hint') : t('settings_compress_needs_key')}
+      </p>
     </CollapsibleSection>
   );
 }
@@ -287,57 +233,3 @@ function AllSwitch({
     </label>
   );
 }
-
-/**
- * The bucket policy, here rather than a page away.
- *
- * These are the two things AWS has to be told before a link will open, and they are
- * needed exactly while the fields above are being filled in — sending someone to another
- * screen to read them is the reason this used to be a link.
- */
-function PermissionsHelp({
-  open,
-  onToggle,
-  onToast,
-}: {
-  open: boolean;
-  onToggle: () => void;
-  onToast: (toast: ToastContent) => void;
-}) {
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(POLICY);
-      onToast({ message: t('toast_policy_copied'), kind: 'success' });
-    } catch {
-      window.prompt('Copy the text below:', POLICY);
-    }
-  };
-
-  return (
-    <CollapsibleSection
-      title={t('settings_permissions')}
-      sectionId="set-permissions"
-      open={open}
-      onToggle={onToggle}
-    >
-      <p className="twk-settings-note">{t('settings_permissions_body')}</p>
-      <pre className="twk-policy">{POLICY}</pre>
-      <div className="twk-settings-actions">
-        <button type="button" aria-label={t('copy_policy')} data-testid="copy-policy" onClick={() => void copy()}>
-          {t('copy_policy')}
-        </button>
-      </div>
-    </CollapsibleSection>
-  );
-}
-
-const POLICY = `// the key above may write, and mark what it writes readable:
-{ "Effect": "Allow", "Action": ["s3:PutObject", "s3:PutObjectAcl"],
-  "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
-
-// and a stranger with the link may read it — either this bucket policy:
-{ "Effect": "Allow", "Principal": "*", "Action": "s3:GetObject",
-  "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
-
-// or leave ACLs on with Block Public Access off, and each file is
-// marked public as it uploads.`;

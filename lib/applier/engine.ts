@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser';
 import { isExtensionAlive, safeSendMessage } from '../extension-context';
 import { applyAll, revertAll, revertRemoved } from '../edits/apply';
+import { sign } from './handshake';
 import { removeMarker, showMarker } from './marker';
 import { readDomValue } from '../edits/dom';
 import { loadPageEdits, pageKey, savePageEdits } from '../edits/storage';
@@ -146,7 +147,7 @@ export class ApplierEngine {
     savePageEdits(this.edits).catch(() => {});
     // The panel keeps its own copy of the records; without this, its reset buttons
     // would still write the snapshot this method just retired.
-    this.doc.dispatchEvent(new CustomEvent('tweakpage:baseline', { detail: { updates } }));
+    this.doc.dispatchEvent(new CustomEvent('tweakpage:baseline', { detail: sign({ updates }) }));
   }
 
   private observe(): void {
