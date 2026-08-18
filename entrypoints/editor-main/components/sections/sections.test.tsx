@@ -1,7 +1,7 @@
 import { fakeBrowser } from 'wxt/testing';
-import { beforeEach, expect, test } from 'vitest';
+import { afterEach, beforeEach, expect, test } from 'vitest';
 import { t } from '../../../../lib/i18n';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { AdvancedSection } from './AdvancedSection';
 import { AppearanceSection } from './AppearanceSection';
 import { BackgroundSection } from './BackgroundSection';
@@ -12,6 +12,10 @@ import { TypographySection } from './TypographySection';
 import { EditsController } from '../../controller';
 
 const NOW = () => '2026-08-15T10:00:00.000Z';
+
+// Without this, each render stays mounted and screen queries see every earlier test's
+// DOM as well as this one's.
+afterEach(cleanup);
 
 beforeEach(() => {
   fakeBrowser.reset();
@@ -180,31 +184,50 @@ test('an unreadable declaration is refused with the line named, and records noth
   expect(controller.getPage().records, 'nothing half-applies').toHaveLength(0);
 });
 
-test('a picked image is described in the field, not printed into it', () => {
+test('a picked image is shown as a picture, not as bytes and not as nothing', () => {
   document.body.innerHTML = '<img id="pic" src="/a.png">';
   const controller = new EditsController(null, document, NOW);
   render(<ImageSection element={document.getElementById('pic')!} controller={controller} />);
-  const field = screen.getByTestId('image-url') as HTMLInputElement;
 
   const picked = 'data:image/png;base64,' + 'A'.repeat(300_000);
-  fireEvent.change(field, { target: { value: picked } });
-  fireEvent.blur(field);
+  fireEvent.change(screen.getByTestId('image-url'), { target: { value: picked } });
+  fireEvent.blur(screen.getByTestId('image-url'));
 
-  expect(field.value, 'the bytes are not a value you can read or edit').toBe('');
-  expect(field.placeholder, 'so the field says what it is holding').toMatch(/image\/png/);
+  // An empty-looking field reads as "the edit was lost", which is what it looked like.
+  const chip = screen.getByTestId('image-url-picked');
+  expect(chip.querySelector('img')?.getAttribute('src'), 'the picture identifies itself').toBe(picked);
   // 300k base64 characters decode to about 220KB — the size shown is the real one.
-  expect(field.placeholder).toMatch(/2[12][0-9] KB/);
+  expect(chip.textContent).toMatch(/2[12][0-9] KB/);
+  expect(chip.textContent).toMatch(/png/);
   expect(document.getElementById('pic')!.getAttribute('src'), 'and the edit still happened').toBe(picked);
 });
 
-test('typing a URL over a picked image replaces it', () => {
-  document.body.innerHTML = '<img id="pic" src="data:image/png;base64,AAAA">';
+test('a picked background image is shown the same way', () => {
+  document.body.innerHTML = '<div id="box">x</div>';
+  const controller = new EditsController(null, document, NOW);
+  render(<BackgroundSection element={document.getElementById('box')!} controller={controller} />);
+
+  const picked = 'data:image/png;base64,' + 'A'.repeat(1000);
+  fireEvent.change(screen.getByTestId('background-image-url'), { target: { value: picked } });
+  fireEvent.blur(screen.getByTestId('background-image-url'));
+
+  const chip = screen.getByTestId('background-image-picked');
+  expect(chip.querySelector('img')?.getAttribute('src'), 'url() wrapping and all').toBe(picked);
+});
+
+test('resetting a picked image brings the URL field back', () => {
+  // The chip replaces the input while a file is held, so the way back to typing a URL
+  // is the reset beside the field name — the same one every other field uses.
+  document.body.innerHTML = '<img id="pic" src="/a.png">';
   const controller = new EditsController(null, document, NOW);
   render(<ImageSection element={document.getElementById('pic')!} controller={controller} />);
-  const field = screen.getByTestId('image-url') as HTMLInputElement;
-  expect(field.value).toBe('');
+  fireEvent.change(screen.getByTestId('image-url'), {
+    target: { value: 'data:image/png;base64,AAAA' },
+  });
+  fireEvent.blur(screen.getByTestId('image-url'));
+  expect(screen.queryByTestId('image-url')).toBeNull();
 
-  fireEvent.change(field, { target: { value: 'https://cdn.example.com/b.png' } });
-  fireEvent.blur(field);
-  expect(document.getElementById('pic')!.getAttribute('src')).toBe('https://cdn.example.com/b.png');
+  fireEvent.click(screen.getByTestId('reset-src'));
+  const field = screen.getByTestId('image-url') as HTMLInputElement;
+  expect(field.value, 'back to what the site serves').toBe('/a.png');
 });

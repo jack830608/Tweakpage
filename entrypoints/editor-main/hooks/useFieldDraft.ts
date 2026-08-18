@@ -4,6 +4,12 @@ import type { EditsController } from '../controller';
 export interface FieldDraft {
   /** what the input should display right now */
   value: string;
+  /**
+   * What the page actually holds — the record if there is one, the computed value if
+   * not. Distinct from `value`, which includes whatever is being typed and not yet
+   * committed; a control that swaps itself out mid-keystroke never gets to commit.
+   */
+  applied: string;
   /** the pre-edit value to hand to recordEdit as oldValue */
   original: string;
   /** hold text the user is part-way through typing */
@@ -55,6 +61,7 @@ export function useFieldDraft(
 
   return {
     value: draft ?? authoritative,
+    applied: authoritative,
     original: record?.oldValue ?? computed,
     setDraft: (next: string) => {
       setDraft(next);

@@ -833,5 +833,8 @@
   },
   "image_embedded": {
     "message": "Picked file · $1 · $2 KB"
+  },
+  "image_picked": {
+    "message": "Picked file"
   }
 }
