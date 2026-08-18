@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [WxtVitest()],
   test: {
     environment: 'happy-dom',
-    exclude: [...configDefaults.exclude, 'tests/e2e/**', '**/.worktrees/**'],
+    // tests/ holds the Playwright suites: same filename pattern, different runner.
+    exclude: [...configDefaults.exclude, 'tests/**', '**/.worktrees/**'],
   },
 });

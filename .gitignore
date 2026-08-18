@@ -5,3 +5,5 @@ test-results/
 playwright-report/
 .worktrees/
 .superpowers/
+.output/chrome-mv3-en/
+shots-report/
