@@ -743,5 +743,20 @@
   },
   "snap_done": {
     "message": "Saved"
+  },
+  "duplicate": {
+    "message": "Duplicate"
+  },
+  "aria_duplicate_element": {
+    "message": "Insert a copy of this element after it"
+  },
+  "tip_duplicate": {
+    "message": "Insert an editable copy right after this element"
+  },
+  "tip_hide": {
+    "message": "Hide the selected element"
+  },
+  "tip_unhide": {
+    "message": "Show the element again"
   }
 }

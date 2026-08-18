@@ -1,5 +1,8 @@
-/** 'move' reorders an element among its siblings; old/newValue hold its index. */
-export type EditType = 'style' | 'text' | 'attr' | 'move';
+/**
+ * 'move' reorders an element among its siblings; old/newValue hold its index.
+ * 'clone' inserts a copy of the element right after it; the record's id stamps the copy.
+ */
+export type EditType = 'style' | 'text' | 'attr' | 'move' | 'clone';
 
 /** 'similar' points a style edit at every element the selector matches, not just one. */
 export type EditScope = 'element' | 'similar';

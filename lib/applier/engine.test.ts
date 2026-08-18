@@ -182,17 +182,23 @@ test('counts only the edits actually in force', async () => {
 
 test('clearing a page puts it back without a reload', async () => {
   const url = 'https://example.com/p';
-  await seed(url, [record({}), record({ id: 'r2', type: 'style', property: 'color', oldValue: 'rgb(0, 0, 0)', newValue: 'rgb(5, 150, 105)' })]);
+  // Unique ids and selector: marks are looked up document-wide, and engines from other
+  // tests keep observing this document — a shared id lets their records claim our node.
+  document.body.innerHTML = '<h1 class="clr">Original</h1>';
+  await seed(url, [
+    record({ id: 'clr1', selector: '.clr' }),
+    record({ id: 'clr2', selector: '.clr', type: 'style', property: 'color', oldValue: 'rgb(0, 0, 0)', newValue: 'rgb(5, 150, 105)' }),
+  ]);
   const engine = new ApplierEngine(document);
   await engine.start(url);
-  expect(document.querySelector('.title')!.textContent).toBe('Changed');
+  expect(document.querySelector('.clr')!.textContent).toBe('Changed');
   expect(document.querySelector('style[data-tweakpage-style]')).toBeTruthy();
 
   // What the popup's Clear does. The page is already open; nothing will reload it.
   await fakeBrowser.storage.local.remove(pageKey(url));
   await wait(10);
 
-  expect(document.querySelector('.title')!.textContent, 'the text edit should be undone').toBe(
+  expect(document.querySelector('.clr')!.textContent, 'the text edit should be undone').toBe(
     'Original',
   );
   expect(document.querySelector('style[data-tweakpage-style]'), 'and the styles taken back out').toBeNull();
@@ -204,7 +210,7 @@ test("a site rewrite becomes the new baseline, so clearing restores the site's v
   // Its own element and selector: engines from earlier tests keep observing this
   // document, and sharing .title with them lets their reapply race this test's.
   document.body.innerHTML = '<h1 class="live">Original</h1>';
-  await seed(url, [record({ selector: '.live', oldValue: 'Original', newValue: 'Edited headline' })]);
+  await seed(url, [record({ id: 'live1', selector: '.live', oldValue: 'Original', newValue: 'Edited headline' })]);
   const engine = new ApplierEngine(document);
   await engine.start(url);
   expect(document.querySelector('.live')!.textContent).toBe('Edited headline');

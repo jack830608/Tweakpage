@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { buildElementLabel } from '../../../lib/selector/generate';
 import type { EditsController } from '../controller';
 import { Breadcrumb } from './Breadcrumb';
-import { EyeIcon, EyeOffIcon } from './icons';
+import { CopyIcon, EyeIcon, EyeOffIcon } from './icons';
 import { t } from '../../../lib/i18n';
 
 interface SelectionCardProps {
@@ -10,6 +10,8 @@ interface SelectionCardProps {
   controller: EditsController;
   onSelect: (el: Element) => void;
 }
+
+// Ternary titles slip past the hard-coded-label guard, so these go through t() by hand.
 
 export function SelectionCard({ element, controller, onSelect }: SelectionCardProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
@@ -29,14 +31,31 @@ export function SelectionCard({ element, controller, onSelect }: SelectionCardPr
     <div className="twk-selection-card">
       <div className="twk-selection-head">
         <div className="twk-selection-label">{buildElementLabel(element)}</div>
-        <button
-          type="button"
-          aria-label={hidden ? t('aria_unhide_element') : t('aria_hide_element')}
-          title={hidden ? 'Show the element again' : 'Hide the selected element'}
-          onClick={onToggleHide}
-        >
-          {hidden ? <><EyeIcon /> {t('unhide')}</> : <><EyeOffIcon /> {t('hide')}</>}
-        </button>
+        <div className="twk-selection-actions">
+          {controller.canClone(element) && (
+            <button
+              type="button"
+              aria-label={t('aria_duplicate_element')}
+              data-testid="duplicate-element"
+              title={t('tip_duplicate')}
+              onClick={() => {
+                const copy = controller.cloneElement(element);
+                // The copy is why the button was pressed — select it, ready to edit.
+                if (copy) onSelect(copy);
+              }}
+            >
+              <CopyIcon /> {t('duplicate')}
+            </button>
+          )}
+          <button
+            type="button"
+            aria-label={hidden ? t('aria_unhide_element') : t('aria_hide_element')}
+            title={hidden ? t('tip_unhide') : t('tip_hide')}
+            onClick={onToggleHide}
+          >
+            {hidden ? <><EyeIcon /> {t('unhide')}</> : <><EyeOffIcon /> {t('hide')}</>}
+          </button>
+        </div>
       </div>
       <Breadcrumb element={element} onSelect={onSelect} />
       {similar && (

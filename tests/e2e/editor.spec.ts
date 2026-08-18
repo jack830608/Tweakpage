@@ -1061,3 +1061,27 @@ test('the panel follows inline typing live, before any blur', async ({ context }
   ).toHaveValue('Original Headline live');
   await expect(page.locator('[data-testid="review-changes"]')).toContainText('1');
 });
+
+test('duplicate an element, edit the copy, and it all survives a reload', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  const texts = () =>
+    page.evaluate(() => [...document.querySelectorAll('#perks li')].map((li) => li.textContent));
+
+  await page.locator('#perk-b').click();
+  await page.locator('[data-testid="duplicate-element"]').click();
+  await expect.poll(texts).toEqual(['Fast shipping', 'Free returns', 'Free returns', 'Two-year warranty']);
+
+  // The copy is selected on creation — edit it directly.
+  await page.locator('[data-testid="text"]').fill('Free exchanges');
+  await expect.poll(texts).toEqual(['Fast shipping', 'Free returns', 'Free exchanges', 'Two-year warranty']);
+
+  // Fresh load: the applier recreates the copy, and the copy's own edit lands on it —
+  // the second apply pass the insertion itself triggers.
+  await page.reload();
+  await expect.poll(texts).toEqual(['Fast shipping', 'Free returns', 'Free exchanges', 'Two-year warranty']);
+
+  // The original was never touched.
+  await expect(page.locator('#perk-b')).toHaveText('Free returns');
+});

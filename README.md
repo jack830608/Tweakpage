@@ -28,8 +28,9 @@ DevTools for a copy tweak. Every edit is recorded as a structured diff
 - **Edit almost anything** — text (inline markup preserved, one box per run), typography,
   colors with an eyedropper and alpha, backgrounds, images (local file or URL), links,
   size, spacing, layout, borders, shadows, opacity.
-- **Reorder and hide** — ▲▼ on the selection outline swap an element with its siblings;
-  Hide removes it non-destructively.
+- **Reorder, duplicate, hide** — ▲▼ on the selection outline swap an element with its
+  siblings; Duplicate inserts an editable copy right after it; Hide removes it
+  non-destructively.
 - **Apply to every similar element** — style a card once, restyle the family.
 - **Compare** — flip the whole page between Edited and Original with one switch.
 - **Edits persist** — saved locally per URL, replayed on reload and across client-side

@@ -9,6 +9,18 @@ export interface GeneratedSelector {
 }
 
 export function generateSelector(el: Element): GeneratedSelector {
+  // A copy Tweakpage created is identified by its stamp, nothing else: any positional
+  // selector for it describes a page where the copy already exists, which a fresh load
+  // is not. The stamp is minted with the copy on every replay, so it always resolves.
+  const stamp = el.getAttribute('data-tweakpage-clone');
+  if (stamp && /^[A-Za-z0-9_-]{1,64}$/.test(stamp)) {
+    return {
+      selector: `[data-tweakpage-clone="${stamp}"]`,
+      fallbackSelectors: [],
+      textFingerprint: el.textContent?.trim().slice(0, 60) || undefined,
+      elementLabel: buildElementLabel(el),
+    };
+  }
   let primary: string | null = dataAttrSelector(el);
   if (!primary) {
     try {

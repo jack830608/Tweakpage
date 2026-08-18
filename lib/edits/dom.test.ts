@@ -80,3 +80,60 @@ describe('moving an element among its siblings', () => {
     expect(document.querySelector('div div')!.id, 'marker stays where it was').toBe('tweakpage-marker');
   });
 });
+
+describe('duplicating an element', () => {
+  const clone = (overrides = {}) => ({
+    id: 'cl1', selector: '#card', fallbackSelectors: [], elementLabel: 'div#card',
+    type: 'clone' as const, property: 'clone', oldValue: '', newValue: '',
+    enabled: true, createdAt: 'n', updatedAt: 'n',
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    document.body.innerHTML =
+      '<div><div id="card" data-tweakpage="st9"><h3 id="inner">Card</h3><p>Body</p></div><div id="next">Next</div></div>';
+  });
+
+  test('apply inserts a stamped copy right after the source', () => {
+    const el = document.getElementById('card')!;
+    applyDomEdit(el, clone());
+    const copy = document.querySelector('[data-tweakpage-clone="cl1"]')!;
+    expect(copy).toBeTruthy();
+    expect(copy.previousElementSibling, 'the copy sits next to its source').toBe(el);
+    expect(copy.querySelector('h3')?.textContent).toBe('Card');
+  });
+
+  test('the copy sheds ids and marks — they belong to the original', () => {
+    // A copied id breaks uniqueness for every record that resolves the ORIGINAL by it,
+    // and a copied mark would style two elements under one record.
+    applyDomEdit(document.getElementById('card')!, clone());
+    const copy = document.querySelector('[data-tweakpage-clone="cl1"]')!;
+    expect(copy.hasAttribute('id')).toBe(false);
+    expect(copy.hasAttribute('data-tweakpage')).toBe(false);
+    expect(copy.querySelector('h3')?.hasAttribute('id')).toBe(false);
+    expect(document.querySelectorAll('#card')).toHaveLength(1);
+  });
+
+  test('reapply is a no-op while the copy exists', () => {
+    const el = document.getElementById('card')!;
+    applyDomEdit(el, clone());
+    applyDomEdit(el, clone());
+    expect(document.querySelectorAll('[data-tweakpage-clone="cl1"]'), 'one clone per record').toHaveLength(1);
+  });
+
+  test('revert removes the copy and only the copy', () => {
+    const el = document.getElementById('card')!;
+    applyDomEdit(el, clone());
+    revertDomEdit(el, clone());
+    expect(document.querySelector('[data-tweakpage-clone="cl1"]')).toBeNull();
+    expect(document.getElementById('card'), 'the original stays').toBeTruthy();
+  });
+
+  test('a nested clone stamp is scrubbed too, so cloning a clone stays sane', () => {
+    applyDomEdit(document.getElementById('card')!, clone());
+    const copy = document.querySelector('[data-tweakpage-clone="cl1"]') as Element;
+    applyDomEdit(copy, clone({ id: 'cl2', selector: '[data-tweakpage-clone="cl1"]' }));
+    expect(document.querySelectorAll('[data-tweakpage-clone="cl1"]'), 'stamps are not inherited').toHaveLength(1);
+    expect(document.querySelectorAll('[data-tweakpage-clone="cl2"]')).toHaveLength(1);
+  });
+});
