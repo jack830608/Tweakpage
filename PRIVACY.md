@@ -35,7 +35,7 @@ All of it in `chrome.storage.local` on your computer:
 
 | Stored | Why |
 | --- | --- |
-| Your edits, per page address | So they can be replayed after a reload |
+| Your edits, per page address (without its query string) | So they can be replayed after a reload |
 | The page's title and the width you edited at | So a hand-off can say what was changed and where |
 | Notes you write on a change | They travel with the hand-off |
 | Proposals you save | So two directions can be compared |

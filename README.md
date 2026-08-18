@@ -34,9 +34,9 @@ DevTools for a copy tweak. Every edit is recorded as a structured diff
   non-destructively.
 - **Apply to every similar element** — style a card once, restyle the family.
 - **Compare** — flip the whole page between Edited and Original with one switch.
-- **Edits persist** — saved locally per URL, replayed on reload and across client-side
-  navigation. A query string that selects content (`?view=b`) counts as its own page;
-  tracking parameters (`utm_*`, click ids) don't.
+- **Edits persist** — saved locally per page, replayed on reload and across client-side
+  navigation. A page is its address without the query string, so a `?variant=` a shop
+  appends, a session id or a page number doesn't lose the work you just did.
 - **Honest pages** — a page showing edits says so with a chip in the bottom-left corner,
   whether or not the editor is open. One chip, one home: while the panel is open its
   footer carries the count; minimize or close and the chip takes over in the same spot.
