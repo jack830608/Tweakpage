@@ -19,10 +19,29 @@ export function ensureStyleTag(doc: Document): HTMLStyleElement {
   return tag;
 }
 
+const STRUCTURAL = new Set<EditRecord['type']>(['move', 'clone']);
+
+/**
+ * True for a record whose selector describes the page AFTER our own structural edits.
+ *
+ * A selector is minted against the page as it looked when the user clicked. Once
+ * Tweakpage has moved or copied something, that is no longer the page a fresh load
+ * produces — so a positional selector minted afterwards means a different element
+ * there, and resolving it early picks the wrong one, silently. Such records wait until
+ * the structural edits have been replayed and the page looks the way they remember.
+ */
+function mintedAfterStructure(record: EditRecord, structureTime: string | null): boolean {
+  return structureTime !== null && !STRUCTURAL.has(record.type) && record.createdAt > structureTime;
+}
+
 export function applyAll(records: EditRecord[], doc: Document): Map<string, ApplyStatus> {
   const statuses = new Map<string, ApplyStatus>();
   const marks = new Map<Element, string[]>();
   const applied: EditRecord[] = [];
+  const structureTime = records
+    .filter((r) => r.enabled && STRUCTURAL.has(r.type))
+    .reduce<string | null>((latest, r) => (latest === null || r.createdAt > latest ? r.createdAt : latest), null);
+  const deferred: EditRecord[] = [];
 
   // Resolve first, mutate after: a move mid-loop shifts the nth positions every later
   // selector counts on, so no record may touch the page until all of them have found
@@ -35,6 +54,10 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
     }
     if (record.type !== 'text' && record.type !== 'attr' && !isSafeRecordId(record.id)) {
       statuses.set(record.id, 'not-found');
+      continue;
+    }
+    if (mintedAfterStructure(record, structureTime)) {
+      deferred.push(record);
       continue;
     }
     // A 'similar' edit is aimed at a family on purpose, so every match gets the mark.
@@ -70,20 +93,37 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
     }
   }
 
-  // A record aimed inside a copy cannot resolve until the copy exists, and the share
-  // preview applies through the controller — no observer, no second chance. So the one
-  // extra round the clone insertions make meaningful happens here, in the same call.
-  if (resolved.some(({ record }) => record.type === 'clone')) {
-    for (const record of records) {
-      if (statuses.get(record.id) !== 'not-found' || record.type === 'clone') continue;
-      if (record.scope === 'similar' && record.type === 'style') continue;
-      const el = resolveTarget(record, doc);
-      if (!el) continue;
-      if (record.type !== 'style') applyDomEdit(el, record);
-      marks.set(el, [...(marks.get(el) ?? []), record.id]);
+  // Second round, against the page as the record remembers it. Two kinds land here:
+  // records minted after a move or a copy rearranged things, and records aimed inside a
+  // copy that could not exist until the copy did. The share preview applies through the
+  // controller — no observer, no second chance — so this happens in the same call.
+  const late = [
+    ...deferred,
+    ...(resolved.some(({ record }) => record.type === 'clone')
+      ? records.filter((r) => statuses.get(r.id) === 'not-found' && !STRUCTURAL.has(r.type))
+      : []),
+  ];
+  for (const record of late) {
+    if (record.scope === 'similar' && record.type === 'style') {
+      const targets = matchAll(doc, record.selector);
+      if (targets.length === 0) {
+        statuses.set(record.id, 'not-found');
+        continue;
+      }
+      for (const el of targets) marks.set(el, [...(marks.get(el) ?? []), record.id]);
       applied.push(record);
       statuses.set(record.id, 'applied');
+      continue;
     }
+    const el = resolveTarget(record, doc);
+    if (!el) {
+      statuses.set(record.id, 'not-found');
+      continue;
+    }
+    if (record.type !== 'style') applyDomEdit(el, record);
+    marks.set(el, [...(marks.get(el) ?? []), record.id]);
+    applied.push(record);
+    statuses.set(record.id, 'applied');
   }
 
   syncMarks(doc, marks);

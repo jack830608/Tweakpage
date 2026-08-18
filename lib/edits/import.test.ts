@@ -152,3 +152,30 @@ test('custom style properties import under the custom gate', () => {
     expect(result.ok && result.skipped, JSON.stringify(bad)).toBe(1);
   }
 });
+
+test('a selector that could never be a selector is refused', () => {
+  const body = (selector: string) =>
+    JSON.stringify({
+      version: 1, url: 'https://a.com/p', title: '', updatedAt: 'n',
+      records: [{
+        id: 'x1', selector, fallbackSelectors: [], elementLabel: 'h1',
+        type: 'style', property: 'color', oldValue: '#000', newValue: '#f00',
+        enabled: true, createdAt: 'n', updatedAt: 'n',
+      }],
+    });
+  for (const hostile of ['h1 { } body { display: none } h1', 'h1 /* x */', 'h1 @media']) {
+    const result = parseImport(body(hostile));
+    expect(result.ok && result.skipped, hostile).toBe(1);
+  }
+  // The control that matters: ordinary selectors — child combinators included — must
+  // survive. Asserting only .ok passes even when every record was dropped.
+  for (const ordinary of [
+    '.card > h1:nth-child(2)',
+    '#main > div > p',
+    '[data-tweakpage-clone="abc-123"] > span:nth-child(1)',
+    'ul li:first-child',
+  ]) {
+    const result = parseImport(body(ordinary));
+    expect(result.ok && result.skipped, ordinary).toBe(0);
+  }
+});

@@ -1,5 +1,5 @@
 import { isTweakpageNode } from '../../lib/edits/dom';
-import { hasInlineMarkup, textNodeProperty, textRuns } from '../../lib/edits/text-nodes';
+import { allRunsAddressable, hasInlineMarkup, textNodeProperty, textRuns } from '../../lib/edits/text-nodes';
 import { hasDirectText } from './components/sections/TextSection';
 import type { EditsController } from './controller';
 
@@ -30,6 +30,9 @@ export function canEditInline(el: Element): boolean {
     return false;
   }
   if ((el as HTMLElement).isContentEditable) return false;
+  // Past the run cap a change has no property to be recorded under, and typing that
+  // records nothing is worse than a field that isn't offered.
+  if (!allRunsAddressable(el)) return false;
   return hasDirectText(el);
 }
 

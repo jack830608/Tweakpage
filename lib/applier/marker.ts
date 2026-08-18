@@ -2,6 +2,23 @@ import { plural, t } from '../i18n';
 
 export const MARKER_HOST_ID = 'tweakpage-marker';
 
+/** Inline !important is the one thing a page's stylesheet cannot outrank. */
+const HOST_DEFENCES: Record<string, string> = {
+  all: 'initial',
+  position: 'fixed',
+  top: '0',
+  left: '0',
+  width: '0',
+  height: '0',
+  visibility: 'visible',
+  opacity: '1',
+  'z-index': '2147483646',
+  display: 'block',
+  transform: 'none',
+  filter: 'none',
+  'clip-path': 'none',
+};
+
 /**
  * Says on the page itself that what you are looking at is not what the site serves.
  *
@@ -26,6 +43,11 @@ export function showMarker(
   const host = existing ?? doc.createElement('div');
   if (!existing) {
     host.id = MARKER_HOST_ID;
+    // Same reasoning as the editor host: a page stylesheet reaching our host element
+    // could hide the one thing that says this page is not what the site serves.
+    for (const [property, value] of Object.entries(HOST_DEFENCES)) {
+      (host as HTMLElement).style.setProperty(property, value, 'important');
+    }
     const shadow = host.attachShadow({ mode: 'open' });
     const style = doc.createElement('style');
     style.textContent = CSS;

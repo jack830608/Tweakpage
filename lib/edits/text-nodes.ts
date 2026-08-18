@@ -2,7 +2,23 @@
 export const TEXT_NODE_PREFIX = 'textNode:';
 
 /** More fields than this stops being an editor and starts being a wall. */
-const MAX_RUNS = 12;
+export const MAX_RUNS = 12;
+
+/**
+ * True when every run of this element can be addressed by a record.
+ *
+ * Past the cap, textRuns stops numbering — so a change to a later run has no property
+ * to be recorded under. The panel simply doesn't offer those boxes; inline editing has
+ * to refuse the element outright, or typing looks like it worked and vanishes on reload.
+ */
+export function allRunsAddressable(el: Element): boolean {
+  let count = 0;
+  const walker = el.ownerDocument.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if ((node.nodeValue ?? '').trim().length > 0 && ++count > MAX_RUNS) return false;
+  }
+  return true;
+}
 
 export interface TextRun {
   index: number;

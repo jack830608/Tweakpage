@@ -7,10 +7,40 @@ import css from './editor.css?inline';
 
 const HOST_ID = 'tweakpage-host';
 
+/** The declarations a page must not be able to change on our own host element. */
+const HOST_DEFENCES: Record<string, string> = {
+  all: 'initial',
+  position: 'fixed',
+  top: '0',
+  left: '0',
+  width: '0',
+  height: '0',
+  overflow: 'visible',
+  visibility: 'visible',
+  opacity: '1',
+  'z-index': '2147483647',
+  display: 'block',
+  transform: 'none',
+  filter: 'none',
+  'clip-path': 'none',
+};
+
+export function applyHostDefences(host: HTMLElement): void {
+  // `all` first: it resets everything, so anything after it survives.
+  for (const [property, value] of Object.entries(HOST_DEFENCES)) {
+    host.style.setProperty(property, value, 'important');
+  }
+}
+
 export function boot(): void {
   if (document.getElementById(HOST_ID)) return;
   const host = document.createElement('div');
   host.id = HOST_ID;
+  // The shadow root protects what is inside it; the host itself sits in the page's tree,
+  // where a `div { display: none }` or a blanket `* { visibility: hidden }` reaches it
+  // and takes the whole editor with it. Inline !important is the one declaration a page
+  // stylesheet cannot outrank.
+  applyHostDefences(host);
   const shadow = host.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
   style.textContent = css;

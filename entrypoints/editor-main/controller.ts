@@ -308,6 +308,9 @@ export class EditsController {
     const loaded = await loadPageEdits(url);
     if (normalizePageUrl(this.doc.location.href) !== next) return;
     this.page = loaded ?? emptyPageEdits(next, this.doc.title, this.now());
+    // The preview belonged to the page the link pointed at. Carrying it across a route
+    // change would silently stop this page's own edits from ever being saved.
+    this.sharedPreview = false;
     this.undoStack = [];
     this.redoStack = [];
     this.lastEditTarget = null;
