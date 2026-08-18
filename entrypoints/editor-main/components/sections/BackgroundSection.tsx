@@ -3,6 +3,7 @@ import type { EditsController } from '../../controller';
 import { useFieldDraft } from '../../hooks/useFieldDraft';
 import { ColorField } from '../ColorField';
 import { Field } from '../Field';
+import { embeddedIn, PickedImage } from '../ImageValue';
 import { ImagePicker } from '../ImagePicker';
 import { t } from '../../../../lib/i18n';
 
@@ -63,19 +64,23 @@ export function BackgroundSection({ element, controller }: SectionProps) {
         element={element}
         error={image.error}
       >
-        <input
-          type="text"
-          aria-label={t('aria_bg_image_url')} data-testid="background-image-url"
-          placeholder={t('image_url_placeholder')}
-          value={image.value}
-          onChange={(e) => image.setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key !== 'Enter') return;
-            e.preventDefault();
-            commit();
-          }}
-        />
+        {embeddedIn(image.applied) ? (
+          <PickedImage dataUrl={embeddedIn(image.applied)!} testId="background-image-picked" />
+        ) : (
+          <input
+            type="text"
+            aria-label={t('aria_bg_image_url')} data-testid="background-image-url"
+            placeholder={t('image_url_placeholder')}
+            value={image.value}
+            onChange={(e) => image.setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter') return;
+              e.preventDefault();
+              commit();
+            }}
+          />
+        )}
       </Field>
       <div className="twk-field twk-field--actions">
         <span aria-hidden="true" />

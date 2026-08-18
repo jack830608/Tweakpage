@@ -201,6 +201,7 @@ export const MESSAGES: Record<string, string> = {
   aria_open_settings: "Open share settings",
   pop_clear: 'Clear',
   confirm_again: "Sure?",
+  image_picked: "Picked file",
   image_embedded: "Picked file · $1 · $2 KB",
   aria_upload_images_all: "Upload images for every hand-off",
   settings_upload_all: "All hand-offs",
