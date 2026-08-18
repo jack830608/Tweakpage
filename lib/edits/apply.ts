@@ -70,6 +70,22 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
     }
   }
 
+  // A record aimed inside a copy cannot resolve until the copy exists, and the share
+  // preview applies through the controller — no observer, no second chance. So the one
+  // extra round the clone insertions make meaningful happens here, in the same call.
+  if (resolved.some(({ record }) => record.type === 'clone')) {
+    for (const record of records) {
+      if (statuses.get(record.id) !== 'not-found' || record.type === 'clone') continue;
+      if (record.scope === 'similar' && record.type === 'style') continue;
+      const el = resolveTarget(record, doc);
+      if (!el) continue;
+      if (record.type !== 'style') applyDomEdit(el, record);
+      marks.set(el, [...(marks.get(el) ?? []), record.id]);
+      applied.push(record);
+      statuses.set(record.id, 'applied');
+    }
+  }
+
   syncMarks(doc, marks);
 
   // Only edits that resolved get a rule, so "applied" in the list and "styled" on the

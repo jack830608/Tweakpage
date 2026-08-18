@@ -1,4 +1,4 @@
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { buildElementLabel, generateSelector, nthChildPath } from './generate';
 
 beforeEach(() => {
@@ -80,4 +80,28 @@ test('skips unstable data-* values (long or digit-heavy)', () => {
     '<p class="lead" data-reactid="12345">a</p><p class="other">b</p>';
   const gen = generateSelector(document.querySelector('.lead')!);
   expect(gen.selector).not.toContain('data-reactid');
+});
+
+describe('elements inside a tweakpage copy', () => {
+  test('are addressed through the stamp, relative to it', () => {
+    // Their absolute selectors describe a page where the copy already exists — which a
+    // fresh load is not. Resolved absolutely, they miss, or worse, land on the original.
+    document.body.innerHTML =
+      '<section class="block"><div class="pg-container"><p>Text</p></div></section>' +
+      '<section class="block" data-tweakpage-clone="cl77"><div class="pg-container"><p>Text</p></div></section>';
+    const inner = document.querySelectorAll('.pg-container')[1];
+    const gen = generateSelector(inner);
+    expect(gen.selector.startsWith('[data-tweakpage-clone="cl77"]'), gen.selector).toBe(true);
+    expect(document.querySelectorAll(gen.selector), 'unique, and inside the copy').toHaveLength(1);
+    expect(document.querySelectorAll(gen.selector)[0]).toBe(inner);
+    for (const fallback of gen.fallbackSelectors) {
+      expect(fallback.startsWith('[data-tweakpage-clone="cl77"]'), fallback).toBe(true);
+    }
+  });
+
+  test('the copy root itself still gets the bare stamp', () => {
+    document.body.innerHTML = '<div data-tweakpage-clone="cl88"><p>x</p></div>';
+    const gen = generateSelector(document.querySelector('[data-tweakpage-clone]')!);
+    expect(gen.selector).toBe('[data-tweakpage-clone="cl88"]');
+  });
 });
