@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { decodeRef, makeShareId, objectUrl, shareLink, shareRefFrom } from './link';
+import { decodeRef, imageUrl, makeShareId, objectUrl, shareLink, shareRefFrom } from './link';
 
 const REF = { id: 'abcdefghijklmnopqrstuv', bucket: 'my-bucket', region: 'ap-northeast-1' };
 
@@ -17,7 +17,7 @@ test('a link is the page itself, with the reference added', () => {
 
 test('the address is built from the parts, never taken from the link', () => {
   expect(objectUrl(REF).toString()).toBe(
-    'https://my-bucket.s3.ap-northeast-1.amazonaws.com/tweakpage/abcdefghijklmnopqrstuv.json',
+    'https://my-bucket.s3.ap-northeast-1.amazonaws.com/tweakpage/shares/abcdefghijklmnopqrstuv.json',
   );
 });
 
@@ -29,4 +29,14 @@ test('a reference that could point somewhere else is refused', () => {
   expect(decodeRef('SHORT_my-bucket_ap-northeast-1')).toBeNull();
   expect(shareRefFrom('https://example.com/?tweakpage=https://evil.example/x.json')).toBeNull();
   expect(shareRefFrom('https://example.com/')).toBeNull();
+});
+
+test('the bucket is laid out by what each object is', () => {
+  const ref = { id: 'a'.repeat(22), bucket: 'my-bucket', region: 'us-east-1' };
+  expect(objectUrl(ref).pathname).toBe(`/tweakpage/shares/${ref.id}.json`);
+  expect(imageUrl('my-bucket', 'us-east-1', 'abc.png').pathname).toBe('/tweakpage/images/abc.png');
+  // Both under one prefix, so the policy in the setup instructions still covers everything.
+  for (const url of [objectUrl(ref), imageUrl('my-bucket', 'us-east-1', 'abc.png')]) {
+    expect(url.pathname.startsWith('/tweakpage/')).toBe(true);
+  }
 });

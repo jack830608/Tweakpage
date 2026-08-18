@@ -143,13 +143,21 @@ Gear icon → **Share links** → fill in bucket, region, access key id and secr
 save as you type; until all four are set, the Share link button stays disabled. This
 repo ships no defaults.
 
+Everything Tweakpage writes lives under one prefix, sorted by what it is, so a single
+policy line covers the lot:
+
+```
+tweakpage/
+  shares/<id>.json          the page a link points at
+  images/<sha256>.<ext>     pictures those pages reference
+```
+
 ### Images
 
 An image picked from your machine is stored locally as data, which is right for this
 machine and useless in a share: the bytes make the page too big to survive the import
 limits, so the recipient would quietly see the original picture. Sharing therefore
-lifts each image into `tweakpage/images/<sha256>.<ext>` — the same prefix as the shares,
-so the policy below covers both — and sends a URL in its place. The local edit keeps its
+lifts each image into `tweakpage/images/<sha256>.<ext>` and sends a URL in its place. The local edit keeps its
 bytes, so your own page still works offline.
 
 Under gear icon → **Images**, one switch per hand-off — Copy summary, Copy JSON,
