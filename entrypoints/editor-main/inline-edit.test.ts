@@ -36,11 +36,24 @@ describe('what can be edited in place', () => {
 describe('the session', () => {
   test('makes the element a plaintext-only input and restores it on finish', () => {
     document.body.innerHTML = '<h1 id="t">Hello</h1>';
-    const el = document.getElementById('t')!;
+    const el = document.getElementById('t')! as HTMLElement;
     const session = startInlineEdit(el, controller());
     expect(el.getAttribute('contenteditable')).toBe('plaintext-only');
+    // Our emerald editing outline is the affordance; the browser's blue focus ring on
+    // top of it reads as a second, unexplained selection.
+    expect(el.style.outline).toContain('none');
     session.finish();
     expect(el.hasAttribute('contenteditable')).toBe(false);
+    expect(el.getAttribute('style'), 'no styling residue is left behind').toBeNull();
+  });
+
+  test("a page's own inline outline comes back exactly as it was", () => {
+    document.body.innerHTML = '<h1 id="t" style="outline: 1px dotted red">Hello</h1>';
+    const el = document.getElementById('t')! as HTMLElement;
+    const session = startInlineEdit(el, controller());
+    expect(el.style.outline).toContain('none');
+    session.finish();
+    expect(el.getAttribute('style')).toBe('outline: 1px dotted red');
   });
 
   test('pauses the applier while typing and releases it only after recording', () => {
