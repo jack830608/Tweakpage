@@ -21,6 +21,20 @@ export function generateSelector(el: Element): GeneratedSelector {
       elementLabel: buildElementLabel(el),
     };
   }
+  // Elements INSIDE a copy are addressed through its stamp too, relative to it. Their
+  // absolute selectors describe a page where the copy already exists — a fresh load is
+  // not that page, so absolutely they miss, or worse, land on the original's twin.
+  const root = el.closest('[data-tweakpage-clone]');
+  const rootStamp = root?.getAttribute('data-tweakpage-clone');
+  if (root && root !== el && rootStamp && /^[A-Za-z0-9_-]{1,64}$/.test(rootStamp)) {
+    const prefix = `[data-tweakpage-clone="${rootStamp}"]`;
+    return {
+      selector: `${prefix} > ${nthChildPathWithin(el, root)}`,
+      fallbackSelectors: [],
+      textFingerprint: el.textContent?.trim().slice(0, 60) || undefined,
+      elementLabel: buildElementLabel(el),
+    };
+  }
   let primary: string | null = dataAttrSelector(el);
   if (!primary) {
     try {
@@ -68,6 +82,20 @@ export function nthChildPath(el: Element): string {
       parts.unshift(cur.tagName.toLowerCase());
       return parts.join(' > ');
     }
+    const index = Array.prototype.indexOf.call(parent.children, cur) + 1;
+    parts.unshift(`${cur.tagName.toLowerCase()}:nth-child(${index})`);
+    cur = parent;
+  }
+  return parts.join(' > ');
+}
+
+/** The nth-child chain from just below the root down to the element. */
+function nthChildPathWithin(el: Element, root: Element): string {
+  const parts: string[] = [];
+  let cur: Element | null = el;
+  while (cur && cur !== root) {
+    const parent: Element | null = cur.parentElement;
+    if (!parent) break;
     const index = Array.prototype.indexOf.call(parent.children, cur) + 1;
     parts.unshift(`${cur.tagName.toLowerCase()}:nth-child(${index})`);
     cur = parent;

@@ -232,12 +232,11 @@ describe('clone records through applyAll', () => {
       { ...base, id: 'tx10', selector: '[data-tweakpage-clone="cl10"]', elementLabel: 'p',
         type: 'text', property: 'textContent', oldValue: 'Original', newValue: 'The copy, edited' },
     ];
-    // Fresh load: the copy does not exist when the text record resolves — the reapply
-    // pass the insertion itself triggers is what lands it.
+    // Fresh load: the copy does not exist when the text record first resolves. The
+    // share preview has no reapply loop, so applyAll itself gives the one extra
+    // resolution round the insertion makes meaningful.
     const first = applyAll(records, document);
-    expect(first.get('tx10')).toBe('not-found');
-    const second = applyAll(records, document);
-    expect(second.get('tx10')).toBe('applied');
+    expect(first.get('tx10'), 'one call converges — previews have no second chance').toBe('applied');
     expect(document.querySelector('[data-tweakpage-clone="cl10"]')!.textContent).toBe('The copy, edited');
     expect(document.getElementById('src')!.textContent, 'the original is untouched').toBe('Original');
   });
@@ -253,4 +252,46 @@ describe('clone records through applyAll', () => {
     revertAll(records, document);
     expect(document.querySelectorAll('p')).toHaveLength(1);
   });
+});
+
+test("a style edit inside a copy lands on the copy in one pass — the sender's exact share", () => {
+  // The reported repro: duplicate a section, restyle something inside the copy, share.
+  // The recipient's preview applies through the controller, which never reapplies.
+  document.body.innerHTML =
+    '<section class="block"><div class="inner"><p>Text</p></div></section>';
+  const base = { fallbackSelectors: [] as string[], enabled: true, createdAt: 'n', updatedAt: 'n' };
+  const records: Parameters<typeof applyAll>[0] = [
+    { ...base, id: 'cl20', selector: '.block', elementLabel: 'section',
+      type: 'clone', property: 'clone', oldValue: '', newValue: '' },
+    { ...base, id: 'st20', selector: '[data-tweakpage-clone="cl20"] > div:nth-child(1)', elementLabel: 'div',
+      type: 'style', property: 'backgroundColor', oldValue: '', newValue: '#434195' },
+  ];
+  const statuses = applyAll(records, document);
+  expect(statuses.get('st20')).toBe('applied');
+
+  const copyInner = document.querySelector('[data-tweakpage-clone="cl20"] > .inner')!;
+  expect(copyInner.getAttribute('data-tweakpage'), 'styled: the copy').toContain('st20');
+  const originalInner = document.querySelectorAll('.inner')[0];
+  expect(originalInner.getAttribute('data-tweakpage') ?? '', 'unstyled: the original').not.toContain('st20');
+});
+
+test('a fingerprint must not smuggle a copy-scoped record onto the original', () => {
+  // The reported repro, with the detail that broke it: real records carry text
+  // fingerprints, the copy's subtree is textually identical to the original's, and
+  // before the copy exists the fingerprint fallback found the original's twin —
+  // unique, plausible, wrong.
+  document.body.innerHTML = '<p id="promo">Fast <span>shipping</span> included</p>';
+  const base = { fallbackSelectors: [] as string[], enabled: true, createdAt: 'n', updatedAt: 'n' };
+  const records: Parameters<typeof applyAll>[0] = [
+    { ...base, id: 'cl30', selector: '#promo', elementLabel: 'p',
+      type: 'clone', property: 'clone', oldValue: '', newValue: '' },
+    { ...base, id: 'st30', selector: '[data-tweakpage-clone="cl30"] > span:nth-child(1)',
+      elementLabel: 'span', textFingerprint: 'shipping',
+      type: 'style', property: 'background-color', oldValue: 'rgba(0, 0, 0, 0)', newValue: 'rgb(67, 65, 149)' },
+  ];
+  applyAll(records, document);
+  const copySpan = document.querySelector('[data-tweakpage-clone] span')!;
+  const originalSpan = document.querySelector('#promo span')!;
+  expect(copySpan.getAttribute('data-tweakpage'), 'styled: the copy').toContain('st30');
+  expect(originalSpan.getAttribute('data-tweakpage') ?? '', 'untouched: the original').not.toContain('st30');
 });

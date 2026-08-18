@@ -1136,3 +1136,72 @@ test('a note survives reload and travels in the Markdown hand-off', async ({ con
   const markdown: string = await page.evaluate(() => navigator.clipboard.readText());
   expect(markdown).toContain('Legal requires this wording');
 });
+
+test("restyling inside a copy survives the share round-trip — the recipient's preview has no reapply", async ({
+  context,
+}) => {
+  const stored = new Map<string, string>();
+  await context.route('https://**.amazonaws.com/**', async (route) => {
+    const request = route.request();
+    if (request.method() === 'PUT') {
+      stored.set(new URL(request.url()).pathname, request.postData() ?? '');
+      return route.fulfill({ status: 200, body: '' });
+    }
+    const body = stored.get(new URL(request.url()).pathname);
+    return body === undefined
+      ? route.fulfill({ status: 404, body: '' })
+      : route.fulfill({ status: 200, contentType: 'application/json', body });
+  });
+
+  const sender = await context.newPage();
+  await sender.goto('http://localhost:4173/');
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  await worker.evaluate(async () => {
+    await (globalThis as any).chrome.storage.local.set({
+      'tweakpage:share-settings': {
+        bucket: 'demo-bucket', region: 'ap-northeast-1',
+        accessKeyId: 'AKIAIOSFODNN7EXAMPLE', secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      },
+    });
+  });
+  await activateEditor(context);
+
+  // Duplicate the promo line, then restyle the span INSIDE the copy.
+  await sender.locator('#promo').click({ position: { x: 2, y: 2 } });
+  await sender.locator('[data-testid="duplicate-element"]').click();
+  const copyItem = sender.locator('[data-tweakpage-clone] span').first();
+  await copyItem.click();
+  const advanced = sender.locator('[data-section="advanced"]');
+  if ((await advanced.getAttribute('aria-expanded')) !== 'true') await advanced.click();
+  await sender.locator('[data-testid="custom-css"]').fill('background-color: rgb(67, 65, 149);');
+  await sender.locator('[data-testid="custom-css"]').blur();
+  const bg = (locator: import('@playwright/test').Locator) =>
+    locator.evaluate((el) => getComputedStyle(el).backgroundColor);
+  await expect.poll(() => bg(copyItem)).toBe('rgb(67, 65, 149)');
+
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await sender.locator('[data-testid="share-link"]').click();
+  await expect(sender.locator('[data-testid="toast"]')).toHaveAttribute('data-kind', 'success');
+  const link: string = await sender.evaluate(() => navigator.clipboard.readText());
+
+  // A clean profile opens the link: the preview applies once, with no reapply loop.
+  const reader = await chromiumWithExtension();
+  await reader.context.route('https://**.amazonaws.com/**', (route) =>
+    route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: stored.get(new URL(route.request().url()).pathname) ?? '',
+    }),
+  );
+  const readerPage = await reader.context.newPage();
+  await readerPage.goto(link);
+
+  const readerCopyItem = readerPage.locator('[data-tweakpage-clone] span').first();
+  await expect(readerCopyItem).toBeVisible();
+  await expect
+    .poll(() => bg(readerCopyItem), { timeout: 4000 })
+    .toBe('rgb(67, 65, 149)');
+  const originalItem = readerPage.locator('#promo span');
+  expect(await bg(originalItem), 'the original stays unpainted').not.toBe('rgb(67, 65, 149)');
+  await reader.context.close();
+});

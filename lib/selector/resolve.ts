@@ -1,3 +1,4 @@
+import { CLONE_ATTRIBUTE } from '../edits/dom';
 import { textNodeIndex } from '../edits/text-nodes';
 import type { EditRecord } from '../edits/types';
 
@@ -22,6 +23,13 @@ type Resolvable = Pick<EditRecord, 'selector' | 'fallbackSelectors' | 'textFinge
  *    page with dynamic content.
  */
 export function resolveRecord(record: Resolvable, root: Document | Element): Element | null {
+  // A selector anchored to a copy's stamp resolves inside that copy or not at all.
+  // Before the copy exists, "helpful" fingerprint relocation would land on the
+  // original's twin — the copy's whole subtree is textually identical to it. The stamp
+  // IS the identity here; not-found simply means the copy hasn't been made yet.
+  if (record.selector.startsWith(`[${CLONE_ATTRIBUTE}`)) {
+    return queryUnique(root, record.selector);
+  }
   const identities = rememberedTexts(record);
   for (const selector of [record.selector, ...record.fallbackSelectors]) {
     const el = queryUnique(root, selector);
