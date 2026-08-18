@@ -17,6 +17,8 @@ export class ApplierEngine {
   private url = '';
   private loadSeq = 0;
   private paused = false;
+  /** True while inline text editing owns the element — a keystroke is a mutation. */
+  private editing = false;
   /**
    * What the editor told us about itself. The chip has one owner — this engine — and
    * one home; the editor only reports its state. 'open' silences the chip (the panel
@@ -40,6 +42,11 @@ export class ApplierEngine {
     this.doc.addEventListener('tweakpage:preview', (e) => {
       this.paused = (e as CustomEvent<{ on?: boolean }>).detail?.on === true;
       if (!this.paused) this.applyNow();
+    });
+    this.doc.addEventListener('tweakpage:editing', (e) => {
+      this.editing = (e as CustomEvent<{ on?: boolean }>).detail?.on === true;
+      // Released: what was typed is recorded by now, so reapplying is a visual no-op.
+      if (!this.editing) this.applyNow();
     });
     this.doc.addEventListener('tweakpage:ui', (e) => {
       const detail = (e as CustomEvent<Partial<typeof this.editorUi>>).detail;
@@ -108,7 +115,7 @@ export class ApplierEngine {
   }
 
   private applyNow(): void {
-    if (this.paused || !this.edits) return;
+    if (this.paused || this.editing || !this.edits) return;
     this.refreshBaselines();
     applyAll(this.edits.records, this.doc);
   }

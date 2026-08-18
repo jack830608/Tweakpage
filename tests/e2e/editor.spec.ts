@@ -978,3 +978,55 @@ test('moving an element keeps it on screen', async ({ context }) => {
     )
     .toBe(true);
 });
+
+test('double-click edits text in place, and the applier does not eat the typing', async ({
+  context,
+}) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  // An existing edit first, so the reapply loop has something it wants to write.
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited headline');
+  await page.waitForTimeout(150);
+
+  await page.locator('h1').dblclick();
+  await expect(page.locator('h1')).toHaveAttribute('contenteditable', 'plaintext-only');
+  await page.keyboard.press('End');
+  // Slowly, so the 50ms reapply window opens between keystrokes.
+  await page.keyboard.type(' typed', { delay: 60 });
+  await expect(page.locator('h1'), 'every keystroke survives').toHaveText('Edited headline typed');
+
+  // Clicking away commits.
+  await page.locator('.lead').click();
+  await expect(page.locator('h1')).not.toHaveAttribute('contenteditable', /./);
+
+  // It went through the same records as the panel: replay proves it.
+  await page.reload();
+  await expect(page.locator('h1')).toHaveText('Edited headline typed');
+
+  // And the panel shows the committed text, coalesced into the one record.
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await expect(page.locator('[data-testid="text"]')).toHaveValue('Edited headline typed');
+});
+
+test('inline editing keeps inline markup and records only the changed run', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  await page.locator('#promo span').dblclick(); // dblclick selects the word "shipping"
+  await page.keyboard.type('delivery');
+  await page.keyboard.press('Escape'); // Esc blurs, which commits
+  await expect(page.locator('#promo span'), 'the span survives with its style').toHaveText(
+    'delivery',
+  );
+  await expect(page.locator('#promo')).toHaveText('Fast delivery included');
+
+  await page.reload();
+  await expect(page.locator('#promo span')).toHaveText('delivery');
+  const color = await page.locator('#promo span').evaluate((el) => getComputedStyle(el).color);
+  expect(color, 'markup and styling intact after replay').toBe('rgb(0, 128, 0)');
+});

@@ -1,17 +1,18 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { browser } from 'wxt/browser';
 import type { EditsController } from './controller';
 import { Overlay } from './components/Overlay';
 import { Panel, type InteractionMode } from './components/Panel';
 import { StatusBadge } from './components/StatusBadge';
 import { Toast, type ToastContent } from './components/Toast';
-import { useElementPicker } from './hooks/useElementPicker';
+import { eventTargetElement, useElementPicker } from './hooks/useElementPicker';
 import { useKeyboardPicker } from './hooks/useKeyboardPicker';
 import { useExtensionAlive } from './hooks/useExtensionAlive';
 import { captureBeforeAfter } from './snapshot';
 import { parseImport } from '../../lib/edits/import';
 import { shareRefFrom } from '../../lib/share/link';
 import { revealElement } from './reveal';
+import { canEditInline, startInlineEdit, type InlineEditSession } from './inline-edit';
 import { safeStorageSet } from '../../lib/extension-context';
 import { plural, t } from '../../lib/i18n';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
@@ -30,6 +31,10 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   const sharedPreview = useSyncExternalStore(controller.subscribe, controller.isPreviewingShared);
   const [hovered, setHovered] = useState<Element | null>(null);
   const [selected, setSelected] = useState<Element | null>(null);
+  // The live inline-edit session, if any. A ref, not state: focusout and dblclick race
+  // each other, and the session's identity must be checked synchronously inside them.
+  const inlineSession = useRef<InlineEditSession | null>(null);
+  const [editingEl, setEditingEl] = useState<Element | null>(null);
   const [mode, setMode] = useState<InteractionMode>('edit');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -125,8 +130,55 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     if (next === 'browse') setHovered(null);
   }, []);
 
-  const onHover = useCallback((el: Element | null) => setHovered(el), []);
+  const finishInlineEdit = useCallback(() => {
+    const session = inlineSession.current;
+    if (!session) return;
+    inlineSession.current = null;
+    setEditingEl(null);
+    session.finish();
+  }, []);
+
+  // Double-click on text starts editing it where it lives; blur, Esc or clicking away
+  // finishes. The panel's text boxes stay — this is the fast path, not a replacement.
+  useEffect(() => {
+    if (mode !== 'edit' || !alive) return;
+    const onDblClick = (e: MouseEvent) => {
+      const target = eventTargetElement(e, host);
+      if (!target || !canEditInline(target)) return;
+      if (inlineSession.current?.element === target) return;
+      finishInlineEdit();
+      e.preventDefault();
+      e.stopPropagation();
+      setSelected(target);
+      setHovered(null);
+      inlineSession.current = startInlineEdit(target, controller, () =>
+        setToast({ message: t('toast_inline_unrecorded') }),
+      );
+      setEditingEl(target);
+    };
+    const onFocusOut = (e: FocusEvent) => {
+      if (inlineSession.current && e.target === inlineSession.current.element) finishInlineEdit();
+    };
+    document.addEventListener('dblclick', onDblClick, true);
+    document.addEventListener('focusout', onFocusOut, true);
+    return () => {
+      document.removeEventListener('dblclick', onDblClick, true);
+      document.removeEventListener('focusout', onFocusOut, true);
+      finishInlineEdit();
+    };
+  }, [mode, alive, host, controller, finishInlineEdit]);
+
+  const onHover = useCallback(
+    (el: Element | null) => {
+      // While typing, outlining whatever the mouse drifts over is just noise.
+      if (inlineSession.current && el && inlineSession.current.element.contains(el)) return;
+      setHovered(el);
+    },
+    [],
+  );
   const onSelect = useCallback((el: Element) => {
+    // A click inside the element being edited is the caret moving, not a selection.
+    if (inlineSession.current?.element.contains(el)) return;
     setSelected(el);
     setHovered(null);
     setMinimized(false);
@@ -153,6 +205,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
       <Overlay
         hovered={mode === 'edit' && alive && hovered?.isConnected ? hovered : null}
         selected={mode === 'edit' && alive ? activeSelected : null}
+        editing={editingEl?.isConnected ? editingEl : null}
         edited={mode === 'edit' && showMarks ? Array.from(document.querySelectorAll('[data-tweakpage]')) : []}
         canMove={(el, direction) => controller.canMove(el, direction)}
         onMove={(el, direction) => {

@@ -205,6 +205,7 @@ export const MESSAGES: Record<string, string> = {
   aria_open_settings: "Open share settings",
   pop_clear: 'Clear',
   confirm_again: "Sure?",
+  toast_inline_unrecorded: "That change couldn't be recorded \u2014 the element's structure changed while editing.",
   aria_move_up: "Move before its previous sibling",
   aria_move_down: "Move after its next sibling",
   tip_move_up: "Move up",

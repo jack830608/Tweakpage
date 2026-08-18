@@ -244,3 +244,24 @@ test('the marker yields while the editor UI is on screen and returns when it clo
   document.dispatchEvent(new CustomEvent('tweakpage:ui', { detail: { state: 'closed', shared: false, count: 1 } }));
   expect(document.getElementById('tweakpage-marker')).toBeTruthy();
 });
+
+test('inline editing pauses reapply so typing is not overwritten', async () => {
+  const url = 'https://example.com/typing';
+  document.body.innerHTML = '<h1 class="ty">Original</h1>';
+  await seed(url, [record({ selector: '.ty', oldValue: 'Original', newValue: 'Edited' })]);
+  const engine = new ApplierEngine(document);
+  await engine.start(url);
+  expect(document.querySelector('.ty')!.textContent).toBe('Edited');
+
+  document.dispatchEvent(new CustomEvent('tweakpage:editing', { detail: { on: true } }));
+  // The user types: every keystroke is a mutation the observer sees.
+  document.querySelector('.ty')!.textContent = 'Edited plus my typing';
+  await wait(80);
+  expect(document.querySelector('.ty')!.textContent, 'the applier must not eat keystrokes').toBe(
+    'Edited plus my typing',
+  );
+
+  document.dispatchEvent(new CustomEvent('tweakpage:editing', { detail: { on: false } }));
+  await wait(10);
+  expect(document.querySelector('.ty')!.textContent, 'released, records apply again').toBe('Edited');
+});
