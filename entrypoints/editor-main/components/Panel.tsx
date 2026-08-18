@@ -48,7 +48,7 @@ export interface PanelProps {
   onSelect: (el: Element) => void;
   onHighlight: (el: Element | null) => void;
   onToast: (toast: ToastContent) => void;
-  onSnapshot: () => void;
+  onSnapshot: () => Promise<boolean>;
   showMarks?: boolean;
   onToggleMarks?: (on: boolean) => void;
   onMinimize: () => void;
@@ -244,7 +244,7 @@ export function Panel(props: PanelProps) {
             data-testid="keep-shared"
             onClick={() => {
               controller.keepShared();
-              props.onToast({ message: t('toast_shared_kept') });
+              props.onToast({ message: t('toast_shared_kept'), kind: 'success' });
             }}
           >
             {t('shared_preview_keep')}

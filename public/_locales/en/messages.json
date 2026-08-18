@@ -731,5 +731,17 @@
   },
   "toast_inline_unrecorded": {
     "message": "That change couldn't be recorded — the element's structure changed while editing."
+  },
+  "share_link_busy": {
+    "message": "Uploading…"
+  },
+  "share_link_done": {
+    "message": "Link copied"
+  },
+  "snap_busy": {
+    "message": "Capturing…"
+  },
+  "snap_done": {
+    "message": "Saved"
   }
 }

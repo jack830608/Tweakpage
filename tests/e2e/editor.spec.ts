@@ -341,6 +341,8 @@ test('a shared link works for someone who has set nothing up', async ({ context 
     const request = route.request();
     if (request.method() === 'PUT') {
       stored.set(new URL(request.url()).pathname, request.postData() ?? '');
+      // Real uploads take real time; the busy state below needs a window to exist in.
+      await new Promise((resolve) => setTimeout(resolve, 400));
       return route.fulfill({ status: 200, body: '' });
     }
     const body = stored.get(new URL(request.url()).pathname);
@@ -369,8 +371,19 @@ test('a shared link works for someone who has set nothing up', async ({ context 
   await sender.locator('h1').click();
   await sender.locator('[data-testid="text"]').fill('Headline from a colleague');
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await sender.locator('[data-testid="share-link"]').click();
-  await expect(sender.locator('.twk-toast')).toBeVisible();
+  const shareButton = sender.locator('[data-testid="share-link"]');
+  await shareButton.click();
+  // The upload takes real time; a silent button reads as broken and gets re-clicked.
+  await expect(shareButton).toHaveAttribute('aria-busy', 'true');
+  await expect(shareButton).toBeDisabled();
+  const toast = sender.locator('[data-testid="toast"]');
+  await expect(toast).toBeVisible();
+  await expect(toast, 'the outcome is legible as a success, not just words').toHaveAttribute(
+    'data-kind',
+    'success',
+  );
+  await expect(toast.locator('.twk-toast-icon')).toBeVisible();
+  await expect(shareButton).toHaveAttribute('aria-busy', 'false');
 
   const link: string = await sender.evaluate(() => navigator.clipboard.readText());
   expect(link, 'the link points at the page, carrying a reference').toContain('?tweakpage=');

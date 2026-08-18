@@ -88,7 +88,7 @@ test('importing a matching export applies edits to the current page', async () =
   await importFile(json);
   expect(controller.getPage().records).toHaveLength(1);
   expect(document.getElementById('title')!.textContent).toBe('Imported');
-  expect(onToast).toHaveBeenCalledWith({ message: 'Imported 1 edits' });
+  expect(onToast).toHaveBeenCalledWith({ message: 'Imported 1 edits', kind: 'success' });
 });
 
 test('importing invalid json reports an error toast', async () => {
@@ -96,7 +96,7 @@ test('importing invalid json reports an error toast', async () => {
   const onToast = vi.fn();
   render(<ChangesTab controller={controller} onToast={onToast} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
   await importFile('nope');
-  expect(onToast).toHaveBeenCalledWith({ message: 'Import failed: not valid JSON' });
+  expect(onToast).toHaveBeenCalledWith({ message: 'Import failed: not valid JSON', kind: 'error' });
   expect(controller.getPage().records).toHaveLength(0);
 });
 

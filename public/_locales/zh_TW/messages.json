@@ -731,5 +731,17 @@
   },
   "toast_inline_unrecorded": {
     "message": "這次修改沒有記錄下來 —— 編輯途中元素結構被改變了。"
+  },
+  "share_link_busy": {
+    "message": "上傳中…"
+  },
+  "share_link_done": {
+    "message": "已複製連結"
+  },
+  "snap_busy": {
+    "message": "擷取中…"
+  },
+  "snap_done": {
+    "message": "已儲存"
   }
 }

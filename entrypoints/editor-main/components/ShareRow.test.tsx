@@ -1,6 +1,6 @@
 import { fakeBrowser } from 'wxt/testing';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ShareRow } from './ShareRow';
 import { EditsController } from '../controller';
 
@@ -59,7 +59,7 @@ test('copy summary reports success via toast', async () => {
   fireEvent.click(screen.getByRole('button', { name: /Copy summary/ }));
   await Promise.resolve();
   await Promise.resolve();
-  expect(onToast).toHaveBeenCalledWith({ message: 'Summary copied to clipboard' });
+  expect(onToast).toHaveBeenCalledWith({ message: 'Summary copied to clipboard', kind: 'success' });
 });
 
 test('snap button triggers the snapshot flow', () => {
@@ -68,4 +68,60 @@ test('snap button triggers the snapshot flow', () => {
   render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={onSnapshot} />);
   fireEvent.click(screen.getByRole('button', { name: 'Snapshot before and after' }));
   expect(onSnapshot).toHaveBeenCalled();
+});
+
+test('the share button says it is uploading, refuses re-entry, then confirms', async () => {
+  await fakeBrowser.storage.local.set({
+    'tweakpage:share-settings': {
+      bucket: 'b', region: 'r', accessKeyId: 'k', secretAccessKey: 's',
+    },
+  });
+  let release!: (value: unknown) => void;
+  const gate = new Promise((resolve) => (release = resolve));
+  vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockReturnValue(
+    gate.then(() => ({ ok: true, ref: { id: 'x'.repeat(22), bucket: 'b', region: 'r' } })) as never,
+  );
+  Object.defineProperty(navigator, 'clipboard', {
+    value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    configurable: true,
+  });
+
+  const onToast = vi.fn();
+  const controller = new EditsController(null, document, NOW);
+  render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn().mockResolvedValue(true)} />);
+  const button = await screen.findByTestId('share-link');
+  await waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
+
+  fireEvent.click(button);
+  await waitFor(() => {
+    // Seconds of S3 round-trips with a silent button reads as broken and gets re-clicked.
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect((button as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  release(undefined);
+  await waitFor(() => expect(button.getAttribute('aria-busy')).toBe('false'));
+  expect(onToast).toHaveBeenCalledWith(
+    expect.objectContaining({ kind: 'success' }),
+  );
+});
+
+test('a failed upload returns the button to idle with an error toast', async () => {
+  await fakeBrowser.storage.local.set({
+    'tweakpage:share-settings': {
+      bucket: 'b', region: 'r', accessKeyId: 'k', secretAccessKey: 's',
+    },
+  });
+  vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockResolvedValue({ ok: false, reason: 'network' } as never);
+
+  const onToast = vi.fn();
+  const controller = new EditsController(null, document, NOW);
+  render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn().mockResolvedValue(true)} />);
+  const button = await screen.findByTestId('share-link');
+  await waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
+
+  fireEvent.click(button);
+  await waitFor(() => expect(onToast).toHaveBeenCalledWith(expect.objectContaining({ kind: 'error' })));
+  await waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
+  expect(button.className, 'no success flash on failure').not.toContain('twk-done');
 });
