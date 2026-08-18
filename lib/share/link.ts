@@ -49,6 +49,20 @@ export function decodeRef(value: string): ShareRef | null {
   return { id, bucket, region };
 }
 
+/**
+ * The shapes S3 will actually answer to.
+ *
+ * Shared by the settings check and by the validation of a link that arrives, so what a
+ * sender is told is configured is exactly what a recipient will accept.
+ */
+export function isBucketName(value: string): boolean {
+  return /^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(value) && !value.includes('..');
+}
+
+export function isRegionName(value: string): boolean {
+  return /^[a-z]{2}(-[a-z]+)+-\d$/.test(value);
+}
+
 export function objectUrl({ id, bucket, region }: ShareRef): URL {
   return new URL(`https://${bucket}.s3.${region}.amazonaws.com/${SHARE_PREFIX}${SHARES}${id}.json`);
 }

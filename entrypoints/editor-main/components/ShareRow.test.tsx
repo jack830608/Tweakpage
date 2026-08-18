@@ -3,6 +3,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ShareRow } from './ShareRow';
 import { EditsController } from '../controller';
+import { t } from '../../../lib/i18n';
 
 const NOW = () => '2026-08-15T10:00:00.000Z';
 
@@ -73,7 +74,7 @@ test('snap button triggers the snapshot flow', () => {
 test('the share button says it is uploading, refuses re-entry, then confirms', async () => {
   await fakeBrowser.storage.local.set({
     'tweakpage:share-settings': {
-      bucket: 'b', region: 'r', accessKeyId: 'k', secretAccessKey: 's',
+      bucket: 'demo-bucket', region: 'us-east-1', accessKeyId: 'k', secretAccessKey: 's',
     },
   });
   let release!: (value: unknown) => void;
@@ -88,6 +89,8 @@ test('the share button says it is uploading, refuses re-entry, then confirms', a
 
   const onToast = vi.fn();
   const controller = new EditsController(null, document, NOW);
+  // A share needs something to share; the button is disabled without it.
+  controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
   render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn().mockResolvedValue(true)} />);
   const button = await screen.findByTestId('share-link');
   await waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
@@ -109,13 +112,15 @@ test('the share button says it is uploading, refuses re-entry, then confirms', a
 test('a failed upload returns the button to idle with an error toast', async () => {
   await fakeBrowser.storage.local.set({
     'tweakpage:share-settings': {
-      bucket: 'b', region: 'r', accessKeyId: 'k', secretAccessKey: 's',
+      bucket: 'demo-bucket', region: 'us-east-1', accessKeyId: 'k', secretAccessKey: 's',
     },
   });
   vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockResolvedValue({ ok: false, reason: 'network' } as never);
 
   const onToast = vi.fn();
   const controller = new EditsController(null, document, NOW);
+  // A share needs something to share; the button is disabled without it.
+  controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
   render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn().mockResolvedValue(true)} />);
   const button = await screen.findByTestId('share-link');
   await waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
@@ -124,4 +129,27 @@ test('a failed upload returns the button to idle with an error toast', async () 
   await waitFor(() => expect(onToast).toHaveBeenCalledWith(expect.objectContaining({ kind: 'error' })));
   await waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
   expect(button.className, 'no success flash on failure').not.toContain('twk-done');
+});
+
+test('with nothing edited, the share button says so instead of making a dead link', async () => {
+  // The recipient is written to reject a share with no records, so offering one is
+  // offering a link that cannot work.
+  await fakeBrowser.storage.local.set({
+    'tweakpage:share-settings': {
+      bucket: 'demo-bucket', region: 'us-east-1', accessKeyId: 'k', secretAccessKey: 's',
+      tinypngKey: '', compressImages: false,
+      uploadImages: { summary: true, json: true, download: true, share: true },
+    },
+  });
+  render(
+    <ShareRow
+      controller={new EditsController(null, document, NOW)}
+      onToast={vi.fn()}
+      onSnapshot={vi.fn().mockResolvedValue(true)}
+    />,
+  );
+  const button = (await screen.findByTestId('share-link')) as HTMLButtonElement;
+  // Configured, so the reason has to be the missing edits, not the missing bucket.
+  await waitFor(() => expect(button.disabled).toBe(true));
+  expect(button.title).toBe(t('tip_share_nothing'));
 });

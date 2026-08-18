@@ -750,6 +750,8 @@ test('credentials are entered on the extension page, and the panel notices', asy
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
   await page.locator('h1').click();
+  // Something to share: the button stays disabled without it, whatever the settings say.
+  await page.locator('[data-testid="text"]').fill('Edited headline');
 
   const share = page.locator('[data-testid="share-link"]');
   const before = await share.evaluate((el) => getComputedStyle(el).opacity);

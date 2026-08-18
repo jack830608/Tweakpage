@@ -1,7 +1,8 @@
 import { compressImage } from './compress';
-import { forget, hostedKey, remember, rememberedUrl } from './hosted';
+import { forget, hostedKey, remember, remembered } from './hosted';
 import { embeddedImages, imageKey, withHostedImages, type EmbeddedImage } from './images';
 import { imageUrl, objectUrl, type ShareRef } from './link';
+import { MAX_SHARE_BYTES } from '../edits/import';
 import type { PageEdits } from '../edits/types';
 import { getShareSettings, isConfigured, type HandOff, type ShareSettings } from './settings';
 import { signRequest } from './sigv4';
@@ -11,6 +12,8 @@ export type TransferFailure =
   | 'not-found'
   | 'rejected'
   | 'not-readable'
+  | 'too-large'
+  | 'empty'
   | 'offline';
 
 export type TransferResult =
@@ -62,13 +65,13 @@ async function hostOne(
   settings: ShareSettings,
 ): Promise<{ url: string; compressed: boolean } | null> {
   const compress = settings.compressImages && settings.tinypngKey !== '';
-  const remembered = hostedKey(await imageKey(image), settings.bucket, compress);
+  const rememberedAs = hostedKey(await imageKey(image), settings.bucket, compress);
 
   // Already up there? Confirm it is still readable — buckets get emptied — and skip
   // both the upload and, with compression on, a slice of the month's quota.
-  const known = await rememberedUrl(remembered);
-  if (known && (await isReadable(known))) return { url: known, compressed: compress };
-  if (known) await forget(remembered);
+  const known = await remembered(rememberedAs);
+  if (known && (await isReadable(known.url))) return known;
+  if (known) await forget(rememberedAs);
 
   const shrunk = compress
     ? await compressImage(image.bytes, image.mediaType, settings.tinypngKey)
@@ -79,8 +82,9 @@ async function hostOne(
   const url = imageUrl(settings.bucket, settings.region, key);
   const written = await putBytes(settings, url, shrunk.bytes, image.mediaType);
   if (!written) return null;
-  await remember(remembered, url.toString());
-  return { url: url.toString(), compressed: shrunk.compressed };
+  const hosted = { url: url.toString(), compressed: shrunk.compressed };
+  await remember(rememberedAs, hosted);
+  return hosted;
 }
 
 /** Asks the way a recipient would: no credentials. */
@@ -136,11 +140,18 @@ async function putBytes(
 export async function putShared(id: string, page: PageEdits): Promise<TransferResult> {
   const settings = await getShareSettings();
   if (!isConfigured(settings)) return { ok: false, reason: 'not-configured' };
+  // A share of nothing is a link the recipient is written to reject. Refused here as
+  // well as in the UI: the button is where it is convenient to say so, not where it is
+  // guaranteed.
+  if (!page.records.some((r) => r.enabled)) return { ok: false, reason: 'empty' };
 
   // Images first: a page whose pictures are hosted is small enough to survive the import
   // limits on arrival, which embedded ones are not.
   const { page: hosted, report } = await hostImages(page, 'share');
   const body = JSON.stringify(hosted);
+  // What we refuse to send is what a recipient refuses to read; the two limits are one
+  // constant so they cannot drift.
+  if (body.length > MAX_SHARE_BYTES) return { ok: false, reason: 'too-large' };
 
   const ref = { id, bucket: settings.bucket, region: settings.region };
   const written = await upload(settings, ref, body);
@@ -169,10 +180,41 @@ export async function getShared(ref: ShareRef): Promise<TransferResult> {
       return { ok: false, reason: 'not-found' };
     }
     if (!response.ok) return { ok: false, reason: 'rejected' };
-    return { ok: true, body: await response.text() };
+    // Whoever controls the object controls its size. Reading it whole before looking is
+    // how a link becomes a way to exhaust the tab.
+    const declared = Number(response.headers.get('content-length'));
+    if (Number.isFinite(declared) && declared > MAX_SHARE_BYTES) {
+      return { ok: false, reason: 'too-large' };
+    }
+    const body = await readBounded(response, MAX_SHARE_BYTES);
+    if (body === null) return { ok: false, reason: 'too-large' };
+    return { ok: true, body };
   } catch {
     return { ok: false, reason: 'offline' };
   }
+}
+
+/** Reads a response, giving up the moment it grows past what we would ever accept. */
+async function readBounded(response: Response, limit: number): Promise<string | null> {
+  const reader = response.body?.getReader();
+  // No streaming body (some test doubles, some environments): fall back to the header
+  // check above plus a length check after the fact.
+  if (!reader) {
+    const text = await response.text();
+    return text.length > limit ? null : text;
+  }
+  const decoder = new TextDecoder();
+  let text = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    text += decoder.decode(value, { stream: true });
+    if (text.length > limit) {
+      await reader.cancel();
+      return null;
+    }
+  }
+  return text + decoder.decode();
 }
 
 async function upload(

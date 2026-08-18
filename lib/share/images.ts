@@ -3,10 +3,12 @@ import type { EditRecord, PageEdits } from '../edits/types';
 /**
  * Local images, on their way to a colleague.
  *
- * A picked file is stored as a data: URL — right for this machine, useless in a share:
- * the bytes make the page JSON enormous, and the import limits reject a record that big,
- * so the recipient silently saw the original image. Sharing therefore lifts every
- * embedded image out to the bucket and sends a URL in its place.
+ * A picked file is stored as a data: URL — right for this machine, heavy in a share: the
+ * bytes bloat the page JSON, and a set of them can push it past the size a share is
+ * allowed to be. So a hand-off that uploads lifts every embedded image out to the bucket
+ * and sends a URL in its place. One that does not upload still carries the bytes, and
+ * they still arrive — smaller shares are the reason to host them, not the only way to
+ * make them work.
  *
  * Only the uploaded copy is rewritten. The local record keeps its data: URL, so the page
  * still replays offline and does not break if the object is later deleted.

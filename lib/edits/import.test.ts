@@ -220,3 +220,52 @@ describe('a picked image inside a record', () => {
     ).toBe(1);
   });
 });
+
+describe('what a link is allowed to hand the tab', () => {
+  const record = (extra: object) => ({
+    id: 'r1', selector: 'h1', fallbackSelectors: [], elementLabel: 'h1',
+    type: 'text', property: 'textContent', oldValue: 'a', newValue: 'b',
+    enabled: true, createdAt: 'n', updatedAt: 'n', ...extra,
+  });
+  const page = (records: object[], extra: object = {}) =>
+    JSON.stringify({ version: 1, url: 'https://a.com/p', title: '', updatedAt: 'n', records, ...extra });
+
+  test('a body too large to be a real share is refused before it is parsed', () => {
+    // Whoever controls the object controls its size; reading it whole is the attack.
+    const huge = 'x'.repeat(25 * 1024 * 1024);
+    expect(parseImport(`{"version":1,"url":"https://a.com/p","records":[],"pad":"${huge}"}`)).toEqual({
+      ok: false, error: 'too large',
+    });
+  });
+
+  test('unbounded fallback selectors are refused', () => {
+    const many = Array.from({ length: 200 }, (_, i) => `.f${i}`);
+    const result = parseImport(page([record({ fallbackSelectors: many })]));
+    expect(result.ok && result.skipped).toBe(1);
+    expect(parseImport(page([record({ fallbackSelectors: many.slice(0, 10) })])).ok).toBe(true);
+  });
+
+  test('every string in a record is bounded', () => {
+    const long = 'x'.repeat(5000);
+    for (const field of ['elementLabel', 'textFingerprint', 'createdAt', 'updatedAt']) {
+      const result = parseImport(page([record({ [field]: long })]));
+      expect(result.ok && result.skipped, field).toBe(1);
+    }
+  });
+
+  test('variants cannot smuggle in more records than the cap', () => {
+    const many = Array.from({ length: 500 }, (_, i) => record({ id: `r${i}` }));
+    const result = parseImport(page(many, {
+      variants: [
+        { id: 'v1', name: 'A', savedAt: 'n', records: many },
+        { id: 'v2', name: 'B', savedAt: 'n', records: many },
+      ],
+    }));
+    expect(result).toEqual({ ok: false, error: 'too many records' });
+  });
+
+  test('a page with a long but sane title is kept, trimmed', () => {
+    const result = parseImport(page([record({})], { title: 'T'.repeat(1000) }));
+    expect(result.ok && result.page.title.length).toBeLessThanOrEqual(300);
+  });
+});

@@ -1,4 +1,5 @@
 import { browser } from 'wxt/browser';
+import { isBucketName, isRegionName } from './link';
 
 const KEY = 'tweakpage:share-settings';
 
@@ -81,9 +82,19 @@ export const TINYPNG_FIELD = {
   hint: undefined as string | undefined,
 };
 
-/** Sharing is offered only when a whole set is present — a partial one just fails at S3. */
+/**
+ * Sharing is offered only when the settings could actually work.
+ *
+ * Not merely "all four are non-empty": a bucket named "x" or a region named "region"
+ * passed that test, unlocked the button, and failed at S3 — or worse, produced a link
+ * whose reference the recipient's own validation would refuse.
+ */
 export function isConfigured(settings: ShareSettings): boolean {
-  return REQUIRED.every((key) => settings[key] !== '');
+  return (
+    REQUIRED.every((key) => settings[key] !== '') &&
+    isBucketName(settings.bucket) &&
+    isRegionName(settings.region)
+  );
 }
 
 export async function getShareSettings(): Promise<ShareSettings> {

@@ -186,10 +186,11 @@ same picture again costs neither a second upload nor a slice of the TinyPNG quot
 remembered URL is checked before it is reused — an emptied bucket means a fresh upload,
 not a broken link.
 
-- Switch one off to keep that hand-off self-contained: the images travel embedded and
-  the toast says how many did, and the local edit keeps its bytes. A JSON export that
-  carries its own bytes needs no AWS account to open and survives the bucket being
-  emptied.
+- Switch one off to keep that hand-off self-contained: the images travel inside it and
+  the local edit keeps its bytes. They still arrive — hosting is what keeps a share
+  small, not what makes it work — but a page carrying several pictures can grow past the
+  24MB a share is allowed to be, and then the share is refused with a reason rather than
+  handed over broken.
 - A summary that could not upload names each image and its size rather than pasting
   hundreds of kilobytes of base64 into your ticket.
 - **TinyPNG** — paste a [tinify.com](https://tinypng.com/developers) key and switch on

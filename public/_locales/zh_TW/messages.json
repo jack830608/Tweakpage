@@ -772,7 +772,7 @@
     "message": "已複製連結 —— 上傳 $1 張圖片,其中 $2 張已壓縮"
   },
   "toast_share_copied_without_images": {
-    "message": "已複製連結,但有 $1 張本機圖片沒能上傳 —— 開啟連結的人會看到原本的圖。"
+    "message": "已複製連結 —— $1 張圖片是夾在裡面送出的,這條分享會比較大。"
   },
   "settings_images": {
     "message": "圖片"
@@ -823,7 +823,7 @@
     "message": "$1 —— 一併上傳 $2 張圖片"
   },
   "toast_with_embedded_images": {
-    "message": "$1 —— $2 張圖片以內嵌方式帶著"
+    "message": "$1 —— $2 張圖片夾在裡面送出"
   },
   "settings_upload_all": {
     "message": "全部交付方式"
@@ -848,5 +848,14 @@
   },
   "settings_compress_needs_key": {
     "message": "要開啟這個,請先到設定頁填入 TinyPNG key。"
+  },
+  "toast_share_empty": {
+    "message": "還沒有東西可以分享 —— 先做一筆改動。"
+  },
+  "toast_share_too_large": {
+    "message": "這個頁面太大,無法分享。請到設定開啟圖片上傳,或移除幾張圖片。"
+  },
+  "tip_share_nothing": {
+    "message": "先做一筆改動 —— 沒有改動的連結沒有東西可看"
   }
 }

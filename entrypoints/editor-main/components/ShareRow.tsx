@@ -30,6 +30,9 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
     return watchShareSettings(read);
   }, []);
 
+  // A share of nothing is a link the recipient is written to reject.
+  const hasEdits = controller.getPage().records.some((r) => r.enabled);
+
   const copy = async (text: string, message: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -74,8 +77,13 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
     if (result?.page) controller.adoptHostedImages(result.page.records);
     if (!result?.ok || !result.ref) {
       // A link nobody can open is the failure worth naming precisely.
+      const REASONS: Record<string, string> = {
+        'not-readable': 'toast_share_private',
+        empty: 'toast_share_empty',
+        'too-large': 'toast_share_too_large',
+      };
       onToast({
-        message: t(result?.reason === 'not-readable' ? 'toast_share_private' : 'toast_share_failed'),
+        message: t(REASONS[result?.reason ?? ''] ?? 'toast_share_failed'),
         kind: 'error',
       });
       return false;
@@ -168,8 +176,10 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           doneLabel={t('share_link_done')}
           ariaLabel={t('aria_share_link')}
           testId="share-link"
-          disabled={!canShare}
-          title={canShare ? t('tip_share_link') : t('tip_share_unset')}
+          disabled={!canShare || !hasEdits}
+          title={
+            !canShare ? t('tip_share_unset') : !hasEdits ? t('tip_share_nothing') : t('tip_share_link')
+          }
           run={onShareLink}
         />
       </div>
