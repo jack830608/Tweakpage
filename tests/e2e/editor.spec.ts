@@ -1382,3 +1382,73 @@ test('each hand-off obeys its own image switch', async ({ context }) => {
   expect(markdown, 'a ticket gets a URL, not 300KB of base64').not.toContain('base64');
   expect(markdown).toContain('/tweakpage/images/');
 });
+
+test('after a share the panel and storage point at the uploaded image, not at bytes', async ({
+  context,
+}) => {
+  const stored = new Map<string, { body: string | Buffer; type: string }>();
+  await context.route('https://**.amazonaws.com/**', async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    if (request.method() === 'PUT') {
+      stored.set(path, { body: request.postDataBuffer() ?? '', type: request.headers()['content-type'] ?? '' });
+      return route.fulfill({ status: 200, body: '' });
+    }
+    const hit = stored.get(path);
+    return hit
+      ? route.fulfill({ status: 200, contentType: hit.type, body: hit.body })
+      : route.fulfill({ status: 404, body: '' });
+  });
+
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  await worker.evaluate(async () => {
+    await (globalThis as any).chrome.storage.local.set({
+      'tweakpage:share-settings': {
+        bucket: 'demo-bucket', region: 'ap-northeast-1',
+        accessKeyId: 'AKIAIOSFODNN7EXAMPLE', secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+        tinypngKey: '', compressImages: false,
+        uploadImages: { summary: true, json: true, download: true, share: true },
+      },
+    });
+  });
+  await activateEditor(context);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+
+  await page.locator('#hero').click();
+  await page.locator('[data-testid="image-file"]').setInputFiles({
+    name: 'local.png', mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPk+89QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    ),
+  });
+  await expect.poll(() => page.locator('#hero').getAttribute('src')).toContain('data:image/png');
+
+  await page.locator('[data-testid="share-link"]').click();
+  await expect(page.locator('[data-testid="toast"]')).toHaveAttribute('data-kind', 'success');
+
+  // The image has an address now, so nothing here should still be carrying its bytes.
+  await expect
+    .poll(() => page.locator('#hero').getAttribute('src'), { timeout: 5000 })
+    .toMatch(/^https:\/\/.*\/tweakpage\/images\/[0-9a-f]{64}\.png$/);
+
+  // The change list shows the URL rather than a wall of base64 — on both sides, since
+  // this fixture's own image is embedded too.
+  await page.locator('[data-testid="review-changes"]').click();
+  // The diff is a value, not UI wording, so reading it is safe in any locale — but the
+  // guard test rightly bans toContainText with Latin words, so assert on the text.
+  const diff = page.locator('.twk-change-diff').first();
+  const shown = (await diff.textContent()) ?? '';
+  expect(shown, 'no wall of base64 on either side').not.toContain('base64');
+  // The URL is truncated for the list, so its start is what proves it is the hosted one.
+  expect(shown, 'the hosted address is what the change now says').toContain('https://demo-bucket.s3.');
+
+  // And a reload replays from storage, which must have been rewritten too.
+  await page.reload();
+  await expect
+    .poll(() => page.locator('#hero').getAttribute('src'), { timeout: 5000 })
+    .toContain('/tweakpage/images/');
+});

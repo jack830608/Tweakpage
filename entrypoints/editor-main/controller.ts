@@ -212,6 +212,39 @@ export class EditsController {
     return this.doc.querySelector(`[${CLONE_ATTRIBUTE}="${record.id}"]`);
   }
 
+  /**
+   * Points the local edits at images that have just been uploaded.
+   *
+   * A picked file lives in the record as base64 — the right thing before it exists
+   * anywhere else, and dead weight once it does. Hosting it during a hand-off makes the
+   * bytes redundant: they bloat storage, fill the change list with an unreadable wall,
+   * and leave the shared page and this one describing the same image two different ways.
+   *
+   * Not an edit and not an undo step — the user changed nothing, the image simply has
+   * an address now. Only a value that really was embedded bytes can be replaced, and
+   * only by a URL, so a reply from the worker cannot rewrite anything else.
+   */
+  adoptHostedImages(hosted: EditRecord[]): void {
+    const urls = new Map(
+      hosted
+        .filter((r) => /^https:\/\//.test(r.newValue))
+        .map((r) => [r.id, r.newValue] as const),
+    );
+    let changed = false;
+    const records = this.page.records.map((record) => {
+      const url = urls.get(record.id);
+      if (url === undefined || !record.newValue.startsWith('data:image/')) return record;
+      changed = true;
+      return { ...record, newValue: url, updatedAt: this.now() };
+    });
+    if (!changed) return;
+    this.page = { ...this.page, records, updatedAt: this.now() };
+    // The page is showing the bytes; point it at the address instead.
+    this.statuses = applyAll(records, this.doc);
+    this.persist();
+    this.listeners.forEach((fn) => fn());
+  }
+
   /** Notes explain, they don't change the page — no undo step, no reapply. */
   setNote(id: string, note: string): void {
     const trimmed = note.trim().slice(0, 500);

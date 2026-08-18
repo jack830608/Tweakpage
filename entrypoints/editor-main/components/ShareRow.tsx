@@ -51,6 +51,8 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
     const result = (await browser.runtime
       .sendMessage({ type: 'tweakpage:host-images', page, handOff })
       .catch(() => null)) as { page?: PageEdits; report?: ImageReport } | null;
+    // An image that now has an address does not need its bytes kept here as well.
+    if (result?.page) controller.adoptHostedImages(result.page.records);
     return { page: result?.page ?? page, report: result?.report };
   };
 
@@ -65,9 +67,11 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           reason?: string;
           ref?: Parameters<typeof shareLink>[1];
           images?: { uploaded: number; compressed: number; embedded: number };
+          page?: PageEdits;
         }
       | null;
 
+    if (result?.page) controller.adoptHostedImages(result.page.records);
     if (!result?.ok || !result.ref) {
       // A link nobody can open is the failure worth naming precisely.
       onToast({

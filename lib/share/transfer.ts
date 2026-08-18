@@ -14,7 +14,7 @@ export type TransferFailure =
   | 'offline';
 
 export type TransferResult =
-  | { ok: true; body: string; ref?: ShareRef; images?: ImageReport }
+  | { ok: true; body: string; ref?: ShareRef; images?: ImageReport; page?: PageEdits }
   | { ok: false; reason: TransferFailure };
 
 /** What happened to the page's embedded images on the way up. */
@@ -145,12 +145,14 @@ export async function putShared(id: string, page: PageEdits): Promise<TransferRe
   const ref = { id, bucket: settings.bucket, region: settings.region };
   const written = await upload(settings, ref, body);
   if (!written.ok) return written;
-  if (await isPubliclyReadable(ref)) return { ok: true, body: '', ref, images: report };
+  // The rewritten page travels back so the editor can point its own records at the
+  // images that now have addresses.
+  if (await isPubliclyReadable(ref)) return { ok: true, body: '', ref, images: report, page: hosted };
 
   const retried = await upload(settings, ref, body, 'public-read');
   if (!retried.ok) return { ok: false, reason: 'not-readable' };
   return (await isPubliclyReadable(ref))
-    ? { ok: true, body: '', ref, images: report }
+    ? { ok: true, body: '', ref, images: report, page: hosted }
     : { ok: false, reason: 'not-readable' };
 }
 
