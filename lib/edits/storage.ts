@@ -1,21 +1,28 @@
 import { browser } from 'wxt/browser';
 import type { PageEdits } from './types';
 
-// Parameters that describe the visit, not the page: analytics tags, ad-click ids, and
-// our own share reference. Everything else stays — ?view=B may serve a different
-// document, and dropping it applied one account's edits to another's page.
-const VISIT_PARAMS = /^(utm_|gclid$|fbclid$|msclkid$|tweakpage$)/;
-
+/**
+ * Which page an edit belongs to.
+ *
+ * The query string is left out, and that is a deliberate reversal. For a while it was
+ * part of the identity, on the reasoning that ?view=A and ?view=B can serve different
+ * documents — true, and rare. What is common is a query that says nothing about which
+ * page you are on: a Shopify ?variant=, a session id, a page number, a campaign tag the
+ * strip-list had not heard of. Including it meant clicking a variant lost the work you
+ * had just done, silently, and edits made before the rule changed became unreachable.
+ *
+ * Both rules are wrong sometimes, so the choice is between their failures. Ignoring the
+ * query can apply an edit on a variant of the page you did not edit — visible, and one
+ * click to switch off. Including it loses your work without saying so. The second is
+ * worse, so the query stays out.
+ *
+ * A hash router's "#/products/2" is a different page; "#features" is a link within one.
+ * Ignoring both meant every route of a hash-routed app shared a single bucket of edits.
+ */
 export function normalizePageUrl(url: string): string {
   const u = new URL(url);
-  const params = [...u.searchParams].filter(([name]) => !VISIT_PARAMS.test(name));
-  // Sorted so ?a=1&b=2 and ?b=2&a=1 land in one bucket — servers don't order-match either.
-  params.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-  const query = params.length > 0 ? `?${new URLSearchParams(params)}` : '';
-  // A hash router's "#/products/2" is a different page; "#features" is a link within one.
-  // Ignoring both meant every route of a hash-routed app shared a single bucket of edits.
   const route = u.hash.startsWith('#/') ? u.hash : '';
-  return u.origin + u.pathname + query + route;
+  return u.origin + u.pathname + route;
 }
 
 export function pageKey(url: string): string {

@@ -1586,3 +1586,64 @@ test('nothing leaves the machine before the question is answered', async ({ cont
   await page.locator('[data-testid="copy-json"]').click();
   await expect(page.locator('[data-testid="transfer-consent"]'), 'asked once, not once per button').toHaveCount(0);
 });
+
+test('a query the site adds does not lose the work you just did', async ({ context }) => {
+  // A shop appends ?variant= when you pick a size. For a while that counted as a
+  // different page, and the edits made a moment earlier disappeared.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited headline');
+  await expect(page.locator('h1')).toHaveText('Edited headline');
+
+  await page.goto('http://localhost:4173/?variant=42');
+  await expect(page.locator('h1'), 'same page to a person, same page to us').toHaveText(
+    'Edited headline',
+  );
+  await expect(page.locator('#tweakpage-marker button')).toBeVisible();
+
+  await page.goto('http://localhost:4173/?variant=99&sid=abc&utm_source=mail');
+  await expect(page.locator('h1')).toHaveText('Edited headline');
+});
+
+test('an entry left behind by an older rule can still be found and cleared', async ({ context }) => {
+  // Edits saved while the query was part of the key are orphaned now. They are not worth
+  // migrating, but they must not be stuck: the popup lists every page it has anything
+  // for, so an orphan appears with its own address and can be cleared.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  await worker.evaluate(async () => {
+    await (globalThis as any).chrome.storage.local.set({
+      'page:http://localhost:4173/?variant=42': {
+        version: 1, url: 'http://localhost:4173/?variant=42', title: 'Left behind',
+        updatedAt: '2026-08-18T00:00:00.000Z',
+        records: [{
+          id: 'old1', selector: 'h1', fallbackSelectors: [], elementLabel: 'h1',
+          type: 'text', property: 'textContent', oldValue: 'Original Headline',
+          newValue: 'From the old rule', enabled: true, createdAt: 'n', updatedAt: 'n',
+        }],
+      },
+    });
+  });
+
+  const popup = await context.newPage();
+  const root = worker.url().slice(0, worker.url().lastIndexOf('/'));
+  await popup.goto(`${root}/popup.html`);
+  // The address is data, not UI wording, so read it rather than matching on it.
+  const shown = (await popup.locator('.pop-page-url').first().textContent()) ?? '';
+  expect(shown, 'the orphan is listed under its own address').toContain('variant=42');
+
+  const clear = popup.locator('[data-testid="clear-page"]').first();
+  await clear.click();
+  await clear.click();
+  await expect(popup.locator('[data-testid="clear-page"]')).toHaveCount(0);
+
+  const left = await worker.evaluate(async () => {
+    const all = await (globalThis as any).chrome.storage.local.get(null);
+    return Object.keys(all).filter((k) => k.startsWith('page:'));
+  });
+  expect(left, 'gone for good').toEqual([]);
+});
