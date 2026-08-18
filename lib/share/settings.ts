@@ -7,6 +7,15 @@ export interface ShareSettings {
   region: string;
   accessKeyId: string;
   secretAccessKey: string;
+  /** tinify.com key. Empty means images are uploaded as they were picked. */
+  tinypngKey: string;
+  /** Lift embedded images out to the bucket when sharing. */
+  uploadImages: boolean;
+  /**
+   * Compress before uploading. Separate from holding a key on purpose: this sends the
+   * user's images to a third party, which is a decision, not a side effect of pasting.
+   */
+  compressImages: boolean;
 }
 
 export const EMPTY_SETTINGS: ShareSettings = {
@@ -14,6 +23,9 @@ export const EMPTY_SETTINGS: ShareSettings = {
   region: '',
   accessKeyId: '',
   secretAccessKey: '',
+  tinypngKey: '',
+  uploadImages: true,
+  compressImages: false,
 };
 
 /**
@@ -22,8 +34,13 @@ export const EMPTY_SETTINGS: ShareSettings = {
  * Both the in-panel settings and the options page render from this list, so a fifth
  * field appears in both places or neither.
  */
+/** Only the text fields are rendered as inputs; the switches have their own control. */
+type TextKey = {
+  [K in keyof ShareSettings]: ShareSettings[K] extends string ? K : never;
+}[keyof ShareSettings];
+
 export const SHARE_FIELDS: ReadonlyArray<{
-  key: keyof ShareSettings;
+  key: TextKey;
   /** What AWS's own console calls it. */
   label: string;
   /** The environment variable of the same value, for matching against an existing .env. */
@@ -37,9 +54,12 @@ export const SHARE_FIELDS: ReadonlyArray<{
   { key: 'secretAccessKey', label: 'Secret access key', env: 'AWS_SECRET_ACCESS_KEY', secret: true },
 ];
 
+/** The four that have to be there before S3 will answer at all. */
+const REQUIRED = ['bucket', 'region', 'accessKeyId', 'secretAccessKey'] as const;
+
 /** Sharing is offered only when a whole set is present — a partial one just fails at S3. */
 export function isConfigured(settings: ShareSettings): boolean {
-  return Object.values(settings).every((value) => value !== '');
+  return REQUIRED.every((key) => settings[key] !== '');
 }
 
 export async function getShareSettings(): Promise<ShareSettings> {
@@ -51,6 +71,11 @@ export async function getShareSettings(): Promise<ShareSettings> {
       region: str(value.region),
       accessKeyId: str(value.accessKeyId),
       secretAccessKey: str(value.secretAccessKey),
+      tinypngKey: str(value.tinypngKey),
+      // Absent means "written before this existed": uploading is the behaviour that
+      // makes a share work, so it is the default; sending images to a third party is not.
+      uploadImages: value.uploadImages !== false,
+      compressImages: value.compressImages === true,
     };
   } catch {
     return EMPTY_SETTINGS;

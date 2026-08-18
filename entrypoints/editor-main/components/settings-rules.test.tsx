@@ -159,7 +159,8 @@ describe('share credentials', () => {
     fireEvent.click(screen.getByTestId('clear-share-settings'));
     await waitFor(async () => {
       const settings = await getShareSettings();
-      expect(Object.values(settings).join('')).toBe('');
+      // The credentials go; the preferences beside them are not secrets to clear.
+      expect(SHARE_FIELDS.map((f) => settings[f.key]).join('')).toBe('');
     });
   });
 });

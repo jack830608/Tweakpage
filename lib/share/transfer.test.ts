@@ -1,12 +1,21 @@
 import { fakeBrowser } from 'wxt/testing';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { putShared } from './transfer';
+import type { PageEdits } from '../edits/types';
+
+/** putShared serialises the page itself now, so tests hand it one. */
+function pageWith(title: string): PageEdits {
+  return { version: 1, url: 'https://a.com/p', title, updatedAt: 'n', records: [] };
+}
 
 const SETTINGS = {
   bucket: 'demo',
   region: 'us-east-1',
   accessKeyId: 'AKIAIOSFODNN7EXAMPLE',
   secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+  tinypngKey: '',
+  uploadImages: true,
+  compressImages: false,
 };
 
 interface Call {
@@ -40,7 +49,7 @@ beforeEach(async () => {
 
 test('a bucket that already serves public reads is uploaded to once', async () => {
   const calls = bucket({ publicByPolicy: true });
-  const result = await putShared('abcdefghijklmnopqrstuv', '{}');
+  const result = await putShared('abcdefghijklmnopqrstuv', pageWith('{}'));
 
   expect(result.ok).toBe(true);
   expect(calls.filter((c) => c.method === 'PUT'), 'no ACL needed, no second write').toHaveLength(1);
@@ -49,7 +58,7 @@ test('a bucket that already serves public reads is uploaded to once', async () =
 
 test('a private bucket gets a second upload that asks to be readable', async () => {
   const calls = bucket({ publicByPolicy: false, aclAllowed: true });
-  const result = await putShared('abcdefghijklmnopqrstuv', '{}');
+  const result = await putShared('abcdefghijklmnopqrstuv', pageWith('{}'));
 
   expect(result.ok).toBe(true);
   const puts = calls.filter((c) => c.method === 'PUT');
@@ -59,7 +68,7 @@ test('a private bucket gets a second upload that asks to be readable', async () 
 
 test('a link nobody could open is reported instead of copied', async () => {
   bucket({ publicByPolicy: false, aclAllowed: false });
-  const result = await putShared('abcdefghijklmnopqrstuv', '{}');
+  const result = await putShared('abcdefghijklmnopqrstuv', pageWith('{}'));
 
   // The sender never finds out otherwise: the upload succeeds and only the recipient
   // sees the 403.
@@ -68,7 +77,7 @@ test('a link nobody could open is reported instead of copied', async () => {
 
 test('the check is made the way a stranger would make it', async () => {
   const calls = bucket({ publicByPolicy: true });
-  await putShared('abcdefghijklmnopqrstuv', '{}');
+  await putShared('abcdefghijklmnopqrstuv', pageWith('{}'));
   const head = calls.find((c) => c.method === 'HEAD');
   expect(head, 'unsigned, so it proves what an anonymous reader gets').toBeTruthy();
 });

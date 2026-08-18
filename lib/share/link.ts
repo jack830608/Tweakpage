@@ -50,6 +50,16 @@ export function objectUrl({ id, bucket, region }: ShareRef): URL {
   return new URL(`https://${bucket}.s3.${region}.amazonaws.com/${SHARE_PREFIX}${id}.json`);
 }
 
+/**
+ * Images live beside the shares, under the same prefix.
+ *
+ * One prefix means one bucket policy line covers both — the setup instructions do not
+ * grow — and the existing share URLs keep the shape they already have.
+ */
+export function imageUrl(bucket: string, region: string, key: string): URL {
+  return new URL(`https://${bucket}.s3.${region}.amazonaws.com/${SHARE_PREFIX}images/${key}`);
+}
+
 /** Adds the reference to the page's own URL, so the link lands on the page it describes. */
 export function shareLink(pageUrl: string, ref: ShareRef): string {
   const url = new URL(pageUrl);

@@ -57,6 +57,7 @@ export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
         </Row>
       </CollapsibleSection>
       <ShareGroup onToast={onToast} />
+      <ImagesGroup onToast={onToast} />
     </div>
   );
 }
@@ -137,6 +138,96 @@ function ShareGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
       </div>
       <PermissionsHelp open={helpOpen} onToggle={() => setHelpOpen((current) => !current)} onToast={onToast} />
     </CollapsibleSection>
+  );
+}
+
+/**
+ * What happens to a picked image when a link is made.
+ *
+ * Uploading is what makes a share work at all — an embedded image is too big to survive
+ * the import limits, so without it the recipient quietly sees the original picture.
+ * Compression is a separate decision because it sends the image to a third party.
+ */
+function ImagesGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
+  const [settings, setSettings] = useState<ShareSettings | null>(null);
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    void getShareSettings().then(setSettings);
+  }, []);
+  if (!settings) return null;
+
+  const commit = (next: ShareSettings) => {
+    setSettings(next);
+    void saveShareSettings(next);
+  };
+
+  return (
+    <CollapsibleSection
+      title={t('settings_images')}
+      sectionId="set-images"
+      open={open}
+      onToggle={() => setOpen((current) => !current)}
+    >
+      <Row label={t('settings_upload_images')}>
+        <Switch
+          ariaLabel={t('aria_upload_images')}
+          testId="upload-images"
+          checked={settings.uploadImages}
+          onChange={(uploadImages) => commit({ ...settings, uploadImages })}
+        />
+      </Row>
+      <p className="twk-settings-note">{t('settings_upload_images_hint')}</p>
+
+      <Row label="TINYPNG_API_KEY">
+        <input
+          type="password"
+          aria-label="TINYPNG_API_KEY"
+          data-testid="setting-tinypngKey"
+          autoComplete="off"
+          spellCheck={false}
+          value={settings.tinypngKey}
+          onChange={(e) => commit({ ...settings, tinypngKey: e.target.value })}
+        />
+      </Row>
+      <Row label={t('settings_compress')}>
+        <Switch
+          ariaLabel={t('aria_compress_images')}
+          testId="compress-images"
+          checked={settings.compressImages && settings.tinypngKey !== ''}
+          disabled={settings.tinypngKey === ''}
+          onChange={(compressImages) => commit({ ...settings, compressImages })}
+        />
+      </Row>
+      <p className="twk-settings-note">{t('settings_compress_hint')}</p>
+    </CollapsibleSection>
+  );
+}
+
+function Switch({
+  ariaLabel,
+  testId,
+  checked,
+  disabled,
+  onChange,
+}: {
+  ariaLabel: string;
+  testId: string;
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <label className={disabled ? 'twk-switch twk-switch--off' : 'twk-switch'}>
+      <input
+        type="checkbox"
+        aria-label={ariaLabel}
+        data-testid={testId}
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span>{checked ? t('on') : t('off')}</span>
+    </label>
   );
 }
 

@@ -213,20 +213,11 @@
   "err_image_url": {
     "message": "需要以 https:// 開頭 — 或直接選檔案"
   },
-  "share_css": {
-    "message": "複製 CSS"
-  },
-  "toast_copied_css": {
-    "message": "CSS 已複製到剪貼簿"
-  },
   "toast_copied_json": {
     "message": "JSON 已複製 — 直接貼給同事"
   },
   "tip_copy_summary": {
     "message": "複製給工程師的 Markdown 摘要"
-  },
-  "tip_copy_css": {
-    "message": "把改動複製成一份樣式表"
   },
   "tip_snap": {
     "message": "儲存修改前後的截圖"
@@ -275,9 +266,6 @@
   },
   "aria_close": {
     "message": "關閉"
-  },
-  "aria_copy_css": {
-    "message": "複製 CSS"
   },
   "aria_copy_json": {
     "message": "複製 JSON"
@@ -776,5 +764,41 @@
   },
   "aria_note": {
     "message": "這筆改動的備註"
+  },
+  "toast_share_copied_images": {
+    "message": "已複製連結 —— 一併上傳 $1 張圖片"
+  },
+  "toast_share_copied_images_compressed": {
+    "message": "已複製連結 —— 上傳 $1 張圖片,其中 $2 張已壓縮"
+  },
+  "toast_share_copied_without_images": {
+    "message": "已複製連結,但有 $1 張本機圖片沒能上傳 —— 開啟連結的人會看到原本的圖。"
+  },
+  "settings_images": {
+    "message": "圖片"
+  },
+  "settings_upload_images": {
+    "message": "分享時上傳圖片"
+  },
+  "settings_upload_images_hint": {
+    "message": "挑選的圖片是以資料形式存在這台電腦上。分享時會把它送進你的 bucket,連結才對別人有效;關閉的話本機圖片不會隨連結送出。"
+  },
+  "settings_compress": {
+    "message": "上傳前用 TinyPNG 壓縮"
+  },
+  "settings_compress_hint": {
+    "message": "會把圖片送到 tinify.com 再上傳。需要 API key;當月免費額度用完時,改為上傳原圖。"
+  },
+  "aria_upload_images": {
+    "message": "分享時將圖片上傳到你的 bucket"
+  },
+  "aria_compress_images": {
+    "message": "上傳前用 TinyPNG 壓縮圖片"
+  },
+  "on": {
+    "message": "開"
+  },
+  "off": {
+    "message": "關"
   }
 }

@@ -1245,3 +1245,85 @@ test("a page stylesheet cannot silence the marker that says the page is edited",
   const box = (await page.locator('#tweakpage-marker button').boundingBox())!;
   expect(box.width, 'still a real, readable chip').toBeGreaterThan(60);
 });
+
+test('a locally picked image travels with the link instead of being dropped', async ({
+  context,
+}) => {
+  const stored = new Map<string, { body: string | Buffer; type: string }>();
+  await context.route('https://**.amazonaws.com/**', async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    if (request.method() === 'PUT') {
+      stored.set(path, {
+        body: request.postDataBuffer() ?? '',
+        type: request.headers()['content-type'] ?? '',
+      });
+      return route.fulfill({ status: 200, body: '' });
+    }
+    const hit = stored.get(path);
+    if (!hit) return route.fulfill({ status: 404, body: '' });
+    return route.fulfill({ status: 200, contentType: hit.type, body: hit.body });
+  });
+
+  const sender = await context.newPage();
+  await sender.goto('http://localhost:4173/');
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  await worker.evaluate(async () => {
+    await (globalThis as any).chrome.storage.local.set({
+      'tweakpage:share-settings': {
+        bucket: 'demo-bucket', region: 'ap-northeast-1',
+        accessKeyId: 'AKIAIOSFODNN7EXAMPLE', secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+        tinypngKey: '', uploadImages: true, compressImages: false,
+      },
+    });
+  });
+  await activateEditor(context);
+
+  // A real local pick: a 1×1 PNG, which is what the file input hands over.
+  await sender.locator('#hero').click();
+  const image = sender.locator('[data-testid="image-file"]');
+  await image.setInputFiles({
+    name: 'local.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPk+89QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    ),
+  });
+  await expect
+    .poll(() => sender.locator('#hero').getAttribute('src'), { timeout: 3000 })
+    .toContain('data:image/png');
+
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await sender.locator('[data-testid="share-link"]').click();
+  await expect(sender.locator('[data-testid="toast"]')).toHaveAttribute('data-kind', 'success');
+  const link: string = await sender.evaluate(() => navigator.clipboard.readText());
+
+  // The image went up beside the share, under the same prefix.
+  const imageKeys = [...stored.keys()].filter((k) => k.startsWith('/tweakpage/images/'));
+  expect(imageKeys, 'one object per picture').toHaveLength(1);
+  expect(imageKeys[0]).toMatch(/^\/tweakpage\/images\/[0-9a-f]{64}\.png$/);
+
+  // And the edit points at it rather than carrying the bytes. (oldValue keeps whatever
+  // the site itself served — here a data URL — because that is the site's own content.)
+  const shareBody = String(stored.get([...stored.keys()].find((k) => k.endsWith('.json'))!)!.body);
+  const picked = JSON.parse(shareBody).records.find((r: { property: string }) => r.property === 'src');
+  expect(picked.newValue, 'the picked image is a URL now').toMatch(/\/tweakpage\/images\/[0-9a-f]{64}\.png$/);
+  expect(picked.newValue, 'not the bytes').not.toContain('base64');
+
+  // The recipient sees the picked image, which today they would not.
+  const reader = await chromiumWithExtension();
+  await reader.context.route('https://**.amazonaws.com/**', (route) => {
+    const hit = stored.get(new URL(route.request().url()).pathname);
+    return hit
+      ? route.fulfill({ status: 200, contentType: hit.type, body: hit.body })
+      : route.fulfill({ status: 404, body: '' });
+  });
+  const readerPage = await reader.context.newPage();
+  await readerPage.goto(link);
+  await expect
+    .poll(() => readerPage.locator('#hero').getAttribute('src'), { timeout: 5000 })
+    .toContain('/tweakpage/images/');
+  await reader.context.close();
+});

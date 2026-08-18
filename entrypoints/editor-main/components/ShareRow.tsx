@@ -3,7 +3,6 @@ import { browser } from 'wxt/browser';
 import { safeSendMessage } from '../../../lib/extension-context';
 import { makeShareId, shareLink } from '../../../lib/share/link';
 import { getShareSettings, isConfigured, watchShareSettings } from '../../../lib/share/settings';
-import { toCss } from '../../../lib/export/css';
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
 import type { EditsController } from '../controller';
@@ -42,9 +41,14 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
     const page = controller.getPage();
     const id = makeShareId();
     const result = (await browser.runtime
-      .sendMessage({ type: 'tweakpage:share-put', id, body: toJson(page) })
+      .sendMessage({ type: 'tweakpage:share-put', id, page })
       .catch(() => null)) as
-      | { ok?: boolean; reason?: string; ref?: Parameters<typeof shareLink>[1] }
+      | {
+          ok?: boolean;
+          reason?: string;
+          ref?: Parameters<typeof shareLink>[1];
+          images?: { uploaded: number; compressed: number; embedded: number };
+        }
       | null;
 
     if (!result?.ok || !result.ref) {
@@ -55,8 +59,21 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
       });
       return false;
     }
-    await copy(shareLink(page.url, result.ref), t('toast_share_copied'));
+    await copy(shareLink(page.url, result.ref), shareMessage(result.images));
     return true;
+  };
+
+  /**
+   * The link is copied either way; what changes is what the reader will actually see.
+   * An image that had to travel embedded will be dropped on arrival, and saying so here
+   * is the only chance to say it.
+   */
+  const shareMessage = (images?: { uploaded: number; compressed: number; embedded: number }) => {
+    if (!images || (images.uploaded === 0 && images.embedded === 0)) return t('toast_share_copied');
+    if (images.embedded > 0) return t('toast_share_copied_without_images', [images.embedded]);
+    return images.compressed > 0
+      ? t('toast_share_copied_images_compressed', [images.uploaded, images.compressed])
+      : t('toast_share_copied_images', [images.uploaded]);
   };
 
   const onJsonFile = () => {
@@ -76,14 +93,6 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           onClick={() => void copy(toMarkdown(controller.getPage(), today()), t('toast_copied'))}
         >
           <CopyIcon /> {t('share_summary')}
-        </button>
-        <button
-          type="button"
-          aria-label={t('aria_copy_css')} data-testid="copy-css"
-          title={t('tip_copy_css')}
-          onClick={() => void copy(toCss(controller.getPage(), today()), t('toast_copied_css'))}
-        >
-          <CopyIcon /> {t('share_css')}
         </button>
         <AsyncButton
           icon={<CameraIcon />}
