@@ -186,3 +186,56 @@ describe('the preferences the panel may still change', () => {
     expect(box.disabled, 'a switch that cannot do anything must look like it').toBe(true);
   });
 });
+
+describe('a control that governs other controls', () => {
+  test('the master sits apart from the four it changes', async () => {
+    // As a plain checkbox in a row of checkboxes it gave no clue that unticking it
+    // unticked four more. It heads its own set now, and the set is drawn as one thing.
+    await openSettings();
+    const all = screen.getByTestId('upload-images-all');
+    const set = all.closest('.twk-switch-set');
+    expect(set, 'the master is inside the set it governs').toBeTruthy();
+    for (const handOff of HAND_OFFS) {
+      expect(set!.contains(screen.getByTestId(`upload-images-${handOff}`)), handOff).toBe(true);
+    }
+    expect(all.closest('.twk-switch')!.className, 'and is drawn differently').toContain(
+      'twk-switch--all',
+    );
+  });
+
+  test('it says "some" when it means some', async () => {
+    await openSettings();
+    fireEvent.click(screen.getByTestId('upload-images-json'));
+    await waitFor(() => {
+      const all = screen.getByTestId('upload-images-all') as HTMLInputElement;
+      // Unticked would claim all four are off, which is the state it must not report.
+      expect(all.indeterminate).toBe(true);
+      expect(all.checked).toBe(false);
+    });
+  });
+
+  test('the group says how many of them upload without being opened', async () => {
+    await openSettings();
+    fireEvent.click(screen.getByTestId('upload-images-json'));
+    await waitFor(() =>
+      expect(screen.getByTestId('upload-count').textContent).toBe(t('settings_upload_count', ['3', '4'])),
+    );
+  });
+});
+
+describe('a decision that has been taken', () => {
+  test('is shown as one, with the way to undo it', async () => {
+    await fakeBrowser.storage.local.set({ 'tweakpage:transfer-consent': ['demo-bucket'] });
+    await openSettings();
+    await waitFor(() => expect(screen.getByTestId('forget-consent')).toBeTruthy());
+    expect(document.querySelector('.twk-settings-consent')?.textContent).toContain('demo-bucket');
+  });
+
+  test('and is not offered before there is anything to undo', async () => {
+    // A button offering to ask again about a question nobody has been asked explains
+    // nothing, which is exactly how it read.
+    await openSettings();
+    await waitFor(() => expect(screen.getByTestId('upload-images-all')).toBeTruthy());
+    expect(screen.queryByTestId('forget-consent')).toBeNull();
+  });
+});

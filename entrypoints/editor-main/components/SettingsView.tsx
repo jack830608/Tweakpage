@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { safeSendMessage } from '../../../lib/extension-context';
-import { withdrawConsent } from '../../../lib/share/consent';
+import { hasConsented, withdrawConsent } from '../../../lib/share/consent';
 import {
   getShareStatus,
   HAND_OFFS,
@@ -39,6 +39,18 @@ const THEME_OPTIONS = [
 
 export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
   const [appearanceOpen, setAppearanceOpen] = useState(true);
+  const [status, setStatus] = useState<ShareStatus | null>(null);
+  useEffect(() => {
+    void getShareStatus().then(setStatus);
+  }, []);
+
+  const commit = (next: ShareStatus) => {
+    setStatus(next);
+    void saveSharePreferences({
+      uploadImages: next.uploadImages,
+      compressImages: next.compressImages,
+    });
+  };
 
   return (
     <div className="twk-settings">
@@ -57,7 +69,8 @@ export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
           />
         </Row>
       </CollapsibleSection>
-      <SharingGroup onToast={onToast} />
+      {status && <SharingGroup status={status} />}
+      {status && <ImagesGroup status={status} onChange={commit} onToast={onToast} />}
     </div>
   );
 }
@@ -76,26 +89,12 @@ function openSecureSettings(): void {
   safeSendMessage({ type: 'tweakpage:open-options' });
 }
 
-function SharingGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
-  const [status, setStatus] = useState<ShareStatus | null>(null);
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    void getShareStatus().then((next) => {
-      setStatus(next);
-      // Open where there is something to do: nothing set up means this is why you came.
-      setOpen(!next.configured);
-    });
-  }, []);
-  if (!status) return null;
-
-  const commit = (next: ShareStatus) => {
-    setStatus(next);
-    void saveSharePreferences({
-      uploadImages: next.uploadImages,
-      compressImages: next.compressImages,
-    });
-  };
-
+/**
+ * Two groups, because they answer two different questions: whether sharing can work at
+ * all, and what happens to pictures on the way out.
+ */
+function SharingGroup({ status }: { status: ShareStatus }) {
+  const [open, setOpen] = useState(!status.configured);
   return (
     <CollapsibleSection
       title={t('settings_sharing')}
@@ -122,63 +121,110 @@ function SharingGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
           {t('settings_open_secure')}
         </button>
       </div>
+    </CollapsibleSection>
+  );
+}
 
+function ImagesGroup({
+  status,
+  onChange,
+  onToast,
+}: {
+  status: ShareStatus;
+  onChange: (next: ShareStatus) => void;
+  onToast: (toast: ToastContent) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [allowedFor, setAllowedFor] = useState<string | null>(null);
+  useEffect(() => {
+    void hasConsented(status.bucket).then((yes) => setAllowedFor(yes ? status.bucket : null));
+  }, [status.bucket]);
+
+  const on = HAND_OFFS.filter((k) => status.uploadImages[k]).length;
+  const setAll = (value: boolean) =>
+    onChange({
+      ...status,
+      uploadImages: Object.fromEntries(HAND_OFFS.map((k) => [k, value])) as ShareStatus['uploadImages'],
+    });
+
+  return (
+    <CollapsibleSection
+      title={t('settings_images')}
+      sectionId="set-images"
+      open={open}
+      onToggle={() => setOpen((current) => !current)}
+      aside={
+        <span className="twk-chip" data-testid="upload-count">
+          {t('settings_upload_count', [String(on), String(HAND_OFFS.length)])}
+        </span>
+      }
+    >
       <p className="twk-settings-note">{t('settings_upload_images_hint')}</p>
-      <AllSwitch
-        checked={HAND_OFFS.every((k) => status.uploadImages[k])}
-        mixed={
-          HAND_OFFS.some((k) => status.uploadImages[k]) &&
-          !HAND_OFFS.every((k) => status.uploadImages[k])
-        }
-        onChange={(on) =>
-          commit({
-            ...status,
-            uploadImages: Object.fromEntries(
-              HAND_OFFS.map((k) => [k, on]),
-            ) as ShareStatus['uploadImages'],
-          })
-        }
-      />
-      <div className="twk-switch-grid">
-        {HAND_OFFS.map((handOff) => (
-          <Switch
-            key={handOff}
-            label={t(`hand_off_${handOff}`)}
-            ariaLabel={t('aria_upload_images', [t(`hand_off_${handOff}`)])}
-            testId={`upload-images-${handOff}`}
-            checked={status.uploadImages[handOff]}
-            onChange={(on) =>
-              commit({ ...status, uploadImages: { ...status.uploadImages, [handOff]: on } })
-            }
+
+      {/* The one that governs the others sits above them, inside the same box and
+          separated by a rule — a plain checkbox in a row of checkboxes gives no clue
+          that unticking it unticks four more. */}
+      <div className="twk-switch-set">
+        <label className="twk-switch twk-switch--all">
+          <input
+            type="checkbox"
+            aria-label={t('aria_upload_images_all')}
+            data-testid="upload-images-all"
+            ref={(box) => {
+              if (box) box.indeterminate = on > 0 && on < HAND_OFFS.length;
+            }}
+            checked={on === HAND_OFFS.length}
+            onChange={(e) => setAll(e.target.checked)}
           />
-        ))}
+          <span>{t('settings_upload_all')}</span>
+        </label>
+        <div className="twk-switch-grid">
+          {HAND_OFFS.map((handOff) => (
+            <Switch
+              key={handOff}
+              label={t(`hand_off_${handOff}`)}
+              ariaLabel={t('aria_upload_images', [t(`hand_off_${handOff}`)])}
+              testId={`upload-images-${handOff}`}
+              checked={status.uploadImages[handOff]}
+              onChange={(value) =>
+                onChange({ ...status, uploadImages: { ...status.uploadImages, [handOff]: value } })
+              }
+            />
+          ))}
+        </div>
       </div>
 
-      <Row label={t('settings_compress')}>
-        <Switch
-          ariaLabel={t('aria_compress_images')}
-          testId="compress-images"
-          checked={status.compressImages && status.compressionAvailable}
-          disabled={!status.compressionAvailable}
-          onChange={(compressImages) => commit({ ...status, compressImages })}
-        />
-      </Row>
-      <p className="twk-settings-note">
+      <Switch
+        label={t('settings_compress')}
+        ariaLabel={t('aria_compress_images')}
+        testId="compress-images"
+        checked={status.compressImages && status.compressionAvailable}
+        disabled={!status.compressionAvailable}
+        onChange={(compressImages) => onChange({ ...status, compressImages })}
+      />
+      <p className="twk-settings-note twk-settings-note--tight">
         {status.compressionAvailable ? t('settings_compress_hint') : t('settings_compress_needs_key')}
       </p>
-      <div className="twk-settings-actions">
-        <button
-          type="button"
-          aria-label={t('aria_forget_consent')}
-          data-testid="forget-consent"
-          onClick={() => {
-            void withdrawConsent();
-            onToast({ message: t('toast_consent_withdrawn'), kind: 'info' });
-          }}
-        >
-          {t('settings_forget_consent')}
-        </button>
-      </div>
+
+      {/* Shown only once there is something to withdraw. A button offering to ask again
+          about a question nobody has been asked yet explains nothing. */}
+      {allowedFor && (
+        <div className="twk-settings-consent">
+          <span>{t('settings_consent_given', [allowedFor])}</span>
+          <button
+            type="button"
+            aria-label={t('aria_forget_consent')}
+            data-testid="forget-consent"
+            onClick={() => {
+              void withdrawConsent();
+              setAllowedFor(null);
+              onToast({ message: t('toast_consent_withdrawn'), kind: 'info' });
+            }}
+          >
+            {t('settings_withdraw')}
+          </button>
+        </div>
+      )}
     </CollapsibleSection>
   );
 }
@@ -210,40 +256,6 @@ function Switch({
         onChange={(e) => onChange(e.target.checked)}
       />
       <span>{label ?? (checked ? t('on') : t('off'))}</span>
-    </label>
-  );
-}
-
-/**
- * The one control for all four.
- *
- * Half-on is a real state and the box says so: an indeterminate tick reads as "some",
- * where an unticked box would claim they are all off.
- */
-function AllSwitch({
-  checked,
-  mixed,
-  onChange,
-}: {
-  checked: boolean;
-  mixed: boolean;
-  onChange: (value: boolean) => void;
-}) {
-  const box = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (box.current) box.current.indeterminate = mixed;
-  }, [mixed]);
-  return (
-    <label className="twk-switch twk-switch--all">
-      <input
-        ref={box}
-        type="checkbox"
-        aria-label={t('aria_upload_images_all')}
-        data-testid="upload-images-all"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-      <span>{t('settings_upload_all')}</span>
     </label>
   );
 }
