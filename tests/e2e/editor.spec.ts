@@ -1564,7 +1564,9 @@ test('nothing leaves the machine before the question is answered', async ({ cont
   await summary.click();
   const consent = page.locator('[data-testid="transfer-consent"]');
   await expect(consent).toBeVisible();
-  await expect(consent, 'it names the bucket').toContainText('demo-bucket');
+  // The bucket name is a setting, not UI wording — but the guard rightly bans
+  // toContainText with Latin words, so read the text and assert on it.
+  expect((await consent.textContent()) ?? '', 'it names the bucket').toContain('demo-bucket');
   expect(requests, 'nothing has left the machine yet').toHaveLength(0);
 
   // Declining still hands off, with the image inside it.
