@@ -1988,3 +1988,29 @@ test('the label goes where there is room for it', async ({ context }) => {
   const above = (await label.boundingBox())!;
   expect(above.y, 'above when there is room').toBeLessThan(perk.y);
 });
+
+test('an untouched page offers nothing to hand off', async ({ context }) => {
+  // Five export buttons were the most prominent thing on the screen on first run, and
+  // the one sentence telling you to click something on the page sat underneath them.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  for (const gone of ['copy-summary', 'share-link', 'save-variant']) {
+    await expect(page.locator(`[data-testid="${gone}"]`), gone).toHaveCount(0);
+  }
+  // Nor a choice between two versions of a page that has only one.
+  await expect(page.locator('[data-testid="mode-original"]')).toHaveCount(0);
+  await expect(page.locator('[data-testid="mode-edit"]'), 'how the mouse behaves always applies').toBeVisible();
+
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited');
+
+  // And once there is something, it arrives below the work rather than above it.
+  const hint = (await page.locator('[data-testid="mode-edit"]').boundingBox())!;
+  const share = (await page.locator('[data-testid="copy-summary"]').boundingBox())!;
+  const field = (await page.locator('[data-testid="text"]').boundingBox())!;
+  expect(share.y, 'below the fields it describes').toBeGreaterThan(field.y);
+  expect(share.y).toBeGreaterThan(hint.y);
+  await expect(page.locator('[data-testid="mode-original"]')).toBeVisible();
+});

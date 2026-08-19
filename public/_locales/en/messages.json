@@ -59,7 +59,7 @@
     "message": "Switch to Browse to use the page normally (menus, tabs)."
   },
   "onboarding_step3": {
-    "message": "Drag this panel by its title bar if it's in the way."
+    "message": "Double-click any text and type straight on the page."
   },
   "got_it": {
     "message": "Got it"
@@ -998,5 +998,8 @@
   },
   "toast_share_needs_setup": {
     "message": "Share links need an S3 bucket of your own. Settings is open — start there."
+  },
+  "compare": {
+    "message": "Compare"
   }
 }
