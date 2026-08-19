@@ -406,3 +406,31 @@ describe('a page that reuses its nodes for different content', () => {
     expect(secondSpan().textContent).toBe('JACK Jamming');
   });
 });
+
+test("one record's write does not vouch for another record's claim", () => {
+  // Both mint the same selector, so only the remembered text tells them apart. The
+  // memo of what we wrote is keyed by record for this reason: keyed by element alone,
+  // B writing the element made it look like our handiwork to A as well, and A walked
+  // straight past the identity check onto B's element. The two then fought over it and
+  // which words you saw depended on which pass ran last.
+  document.body.innerHTML = '<div class="box"><span>Second question</span></div>';
+  const a = record({
+    id: 'a', selector: '.box > span', type: 'text', property: 'textContent',
+    oldValue: 'First question', newValue: 'First question JACK', textFingerprint: 'First question',
+  });
+  const b = record({
+    id: 'b', selector: '.box > span', type: 'text', property: 'textContent',
+    oldValue: 'Second question', newValue: 'Second question JACK', textFingerprint: 'Second question',
+  });
+
+  const first = applyAll([a, b], document);
+  expect(first.get('b')).toBe('applied');
+  expect(first.get('a'), 'A never belonged to this element').toBe('not-found');
+  expect(document.querySelector('span')!.textContent).toBe('Second question JACK');
+
+  // The second pass is where it went wrong: B's write is now the element's text.
+  const second = applyAll([a, b], document);
+  expect(second.get('a')).toBe('not-found');
+  expect(second.get('b')).toBe('applied');
+  expect(document.querySelector('span')!.textContent).toBe('Second question JACK');
+});
