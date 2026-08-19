@@ -92,6 +92,9 @@ associated with this project.
 
 - **One page's edits**: click the toolbar icon and press Clear beside that page, or
   Revert all in the editor.
+- **Everything at once, without uninstalling**: Settings → Start over, in the editor. It
+  lists what it will take — your preferences, every page of changes, your AWS and TinyPNG
+  keys — and takes only what you tick.
 - **Everything stored locally**: remove the extension. Chrome deletes its storage,
   including the credentials.
 - **Objects already uploaded**: they are in your bucket and only you can delete them.

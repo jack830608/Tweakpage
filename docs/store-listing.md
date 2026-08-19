@@ -83,7 +83,10 @@ you control.
 > switch.
 >
 > Your edits stay. They are saved on your own machine, per page, and replay when you come
-> back — so you can live with a change for a day before deciding.
+> back — so you can live with a change for a day before deciding. Save two versions as
+> proposals and switch between them. Tell it which parts of a page to leave alone — a
+> chat launcher, a consent banner — so they stop absorbing clicks meant for the page.
+> And put everything back the way it came whenever you want.
 >
 > When you're ready, hand it off. Copy a change list an engineer can act on: element,
 > property, old value, new value, and your note explaining why. Or take one image with
@@ -109,7 +112,8 @@ you control.
 > 和原始版之間來回對照。
 >
 > 改動會留著。它們存在你自己的電腦上、依頁面分開,下次回來會自動重現 —— 所以你可以先
-> 跟一個改動相處一天,再決定要不要。
+> 跟一個改動相處一天,再決定要不要。可以存成兩個提案來回對照;可以指定頁面上哪些區域
+> 不要選取 —— 客服按鈕、同意條 —— 讓它們不再吃掉你要點的東西;也隨時可以一鍵回復原廠。
 >
 > 準備好就交出去:複製一份工程師能直接動手的改動清單(元素、屬性、舊值、新值,還有你
 > 寫的理由),或存成一張前後對照圖,或者你有自己的 S3 bucket 的話,送一條連結 ——
@@ -124,7 +128,7 @@ Sizes the dashboard requires. Every screenshot must be the shipping UI.
 
 - [x] Store icon 128×128 (`public/icon/128.png`), artwork inset to 96×96 as the grid
       expects. `pnpm icons` redraws it and the three toolbar sizes from one source.
-- [ ] Screenshots 1280×800 (or 640×400), 1–5 of them. Suggested: select and edit; before
+- [x] Screenshots 1280×800 (or 640×400), 1–5 of them. Suggested: select and edit; before
       and after; the change list with a note; duplicate and reorder; the share link
       preview as the recipient sees it.
 - [x] Small promo tile 440×280 (`docs/assets/store/promo-440x280.png`), also from
@@ -144,4 +148,4 @@ itself lives in `scripts/icon.mjs`, with `docs/assets/icon.svg` as its vector ou
 - [ ] Load the unpacked ZIP by hand and run `docs/qa-checklist.md`
 - [ ] The package contains no tests, no source maps, no `.env`, no real credentials
 - [ ] The privacy policy URL resolves and matches the declared practices
-- [ ] Version bumped
+- [x] Version bumped — 1.0.0
