@@ -113,6 +113,26 @@ export function Panel(props: PanelProps) {
   const canUndo = controller.canUndo();
   const canRedo = controller.canRedo();
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
+  /**
+   * Below the work, not above it.
+   *
+   * Rendered before the editing view, five ways to hand off an untouched page were the
+   * most prominent thing on the screen on first run, and the one sentence telling you to
+   * click something on the page sat underneath them. It belongs at the end of whichever
+   * view produced the thing being handed off, and only once there is one.
+   */
+  const handOff =
+    count > 0 ? (
+      <>
+        <VariantsRow controller={controller} />
+        <ShareRow
+          controller={controller}
+          onToast={props.onToast}
+          onSnapshot={props.onSnapshot}
+          onNeedsSetup={() => setView('settings')}
+        />
+      </>
+    ) : null;
   const sharedPreview = useSyncExternalStore(controller.subscribe, controller.isPreviewingShared);
   const panelRef = useRef<HTMLElement>(null);
   const [restoredPosition, setRestoredPosition] = useState<Position | null>(null);
@@ -272,12 +292,21 @@ export function Panel(props: PanelProps) {
         value={mode}
         onChange={onModeChange}
       />
-      <ModeSwitch
-        ariaLabel={t('aria_compare')}
-        options={COMPARE_OPTIONS}
-        value={previewing ? 'original' : 'edited'}
-        onChange={(value) => controller.setPreviewOriginal(value === 'original')}
-      />
+      {/* Two identical segmented controls stacked six pixels apart read as one
+          four-state control. This one is a view of the page, the one above is how the
+          mouse behaves, and nothing said so. With no edits it is also a distinction
+          without a difference, so it waits until there is one. */}
+      {count > 0 && (
+        <>
+          <span className="twk-share-label">{t('compare')}</span>
+          <ModeSwitch
+            ariaLabel={t('aria_compare')}
+            options={COMPARE_OPTIONS}
+            value={previewing ? 'original' : 'edited'}
+            onChange={(value) => controller.setPreviewOriginal(value === 'original')}
+          />
+        </>
+      )}
       {view === 'edit' && count > 0 && props.onToggleMarks && (
         <label className="twk-marks-toggle">
           <input
@@ -290,13 +319,6 @@ export function Panel(props: PanelProps) {
           {t('show_marks')}
         </label>
       )}
-      <VariantsRow controller={controller} />
-      <ShareRow
-        controller={controller}
-        onToast={props.onToast}
-        onSnapshot={props.onSnapshot}
-        onNeedsSetup={() => setView('settings')}
-      />
         </>
       )}
       {stale > 0 && view === 'edit' && (
@@ -346,6 +368,7 @@ export function Panel(props: PanelProps) {
               setView('edit');
             }}
           />
+          {handOff}
         </div>
       ) : (
         <>
@@ -365,6 +388,7 @@ export function Panel(props: PanelProps) {
               })
             }
           />
+          {handOff}
           <button
             type="button"
             className={count > 0 ? 'twk-footer twk-footer-active' : 'twk-footer'}

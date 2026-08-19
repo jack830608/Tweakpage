@@ -59,7 +59,7 @@
     "message": "切換到「瀏覽」可正常操作頁面(選單、分頁)。"
   },
   "onboarding_step3": {
-    "message": "面板擋住畫面時,按住標題列即可拖動。"
+    "message": "在文字上點兩下,就能直接在頁面上改字。"
   },
   "got_it": {
     "message": "知道了"
@@ -998,5 +998,8 @@
   },
   "toast_share_needs_setup": {
     "message": "分享連結需要一個你自己的 S3 bucket。設定已經打開了,從那裡開始。"
+  },
+  "compare": {
+    "message": "對照"
   }
 }
