@@ -1765,3 +1765,56 @@ test('an edit already made survives the rule that would have prevented it', asyn
   await page.reload();
   await expect(page.locator('#perk-a')).toHaveCSS('color', 'rgb(255, 0, 0)');
 });
+
+test('an edit at every step of a wizard, in a real browser', async ({ context }) => {
+  // The whole journey rather than one symptom of it. Each step redraws its options into
+  // the same container, so all three mint one selector and the identity has to come from
+  // somewhere else.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/wizard.html');
+  await activateEditor(context);
+
+  const options = () => page.locator('#options span');
+  const edited: string[] = [];
+
+  for (let step = 0; step < 3; step++) {
+    const own = (await options().first().textContent())!;
+    await options().first().click();
+    await page.locator('[data-testid="text"]').fill(`${own} JACK`);
+    await expect(options().first()).toHaveText(`${own} JACK`);
+    // The step's other option belongs to the site and must stay that way.
+    const other = await options().nth(1).textContent();
+    expect(other, `step ${step + 1} second option`).not.toContain('JACK');
+    edited.push(own);
+
+    if (step === 2) break;
+    await page.locator('[data-testid="mode-browse"]').click();
+    await options().first().click();
+    await page.locator('[data-testid="mode-edit"]').click();
+    await expect(options().first()).not.toHaveText(`${own} JACK`);
+  }
+
+  // Every record kept its own words. oldValue is what Clear writes back, so a record
+  // holding another step's text puts those words on the page the moment anything reverts.
+  await page.locator('[data-testid="review-changes"]').click();
+  await expect(page.locator('[data-testid^="select-change-"]')).toHaveCount(3);
+  const [worker] = context.serviceWorkers().length
+    ? context.serviceWorkers()
+    : [await context.waitForEvent('serviceworker')];
+  const stored = (await worker.evaluate(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const all = await (globalThis as any).chrome.storage.local.get(null);
+    const key = Object.keys(all).find((k) => k.startsWith('page:') && k.includes('wizard'));
+    return all[key!].records;
+  })) as Array<{ oldValue: string; newValue: string }>;
+  expect(stored.map((r) => r.oldValue)).toEqual(edited);
+  expect(stored.map((r) => r.newValue)).toEqual(edited.map((t) => `${t} JACK`));
+
+  // Walking back brings that step's edit with it, and leaves the others alone.
+  await page.locator('[data-testid="back-to-editing"]').click();
+  await page.locator('[data-testid="mode-browse"]').click();
+  await page.locator('#back').click();
+  await page.locator('#back').click();
+  await expect(options().first()).toHaveText(`${edited[0]} JACK`);
+  expect(await options().nth(1).textContent()).not.toContain('JACK');
+});

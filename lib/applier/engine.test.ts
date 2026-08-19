@@ -271,3 +271,40 @@ test('inline editing pauses reapply so typing is not overwritten', async () => {
   await wait(10);
   expect(document.querySelector('.ty')!.textContent, 'released, records apply again').toBe('Edited');
 });
+
+test("a record's baseline is never taken from another record's element", async () => {
+  // The corruption behind the wizard report. Two steps of the same wizard mint the same
+  // selector, so both records name one element on any given screen. refreshBaselines
+  // exists to follow a site that rewrites a value it does not own — but it resolved the
+  // first step's record onto the second step's element and wrote that element's words
+  // into oldValue. oldValue is what Clear and undo put back, so this loaded the page
+  // with somebody else's text and the export showed a fingerprint and an oldValue that
+  // could not both be true.
+  document.body.innerHTML = '<div class="opts"><span>Second question</span></div>';
+  const first = record({
+    id: 'first', selector: '.opts > span', textFingerprint: 'First question',
+    oldValue: 'First question', newValue: 'First question JACK',
+  });
+  const second = record({
+    id: 'second', selector: '.opts > span', textFingerprint: 'Second question',
+    oldValue: 'Second question', newValue: 'Second question JACK',
+  });
+  await seed('https://a.com/wizard', [first, second]);
+
+  const engine = new ApplierEngine(document);
+  await engine.start('https://a.com/wizard');
+  await wait(50);
+  expect(document.querySelector('.opts > span')!.textContent).toBe('Second question JACK');
+
+  // The damage lands on the pass after the first: by then the element holds what the
+  // second record wrote, and that is exactly what made the first record believe it.
+  document.body.appendChild(document.createElement('hr'));
+  await wait(200);
+  expect(document.querySelector('.opts > span')!.textContent).toBe('Second question JACK');
+  const stored = (await fakeBrowser.storage.local.get(pageKey('https://a.com/wizard')))[
+    pageKey('https://a.com/wizard')
+  ] as { records: EditRecord[] };
+  const byId = Object.fromEntries(stored.records.map((r) => [r.id, r]));
+  expect(byId.first!.oldValue, 'the step it belongs to').toBe('First question');
+  expect(byId.second!.oldValue).toBe('Second question');
+});

@@ -17,7 +17,7 @@ import {
 import { isOurs } from '../../lib/applier/handshake';
 import { CLONE_ATTRIBUTE, elementIndex, isTweakpageNode, pageSiblings } from '../../lib/edits/dom';
 import { generateSelector, type GeneratedSelector } from '../../lib/selector/generate';
-import { resolveRecord } from '../../lib/selector/resolve';
+import { resolveRecord, textStillMatches } from '../../lib/selector/resolve';
 import { similarSelector } from '../../lib/selector/similar';
 
 export class EditsController {
@@ -37,6 +37,16 @@ export class EditsController {
   private undoStack: EditRecord[][] = [];
   private redoStack: EditRecord[][] = [];
   private lastEditTarget: string | null = null;
+  /**
+   * The element the user is typing directly into, while they are typing into it.
+   *
+   * Mid-keystroke an element holds words that are neither what it was called nor what
+   * any record says yet, so the identity test recordFor applies would disown it — and a
+   * disowned element gets a new record per keystroke instead of continuing the one being
+   * typed. The session says which element that is; nothing else can tell this apart from
+   * a page relabelling a node behind our back, which is the case the test is there for.
+   */
+  private inlineTarget: Element | null = null;
   private elementKeys = new WeakMap<Element, string>();
   private nextElementKey = 0;
 
@@ -94,7 +104,14 @@ export class EditsController {
    */
   recordFor = (el: Element, property: string): EditRecord | undefined => {
     const marked = (el.getAttribute(MARK_ATTRIBUTE) ?? '').split(' ').filter(Boolean);
-    const own = this.page.records.find((r) => marked.includes(r.id) && r.property === property);
+    // Held to the same identity test the page applies. A mark is only as fresh as the
+    // last pass: between the site relabelling a node it kept and our next apply, the
+    // mark still names the record for the words that used to be there, and the panel
+    // read that record's oldValue as this element's original.
+    const typing = el === this.inlineTarget;
+    const own = this.page.records.find(
+      (r) => marked.includes(r.id) && r.property === property && (typing || textStillMatches(r, el)),
+    );
     if (own) return own;
     const candidate = findRecord(this.page.records, this.genFor(el).selector, property);
     return candidate && resolveRecord(candidate, el.ownerDocument) === el ? candidate : undefined;
@@ -114,6 +131,11 @@ export class EditsController {
       this.elementKeys.set(el, key);
     }
     return key;
+  }
+
+  /** Set for the length of an inline session. See inlineTarget. */
+  setInlineTarget(el: Element | null): void {
+    this.inlineTarget = el;
   }
 
   isPreviewingOriginal = (): boolean => this.previewing;
@@ -479,12 +501,29 @@ export class EditsController {
       .finally(() => this.listeners.forEach((fn) => fn()));
   }
 
+  /**
+   * Cached against the element, and re-taken when the element stops matching it.
+   *
+   * A GeneratedSelector describes an element at a moment: its fingerprint and its label
+   * are the words it held when it was read. Keyed on the element alone, the cache
+   * outlived that moment — on a wizard where React reuses one list of buttons and swaps
+   * their words, an edit made on step two was minted with step one's fingerprint, could
+   * not then recognise the element it had just been made from, and left the page
+   * unchanged while the panel showed the edit as made.
+   *
+   * Re-reading is for the site moving the words, not us: a record's fingerprint has to
+   * describe where its element started, and the moment to read that is when an edit
+   * begins, not on the keystrokes after it.
+   */
   private genFor(el: Element): GeneratedSelector {
-    let gen = this.selectorCache.get(el);
-    if (!gen) {
-      gen = generateSelector(el);
-      this.selectorCache.set(el, gen);
-    }
+    const cached = this.selectorCache.get(el);
+    const text = el.textContent?.trim().slice(0, 60) || undefined;
+    // Not while the user is typing into the element: mid-session its words are neither
+    // where it started nor where it will end, and re-reading them stamped a record with
+    // "d" as the text that identifies it.
+    if (cached && (cached.textFingerprint === text || el === this.inlineTarget)) return cached;
+    const gen = generateSelector(el);
+    this.selectorCache.set(el, gen);
     return gen;
   }
 

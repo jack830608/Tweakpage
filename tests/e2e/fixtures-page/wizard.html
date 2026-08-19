@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Wizard</title>
+</head>
+<body>
+  <!--
+    A chat-style wizard, modelled on positivegrid.com/pages/product-selector.
+
+    Every step draws its options into the same container, so every step's first option
+    mints the same selector, and the answers already given stay on screen above them.
+    Three separate bugs lived in that shape — an edit following the mark onto a reused
+    node, a panel reading a record by selector alone, and one record's write vouching for
+    another's claim — and each was found by walking one step further than the last fix
+    had been tested. This page is here so the walk is taken on every run.
+  -->
+  <main id="main-content">
+    <div class="log" id="log"></div>
+    <div class="pl-10" id="options"></div>
+    <button id="back" type="button">Change last answer</button>
+  </main>
+  <script>
+    const STEPS = [
+      ['Live Performance / Busking', 'Jamming'],
+      ['Multiple inputs', 'Just my guitar'],
+      ['Indoors (cafes, controlled spaces)', 'Outdoors / mixed environments'],
+    ];
+    let step = 0;
+    const answers = [];
+
+    function draw() {
+      document.getElementById('log').innerHTML = answers
+        .map((a) => `<div class="answer"><span>${a}</span></div>`)
+        .join('');
+      const wanted = STEPS[step] ?? [];
+      const existing = [...document.querySelectorAll('#options .opt')];
+      if (existing.length === wanted.length) {
+        // What React does to a keyed list whose items did not change shape: the same
+        // nodes, new words. This is the case that matters — the mark Tweakpage left on
+        // those nodes is still sitting there, pointing at content that is now somebody
+        // else's, and an edit that follows it lands on the wrong question.
+        existing.forEach((button, i) => {
+          button.querySelector('span').textContent = wanted[i];
+        });
+        return;
+      }
+      document.getElementById('options').innerHTML = wanted
+        .map((o) => `<button class="opt" type="button"><span>${o}</span></button>`)
+        .join('');
+      for (const button of document.querySelectorAll('#options .opt')) {
+        button.addEventListener('click', () => {
+          answers.push(button.querySelector('span').textContent);
+          step += 1;
+          draw();
+        });
+      }
+    }
+
+    document.getElementById('back').addEventListener('click', () => {
+      if (step === 0) return;
+      step -= 1;
+      answers.pop();
+      draw();
+    });
+
+    draw();
+  </script>
+</body>
+</html>

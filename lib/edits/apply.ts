@@ -161,7 +161,7 @@ function resolveTarget(record: Record, doc: Document): Element | null {
 /** Applies, then remembers the words it left behind. See rememberWritten. */
 function writeDomEdit(el: Element, record: Record): void {
   applyDomEdit(el, record);
-  rememberWritten(el);
+  rememberWritten(el, record.id);
 }
 
 /** The move records of a set, lowest index first; ties keep record order. */

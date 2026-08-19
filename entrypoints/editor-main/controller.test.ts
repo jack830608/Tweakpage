@@ -1,6 +1,7 @@
 import { fakeBrowser } from 'wxt/testing';
 import { beforeEach, describe, expect, test } from 'vitest';
 import { EditsController } from './controller';
+import { applyAll } from '../../lib/edits/apply';
 import { loadPageEdits } from '../../lib/edits/storage';
 
 const NOW = () => '2026-08-15T10:00:00.000Z';
@@ -266,5 +267,123 @@ describe('two elements that a selector cannot tell apart', () => {
     c.recordEdit(span(), 'text', 'textContent', 'Live Performance / Busking', 'JACK Live');
     document.body.innerHTML = step('JACK Live');
     expect(c.recordFor(span(), 'textContent')?.newValue).toBe('JACK Live');
+  });
+});
+
+describe('walking a wizard that re-labels one list of buttons', () => {
+  /**
+   * The whole journey, not one symptom of it.
+   *
+   * positivegrid.com/pages/product-selector asks a question at a time. Each step draws
+   * its options into the same container, so every step's first option mints the same
+   * selector — and the answers already given stay on screen above them. Three separate
+   * bugs lived in here and each was found by walking one step further than the last fix
+   * had been tested.
+   */
+  const STEPS = [
+    ['Live Performance / Busking', 'Jamming'],
+    ['Multiple inputs', 'Just my guitar'],
+    ['Indoors (cafes, controlled spaces)', 'Outdoors / mixed environments'],
+  ];
+
+  function render(step: number, answered: string[]): void {
+    document.body.innerHTML = `<div class="log">${answered
+      .map((a) => `<div class="answer"><span>${a}</span></div>`)
+      .join('')}<div class="pl-10">${STEPS[step]!
+      .map((o) => `<button class="opt"><span>${o}</span></button>`)
+      .join('')}</div></div>`;
+  }
+  const options = () => Array.from(document.querySelectorAll('.pl-10 span'));
+  const texts = () => options().map((el) => el.textContent);
+
+  test('each step keeps its own edit, and picks up nobody else\'s', () => {
+    const c = controller();
+    const answered: string[] = [];
+    for (const [step, choices] of STEPS.entries()) {
+      render(step, answered);
+      // What the observer does when the wizard redraws: replay everything on the new DOM.
+      applyAll(c.getPage().records, document);
+      expect(texts(), `step ${step + 1} starts as the site drew it`).toEqual(choices);
+
+      const own = options()[0]!.textContent!;
+      c.recordEdit(options()[0]!, 'text', 'textContent', own, `${own} JACK`);
+      expect(texts(), `step ${step + 1} shows its own edit and only its own`).toEqual([
+        `${own} JACK`,
+        choices[1],
+      ]);
+      answered.push(own);
+    }
+
+    const records = c.getPage().records;
+    expect(records, 'one record per step, none overwritten').toHaveLength(3);
+    // The precondition the whole case rests on: a selector cannot tell these apart.
+    expect(new Set(records.map((r) => r.selector)).size, 'all three mint one selector').toBe(1);
+    // oldValue is what Clear and undo write back. A record holding another step's words
+    // here puts them on the page the moment anything is reverted.
+    expect(records.map((r) => r.oldValue)).toEqual(STEPS.map(([first]) => first));
+    expect(records.map((r) => r.newValue)).toEqual(STEPS.map(([first]) => `${first} JACK`));
+    expect(records.map((r) => r.textFingerprint)).toEqual(STEPS.map(([first]) => first));
+  });
+
+  test('the panel reads the selected element, not the selector', () => {
+    const c = controller();
+    render(0, []);
+    c.recordEdit(options()[0]!, 'text', 'textContent', STEPS[0]![0]!, 'Step one JACK');
+    render(1, [STEPS[0]![0]!]);
+    applyAll(c.getPage().records, document);
+    expect(c.recordFor(options()[0]!, 'textContent'), 'step two is unedited').toBeUndefined();
+
+    c.recordEdit(options()[0]!, 'text', 'textContent', STEPS[1]![0]!, 'Step two JACK');
+    expect(c.recordFor(options()[0]!, 'textContent')?.newValue).toBe('Step two JACK');
+  });
+
+  test('going back to a step shows that step\'s edit again', () => {
+    // Refusing has to be about the arrangement of the page, not about the record: the
+    // wizard has a "Change last answer" button, and the edit must come back with it.
+    const c = controller();
+    render(0, []);
+    c.recordEdit(options()[0]!, 'text', 'textContent', STEPS[0]![0]!, 'Step one JACK');
+    render(1, [STEPS[0]![0]!]);
+    applyAll(c.getPage().records, document);
+    render(0, []);
+    applyAll(c.getPage().records, document);
+    expect(texts()).toEqual(['Step one JACK', STEPS[0]![1]]);
+  });
+});
+
+describe('a wizard that keeps its nodes and swaps their words', () => {
+  // The harder half of the same page: React reuses a keyed list whose items did not
+  // change shape, so the element edited on step two is the same object edited on step
+  // one. Everything the controller remembers about an element by identity is stale the
+  // moment the site rewrites it.
+  const OPTIONS = ['Live Performance / Busking', 'Multiple inputs', 'Indoors (cafes)'];
+
+  function relabel(text: string): Element {
+    if (!document.querySelector('.pl-10')) {
+      document.body.innerHTML = '<div class="pl-10"><button class="opt"><span></span></button></div>';
+    }
+    const span = document.querySelector('.pl-10 span')!;
+    span.textContent = text;
+    return span;
+  }
+
+  test('a second edit on a reused node describes the words that are there now', () => {
+    const c = controller();
+    c.recordEdit(relabel(OPTIONS[0]!), 'text', 'textContent', OPTIONS[0]!, `${OPTIONS[0]} JACK`);
+    expect(document.querySelector('.pl-10 span')!.textContent).toBe(`${OPTIONS[0]} JACK`);
+
+    // The site advances: same node, new question.
+    const span = relabel(OPTIONS[1]!);
+    applyAll(c.getPage().records, document);
+    expect(span.textContent, 'the first edit does not follow the node').toBe(OPTIONS[1]);
+
+    c.recordEdit(span, 'text', 'textContent', OPTIONS[1]!, `${OPTIONS[1]} JACK`);
+    const second = c.getPage().records.find((r) => r.newValue === `${OPTIONS[1]} JACK`)!;
+    // Cached against the element and never invalidated, this held step one's words —
+    // so the new record could not recognise the element it had just been made from, and
+    // the page never changed while the panel showed the edit as made.
+    expect(second.textFingerprint, 'the fingerprint describes this step').toBe(OPTIONS[1]);
+    expect(second.elementLabel).toContain(OPTIONS[1]);
+    expect(document.querySelector('.pl-10 span')!.textContent).toBe(`${OPTIONS[1]} JACK`);
   });
 });

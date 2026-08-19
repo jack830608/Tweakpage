@@ -3,7 +3,7 @@ import { textNodeIndex } from '../edits/text-nodes';
 import type { EditRecord } from '../edits/types';
 
 type Resolvable = Pick<EditRecord, 'selector' | 'fallbackSelectors' | 'textFingerprint'> &
-  Partial<Pick<EditRecord, 'type' | 'property' | 'newValue'>>;
+  Partial<Pick<EditRecord, 'id' | 'type' | 'property' | 'newValue'>>;
 
 /**
  * Finds the element a record was made against — the remembered element, not merely
@@ -41,7 +41,7 @@ export function resolveRecord(record: Resolvable, root: Document | Element): Ele
     // identity, one reading something else belongs to somebody else — a wizard that
     // re-labels one list of buttons at every step put a single edit on every step.
     // Everything else sits on text that is free to change and keeps the match.
-    if (isTextIdentified(record) && !ourOwnHandiwork(el)) continue;
+    if (isTextIdentified(record) && !ourOwnHandiwork(record, el)) continue;
     return el;
   }
   return relocated(record, root, identities);
@@ -67,15 +67,25 @@ export function resolveRecord(record: Resolvable, root: Document | Element): Ele
  *
  * Keyed by node, so an element the page replaced starts with no memory of us.
  */
-const lastWritten = new WeakMap<Element, string>();
+const lastWritten = new WeakMap<Element, { id: string; text: string }>();
 
-export function rememberWritten(el: Element): void {
-  lastWritten.set(el, textOf(el));
+export function rememberWritten(el: Element, id: string): void {
+  lastWritten.set(el, { id, text: textOf(el) });
 }
 
-/** Is this element still showing exactly what we last put in it? */
-function ourOwnHandiwork(el: Element): boolean {
-  return lastWritten.get(el) === textOf(el);
+/**
+ * Is this element showing exactly what THIS record last put in it?
+ *
+ * The record has to be part of the question. Keyed on the element alone, one record's
+ * write vouched for every other record's claim on the same element: on a wizard where
+ * two steps mint the same selector, the second step's edit made the element look like
+ * our handiwork, and the first step's record walked straight past the identity check
+ * onto it. The two then fought over one element, and which text you saw depended on
+ * which pass ran last.
+ */
+function ourOwnHandiwork(record: Resolvable, el: Element): boolean {
+  const written = lastWritten.get(el);
+  return written !== undefined && written.id === record.id && written.text === textOf(el);
 }
 
 export function isTextIdentified(record: Resolvable): boolean {
@@ -95,7 +105,7 @@ export function textStillMatches(record: Resolvable, el: Element): boolean {
   if (!isTextIdentified(record)) return true;
   // Mid-edit the element carries the previous keystroke's value, which is neither the
   // fingerprint nor the record's current one. We wrote it, so it is still our element.
-  if (ourOwnHandiwork(el)) return true;
+  if (ourOwnHandiwork(record, el)) return true;
   const identities = rememberedTexts(record);
   return identities.length === 0 || identities.includes(textOf(el));
 }

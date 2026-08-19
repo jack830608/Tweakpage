@@ -56,6 +56,9 @@ export function startInlineEdit(
   // page's own inline outline comes back exactly as it was.
   const hadStyle = el.getAttribute('style');
   el.setAttribute('contenteditable', 'plaintext-only');
+  // Mid-typing this element holds neither its old words nor its new ones. Saying so is
+  // what keeps every keystroke on the one record instead of minting another.
+  controller.setInlineTarget(el);
   (el as HTMLElement).style.outline = 'none';
   // The applier reapplies records on every mutation — with a keystroke being a
   // mutation, it would rewrite the element under the user's caret.
@@ -87,6 +90,8 @@ export function startInlineEdit(
     // records over this element, and a release-then-diff read a page that no longer
     // held the typing.
     record({ silent: false });
+    // After the diff, for the same reason the applier is released after it.
+    controller.setInlineTarget(null);
     doc.dispatchEvent(new CustomEvent('tweakpage:editing', { detail: { on: false } }));
   };
 
