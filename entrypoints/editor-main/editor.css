@@ -131,7 +131,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-segmented { display: flex; margin: 0 12px 6px; background: var(--sunken); border-radius: 8px; padding: 2px; gap: 2px; }
 .twk-segment { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 5px 0; border: none; border-radius: var(--r-control); background: none; cursor: pointer; font-size: 12px; font-weight: 500; color: var(--ink-2); }
 .twk-segment:hover { color: var(--ink); }
-.twk-segment-active, .twk-segment-active:hover { background: var(--surface); color: var(--accent-ink); font-weight: 600; box-shadow: var(--shadow-lift); }
+.twk-segment-active, .twk-segment-active:hover { background: var(--segment-on, var(--surface)); color: var(--accent-ink); font-weight: 600; box-shadow: var(--shadow-lift); }
 
 /* ---------- share row ---------- */
 .twk-variants { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-top: 1px solid var(--border); }
@@ -247,7 +247,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-box-center { grid-column: 2; grid-row: 2; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-family: var(--mono); color: var(--ink-3); padding: 8px 0; }
 
 /* ---------- notes & onboarding ---------- */
-.twk-hint { font-size: 11px; color: var(--warn-ink); margin: 4px 0 0; }
+/* Not --warn-ink: an explanation and a rejected value were the same colour, so "each box
+   is one run of text" read as something the field had refused. */
+.twk-hint { font-size: 11px; color: var(--ink-3); margin: 4px 0 0; }
 .twk-preview-note { padding: 10px 12px; color: var(--warn-ink); background: var(--warn-bg); margin: 10px 12px; border-radius: var(--r-card); font-size: 12px; }
 .twk-stale { padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
 .twk-stale p { padding: 10px 12px; color: var(--warn-ink); background: var(--warn-bg); border-radius: var(--r-card); font-size: 12px; line-height: 1.5; }
@@ -351,6 +353,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-settings-actions { display: flex; justify-content: flex-end; margin-bottom: 4px; }
 .twk-settings-actions button { padding: 5px 12px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11.5px; cursor: pointer; transition: border-color var(--ease), color var(--ease); }
 .twk-settings-actions button:hover { border-color: var(--border-strong); color: var(--ink); }
+/* The button that can delete every page of work looked exactly like the one that opens
+   another tab. */
+.twk-settings-actions button.twk-danger { border-color: color-mix(in srgb, var(--warn-ink) 45%, transparent); color: var(--warn-ink); }
+.twk-settings-actions button.twk-danger:hover:not(:disabled) { border-color: var(--warn-ink); background: var(--warn-bg); }
+.twk-settings-actions button:disabled { opacity: 0.45; cursor: default; }
 .twk-policy { margin-bottom: 10px; padding: 10px; border-radius: var(--r-card); background: var(--sunken); color: var(--ink-2); font-family: var(--mono); font-size: 10.5px; line-height: 1.65; white-space: pre; overflow-x: auto; }
 
 /* ---------- changes view ---------- */
@@ -423,6 +430,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 :host([data-theme="dark"]) {
     --surface: #212126;
     --sunken: #2b2b31;
+    /* Lighter than the track it sits in. Inherited from light mode, the chosen segment
+       came out darker than the unchosen one and only the accent text said which was on. */
+    --segment-on: #35353c;
     --border: #3a3a41;
     --border-strong: #4a4a52;
     --ink: #f4f4f5;
@@ -446,6 +456,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   :host(:not([data-theme="light"])) {
     --surface: #212126;
     --sunken: #2b2b31;
+    /* Lighter than the track it sits in. Inherited from light mode, the chosen segment
+       came out darker than the unchosen one and only the accent text said which was on. */
+    --segment-on: #35353c;
     --border: #3a3a41;
     --border-strong: #4a4a52;
     --ink: #f4f4f5;

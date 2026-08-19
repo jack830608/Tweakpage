@@ -30,9 +30,11 @@ interface ShareRowProps {
   onToast: (toast: ToastContent) => void;
   /** Resolves when the captures are composed and saved; false on failure. */
   onSnapshot: () => Promise<boolean>;
+  /** Where to send someone who pressed Share link before setting up a bucket. */
+  onNeedsSetup: () => void;
 }
 
-export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
+export function ShareRow({ controller, onToast, onSnapshot, onNeedsSetup }: ShareRowProps) {
   const today = () => new Date().toISOString().slice(0, 10);
   // Offering a button that can only fail is worse than not offering it.
   const [canShare, setCanShare] = useState(false);
@@ -188,6 +190,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           doneLabel={t('copied')}
           ariaLabel={t('aria_copy_summary')}
           testId="copy-summary"
+          disabled={!hasEdits}
           title={t('tip_copy_summary')}
           run={() =>
             withConsent('summary', async (allowUpload) => {
@@ -203,6 +206,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           doneLabel={t('snap_done')}
           ariaLabel={t('aria_snapshot')}
           testId="snapshot-before-and-after"
+          disabled={!hasEdits}
           title={t('tip_snap')}
           run={onSnapshot}
         />
@@ -214,6 +218,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           doneLabel={t('copied')}
           ariaLabel={t('aria_copy_json')}
           testId="copy-json"
+          disabled={!hasEdits}
           title={t('tip_copy_json')}
           run={() =>
             withConsent('json', async (allowUpload) => {
@@ -229,6 +234,7 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           doneLabel={t('snap_done')}
           ariaLabel={t('aria_export_json')}
           testId="export-json"
+          disabled={!hasEdits}
           title={t('tip_export')}
           run={() => withConsent('download', onJsonFile)}
         />
@@ -239,11 +245,23 @@ export function ShareRow({ controller, onToast, onSnapshot }: ShareRowProps) {
           doneLabel={t('share_link_done')}
           ariaLabel={t('aria_share_link')}
           testId="share-link"
-          disabled={!canShare || !hasEdits}
+          // Live without a bucket on purpose. Disabled, its only explanation was a native
+          // title on a button nobody has a reason to hover — the product's headline
+          // feature failing silently and anonymously. Pressing it now takes you to the
+          // one place that can fix it.
+          disabled={!hasEdits}
           title={
             !canShare ? t('tip_share_unset') : !hasEdits ? t('tip_share_nothing') : t('tip_share_link')
           }
-          run={() => withConsent('share', onShareLink)}
+          run={async () => {
+            if (!canShare) {
+              onNeedsSetup();
+              onToast({ message: t('toast_share_needs_setup'), kind: 'info' });
+              // Not a success: nothing was shared, so no confirmation flash.
+              return false;
+            }
+            return withConsent('share', onShareLink);
+          }}
         />
       </div>
     </div>

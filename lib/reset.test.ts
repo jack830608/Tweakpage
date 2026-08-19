@@ -120,3 +120,23 @@ test('a rule you added is gone, and the one that ships is back', async () => {
   await resetTo(['preferences']);
   expect(await getExclusions()).toEqual(['[data-tweakpage-ignore]']);
 });
+
+test('clearing the keys on the options page leaves the panel preferences alone', async () => {
+  // They live in one stored object, and the options page used to write the whole thing:
+  // deleting a secret AWS will never show again also silently reset the four upload
+  // switches somebody had set over in the panel.
+  const { saveShareSettings, getShareSettings } = await import('./share/settings');
+  const before = await getShareSettings();
+  await saveShareSettings({
+    ...before,
+    bucket: '',
+    region: '',
+    accessKeyId: '',
+    secretAccessKey: '',
+    tinypngKey: '',
+  });
+  const after = await getShareSettings();
+  expect(after.accessKeyId).toBe('');
+  expect(after.uploadImages, 'the panel set these').toEqual(before.uploadImages);
+  expect(after.compressImages).toBe(before.compressImages);
+});

@@ -219,7 +219,11 @@ function ResetGroup({
 }) {
   const [open, setOpen] = useState(false);
   const [inventory, setInventory] = useState<ResetInventory | null>(null);
-  const [targets, setTargets] = useState<ResetTarget[]>(['preferences']);
+  // Nothing ticked. "Preferences" was ticked to begin with and the hint called it the
+  // one thing you could undo by doing it again — but it also takes every exclusion rule
+  // you typed and the upload permission you granted, and neither comes back that way.
+  // Three empty boxes make you say what you want, which is the whole point of itemising.
+  const [targets, setTargets] = useState<ResetTarget[]>([]);
   useEffect(() => {
     void takeInventory().then(setInventory);
   }, []);
@@ -237,6 +241,8 @@ function ResetGroup({
     void resetTo(targets).then(async () => {
       setInventory(await takeInventory());
       onReloadStatus();
+      // Emptied, or the boxes keep reading as armed over things that are already gone.
+      setTargets([]);
       onToast({ message: t('toast_reset_done'), kind: 'info' });
     });
   };
@@ -288,6 +294,9 @@ function ResetGroup({
           label={t('reset_run')}
           ariaLabel={t('aria_reset_run')}
           testId="run-reset"
+          className="twk-danger"
+          disabled={targets.length === 0}
+          confirmLabel={t('reset_confirm', [String(targets.length)])}
           onConfirm={run}
         />
       </div>

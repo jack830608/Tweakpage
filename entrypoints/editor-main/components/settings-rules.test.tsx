@@ -239,3 +239,33 @@ describe('a decision that has been taken', () => {
     expect(screen.queryByTestId('forget-consent')).toBeNull();
   });
 });
+
+describe('starting over', () => {
+  test('starts with nothing ticked', async () => {
+    // It used to arrive with "preferences" ticked and a hint calling that the safe one.
+    // It takes every exclusion rule you typed and the upload permission you granted;
+    // neither comes back by doing it again.
+    await openSettings();
+    for (const box of ['reset-preferences', 'reset-edits', 'reset-credentials']) {
+      expect((screen.getByTestId(box) as HTMLInputElement).checked, box).toBe(false);
+    }
+  });
+
+  test('and cannot be pressed until something is', async () => {
+    await openSettings();
+    expect((screen.getByTestId('run-reset') as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByTestId('reset-preferences'));
+    await waitFor(() =>
+      expect((screen.getByTestId('run-reset') as HTMLButtonElement).disabled).toBe(false),
+    );
+  });
+
+  test('the armed label says how much is going', async () => {
+    await openSettings();
+    fireEvent.click(screen.getByTestId('reset-preferences'));
+    fireEvent.click(screen.getByTestId('run-reset'));
+    await waitFor(() =>
+      expect(screen.getByTestId('run-reset').textContent).toBe(t('reset_confirm', ['1'])),
+    );
+  });
+});

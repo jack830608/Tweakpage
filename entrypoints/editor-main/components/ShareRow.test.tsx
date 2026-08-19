@@ -26,7 +26,7 @@ test('export json sends the exported page as a data-url download message', async
   });
   const controller = new EditsController(null, document, NOW);
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
-  render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={vi.fn()} />);
+  render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={vi.fn()} onNeedsSetup={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: /Export JSON/ }));
   // Every hand-off asks the worker what to do about images first, so the download is
   // the message after that one.
@@ -43,7 +43,7 @@ test('copy summary writes the change list to the clipboard', async () => {
   Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
   const controller = new EditsController(null, document, NOW);
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
-  render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={vi.fn()} />);
+  render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={vi.fn()} onNeedsSetup={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: /Copy summary/ }));
   await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
   expect(writeText.mock.calls[0][0]).toContain('# Page edits —');
@@ -55,8 +55,9 @@ test('copy summary reports success via toast', async () => {
   const writeText = vi.fn().mockResolvedValue(undefined);
   Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
   const controller = new EditsController(null, document, NOW);
+  controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
   const onToast = vi.fn();
-  render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn()} />);
+  render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn()} onNeedsSetup={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: /Copy summary/ }));
   await waitFor(() =>
     expect(onToast).toHaveBeenCalledWith({ message: 'Summary copied to clipboard', kind: 'success' }),
@@ -65,8 +66,9 @@ test('copy summary reports success via toast', async () => {
 
 test('snap button triggers the snapshot flow', () => {
   const controller = new EditsController(null, document, NOW);
+  controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
   const onSnapshot = vi.fn();
-  render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={onSnapshot} />);
+  render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={onSnapshot} onNeedsSetup={vi.fn()} />);
   fireEvent.click(screen.getByRole('button', { name: 'Snapshot before and after' }));
   expect(onSnapshot).toHaveBeenCalled();
 });
@@ -91,7 +93,7 @@ test('the share button says it is uploading, refuses re-entry, then confirms', a
   const controller = new EditsController(null, document, NOW);
   // A share needs something to share; the button is disabled without it.
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
-  render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn().mockResolvedValue(true)} />);
+  render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn().mockResolvedValue(true)} onNeedsSetup={vi.fn()} />);
   const button = await screen.findByTestId('share-link');
   await waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
 
@@ -121,7 +123,7 @@ test('a failed upload returns the button to idle with an error toast', async () 
   const controller = new EditsController(null, document, NOW);
   // A share needs something to share; the button is disabled without it.
   controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
-  render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn().mockResolvedValue(true)} />);
+  render(<ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn().mockResolvedValue(true)} onNeedsSetup={vi.fn()} />);
   const button = await screen.findByTestId('share-link');
   await waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
 
@@ -145,11 +147,40 @@ test('with nothing edited, the share button says so instead of making a dead lin
     <ShareRow
       controller={new EditsController(null, document, NOW)}
       onToast={vi.fn()}
-      onSnapshot={vi.fn().mockResolvedValue(true)}
+      onSnapshot={vi.fn().mockResolvedValue(true)} onNeedsSetup={vi.fn()}
     />,
   );
   const button = (await screen.findByTestId('share-link')) as HTMLButtonElement;
   // Configured, so the reason has to be the missing edits, not the missing bucket.
   await waitFor(() => expect(button.disabled).toBe(true));
   expect(button.title).toBe(t('tip_share_nothing'));
+});
+
+
+test('with nothing changed, there is nothing to hand off', () => {
+  // Copy summary, Snapshot, Copy JSON and Download JSON used to be live on an untouched
+  // page and would produce an empty artefact; only Share link checked.
+  const controller = new EditsController(null, document, NOW);
+  render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={vi.fn()} onNeedsSetup={vi.fn()} />);
+  for (const testId of ['copy-summary', 'snapshot-before-and-after', 'copy-json', 'export-json', 'share-link']) {
+    expect((screen.getByTestId(testId) as HTMLButtonElement).disabled, testId).toBe(true);
+  }
+});
+
+
+test('pressing share without a bucket opens the place that fixes it', () => {
+  // It used to be disabled, explained only by a native title on a button nobody has a
+  // reason to hover: the headline feature failing silently and anonymously.
+  const controller = new EditsController(null, document, NOW);
+  controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
+  const onNeedsSetup = vi.fn();
+  const onToast = vi.fn();
+  render(
+    <ShareRow controller={controller} onToast={onToast} onSnapshot={vi.fn()} onNeedsSetup={onNeedsSetup} />,
+  );
+  const button = screen.getByTestId('share-link') as HTMLButtonElement;
+  expect(button.disabled, 'live, because it has somewhere to send you').toBe(false);
+  fireEvent.click(button);
+  expect(onNeedsSetup).toHaveBeenCalled();
+  expect(onToast).toHaveBeenCalledWith(expect.objectContaining({ kind: 'info' }));
 });
