@@ -59,6 +59,11 @@ export function SettingsView({ prefs, onPrefs, onToast, onDiscardEdits }: Settin
 
   return (
     <div className="twk-settings">
+      {/* Ordered by what a reader came for. Appearance is one control and the exclusion
+          list is the longest prose in the panel; both used to sit above the one group
+          that has to be filled in before the headline feature works. */}
+      {status && <SharingGroup status={status} />}
+      {status && <ImagesGroup status={status} onChange={commit} onToast={onToast} />}
       <CollapsibleSection
         title={t('settings_appearance')}
         sectionId="set-appearance"
@@ -75,8 +80,6 @@ export function SettingsView({ prefs, onPrefs, onToast, onDiscardEdits }: Settin
         </Row>
       </CollapsibleSection>
       <ExclusionsGroup onToast={onToast} />
-      {status && <SharingGroup status={status} />}
-      {status && <ImagesGroup status={status} onChange={commit} onToast={onToast} />}
       <ResetGroup
         prefs={prefs}
         onPrefs={onPrefs}

@@ -2048,3 +2048,55 @@ test('the settings page says what it is asking for, and which value is wrong', a
   await page.locator('[data-testid="show-secretAccessKey"]').click();
   await expect(secret).toHaveAttribute('type', 'text');
 });
+
+test('the theme chosen in the panel is the extension\'s theme', async ({ context }) => {
+  // The popup and the settings page followed the OS only, so choosing Light in the panel
+  // left both of them dark on a dark machine — one setting visibly governing one of
+  // three surfaces.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('[data-testid="open-settings"]').click();
+  await page.locator('[data-testid="mode-light"]').click();
+
+  const [worker] = context.serviceWorkers().length
+    ? context.serviceWorkers()
+    : [await context.waitForEvent('serviceworker')];
+  const root = worker.url().slice(0, worker.url().lastIndexOf('/'));
+  for (const surface of ['popup.html', 'options.html']) {
+    const other = await context.newPage();
+    await other.emulateMedia({ colorScheme: 'dark' });
+    await other.goto(`${root}/${surface}`);
+    await expect(other.locator('html'), surface).toHaveAttribute('data-theme', 'light');
+    // And the tokens actually followed, rather than the attribute sitting there unused.
+    const ink = await other.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--ink').trim(),
+    );
+    expect(ink, `${surface} uses the light palette`).toBe('#18181b');
+    await other.close();
+  }
+});
+
+test('the path to an element ends at the element', async ({ context }) => {
+  // The selected element used to come out in the middle of its own breadcrumb: the
+  // child step was appended to the ancestors with nothing between them, and every
+  // breadcrumb convention says the last crumb is where you are.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('#perks').click();
+
+  const crumbs = page.locator('.twk-breadcrumb button');
+  const active = page.locator('.twk-breadcrumb .twk-crumb-active');
+  await expect(active).toHaveCount(1);
+
+  const texts = await crumbs.allTextContents();
+  const activeText = (await active.textContent())!;
+  const at = texts.indexOf(activeText);
+  if (at < texts.length - 1) {
+    // Anything after it is a step downwards and is marked as one.
+    await expect(page.locator('.twk-crumb-down')).toHaveCount(1);
+  }
+  // And a crumb is named after something on the page, not just its tag.
+  expect(texts.some((crumb) => crumb.startsWith('#') || crumb.startsWith('.')), texts.join(' ')).toBe(true);
+});

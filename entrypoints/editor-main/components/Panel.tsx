@@ -358,6 +358,11 @@ export function Panel(props: PanelProps) {
           >
             {t('back_row')}
           </button>
+          {/* Named. The only thing telling you which view this was, was the link out of
+              it. */}
+          <span className="twk-view-title">
+            {plural(count, 'footer_changes_one', 'footer_changes')}
+          </span>
           <ChangesTab
             controller={controller}
             onToast={props.onToast}
