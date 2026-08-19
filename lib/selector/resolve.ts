@@ -35,9 +35,69 @@ export function resolveRecord(record: Resolvable, root: Document | Element): Ele
     const el = queryUnique(root, selector);
     if (!el) continue;
     if (identities.length === 0 || identities.includes(textOf(el))) return el;
-    return relocated(record, root, identities) ?? el;
+    const moved = relocated(record, root, identities);
+    if (moved) return moved;
+    // A unique match is not the same as the right element. Where the words are the
+    // identity, one reading something else belongs to somebody else — a wizard that
+    // re-labels one list of buttons at every step put a single edit on every step.
+    // Everything else sits on text that is free to change and keeps the match.
+    if (isTextIdentified(record) && !ourOwnHandiwork(el)) continue;
+    return el;
   }
   return relocated(record, root, identities);
+}
+
+/**
+ * Whether this record's element is recognised by its words.
+ *
+ * Only whole-element text edits are: the text is both what they carry and what names
+ * them. A style, attribute, move or clone record sits on an element whose text may
+ * legitimately change — a price, a counter, a translation — and holding those to it
+ * would drop edits that are perfectly fine. A per-run text edit leaves the other runs
+ * in place, so the element's full text cannot be reconstructed here to compare.
+ */
+/**
+ * The text this module last wrote into an element.
+ *
+ * Between two passes an element's words can change for two reasons that need opposite
+ * answers: the user typed another character, so the record has moved on while the page
+ * still shows what we wrote last — or the page replaced the words itself, and this is
+ * no longer the element the record meant. The DOM cannot tell those apart. Only
+ * remembering what we put there can.
+ *
+ * Keyed by node, so an element the page replaced starts with no memory of us.
+ */
+const lastWritten = new WeakMap<Element, string>();
+
+export function rememberWritten(el: Element): void {
+  lastWritten.set(el, textOf(el));
+}
+
+/** Is this element still showing exactly what we last put in it? */
+function ourOwnHandiwork(el: Element): boolean {
+  return lastWritten.get(el) === textOf(el);
+}
+
+export function isTextIdentified(record: Resolvable): boolean {
+  return (
+    record.type === 'text' &&
+    record.property !== undefined &&
+    textNodeIndex(record.property) === null &&
+    // No fingerprint, nothing to be recognised by: an element with no text when it was
+    // picked, or a record written before fingerprints existed. Those keep trusting the
+    // selector, which is all they ever had.
+    !!record.textFingerprint
+  );
+}
+
+/** Can this element still be the one the record meant? */
+export function textStillMatches(record: Resolvable, el: Element): boolean {
+  if (!isTextIdentified(record)) return true;
+  // Mid-edit the element carries the previous keystroke's value, which is neither the
+  // fingerprint nor the record's current one. We wrote it, so it is still our element.
+  if (ourOwnHandiwork(el)) return true;
+  const identities = rememberedTexts(record);
+  return identities.length === 0 || identities.includes(textOf(el));
 }
 
 /** The texts under which the element could legitimately appear right now. */

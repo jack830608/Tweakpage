@@ -2,7 +2,7 @@ import { buildCssText, isSafeRecordId, MARK_ATTRIBUTE } from './css';
 import { applyDomEdit, revertDomEdit } from './dom';
 import type { EditRecord as Record } from './types';
 import type { EditRecord } from './types';
-import { resolveRecord } from '../selector/resolve';
+import { rememberWritten, resolveRecord, textStillMatches } from '../selector/resolve';
 
 const STYLE_TAG_SELECTOR = 'style[data-tweakpage-style]';
 const MARKED_SELECTOR = `[${MARK_ATTRIBUTE}]`;
@@ -77,7 +77,7 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
   for (const { record, targets } of resolved) {
     if (record.type === 'move') continue;
     for (const el of targets) {
-      if (record.type !== 'style') applyDomEdit(el, record);
+      if (record.type !== 'style') writeDomEdit(el, record);
       // Every applied record is mark-bound to its node from here on (see resolveTarget):
       // a clone inserting a sibling shifts every nth position after it, and on the next
       // pass only the mark still says which element each record meant.
@@ -88,7 +88,7 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
   // ones already placed below it, so the set lands exactly as arranged.
   for (const { record, targets } of byIndex(resolved, (r) => r.newValue)) {
     for (const el of targets) {
-      applyDomEdit(el, record);
+      writeDomEdit(el, record);
       marks.set(el, [...(marks.get(el) ?? []), record.id]);
     }
   }
@@ -120,7 +120,7 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
       statuses.set(record.id, 'not-found');
       continue;
     }
-    if (record.type !== 'style') applyDomEdit(el, record);
+    if (record.type !== 'style') writeDomEdit(el, record);
     marks.set(el, [...(marks.get(el) ?? []), record.id]);
     applied.push(record);
     statuses.set(record.id, 'applied');
@@ -150,9 +150,18 @@ export function applyAll(records: EditRecord[], doc: Document): Map<string, Appl
 function resolveTarget(record: Record, doc: Document): Element | null {
   if (isSafeRecordId(record.id)) {
     const marked = matchAll(doc, `[${MARK_ATTRIBUTE}~="${record.id}"]`);
-    if (marked.length === 1) return marked[0];
+    // The mark says "the node we stamped last pass", which is not the same as "still the
+    // element this record meant". A framework that keeps its nodes and swaps their words
+    // hands our mark to somebody else's content, and the edit follows it.
+    if (marked.length === 1 && textStillMatches(record, marked[0])) return marked[0];
   }
   return resolveRecord(record, doc);
+}
+
+/** Applies, then remembers the words it left behind. See rememberWritten. */
+function writeDomEdit(el: Element, record: Record): void {
+  applyDomEdit(el, record);
+  rememberWritten(el);
 }
 
 /** The move records of a set, lowest index first; ties keep record order. */
