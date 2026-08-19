@@ -905,5 +905,50 @@
   },
   "settings_withdraw": {
     "message": "Withdraw"
+  },
+  "settings_exclusions": {
+    "message": "Areas to leave alone"
+  },
+  "settings_exclusions_hint": {
+    "message": "The picker skips anything matching these, and everything inside it. Nothing is protected — this all runs on your copy of the page — but an edit on a chat launcher or a consent banner reproduces for nobody, and whoever receives the hand-off gets a line they cannot act on."
+  },
+  "settings_exclusions_count_one": {
+    "message": "1 rule"
+  },
+  "settings_exclusions_count": {
+    "message": "$1 rules"
+  },
+  "settings_exclusions_empty": {
+    "message": "Nothing is skipped. Every element on the page can be picked."
+  },
+  "settings_exclusion_add": {
+    "message": "Add a rule"
+  },
+  "settings_exclusion_add_button": {
+    "message": "Add"
+  },
+  "aria_exclusion_input": {
+    "message": "A CSS selector for a part of the page to skip"
+  },
+  "aria_exclusion_remove": {
+    "message": "Stop skipping $1"
+  },
+  "exclude_empty": {
+    "message": "Type a selector first."
+  },
+  "exclude_too_long": {
+    "message": "That selector is too long to be one."
+  },
+  "exclude_not_a_selector": {
+    "message": "The browser cannot read that as a selector."
+  },
+  "exclude_catches_everything": {
+    "message": "That matches the whole page, which would leave nothing to edit."
+  },
+  "exclude_already_there": {
+    "message": "That rule is already in the list."
+  },
+  "outline_excluded": {
+    "message": "Skipped by $1"
   }
 }

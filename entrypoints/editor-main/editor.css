@@ -41,6 +41,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-outline--hover { outline: 2px dashed var(--outline); outline-offset: 1px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: color-mix(in srgb, var(--outline) 8%, transparent); }
 /* While typing, the selection's tint would sit over the very text being edited. */
 .twk-outline--editing { outline: 2px solid var(--outline); outline-offset: 3px; }
+/* Refused, and saying so. Deliberately not the accent: an element that cannot be picked
+   must not look like one that is about to be. */
+.twk-outline--excluded { outline: 2px dashed var(--ink-3); outline-offset: 1px; background: color-mix(in srgb, var(--ink-3) 10%, transparent); }
+.twk-outline--excluded .twk-outline-label { background: var(--ink-3); }
 .twk-outline--selected { outline: 3px solid var(--outline); outline-offset: 1px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95), 0 0 0 6px color-mix(in srgb, var(--outline) 30%, transparent), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: color-mix(in srgb, var(--outline) 12%, transparent); }
 .twk-edited-mark { position: fixed; pointer-events: none; z-index: 2147483645; outline: 1px dashed color-mix(in srgb, var(--outline) 55%, transparent); outline-offset: 1px; background: color-mix(in srgb, var(--outline) 5%, transparent); }
 .twk-marks-toggle { display: flex; align-items: center; gap: 6px; margin: 2px 12px 12px; font-size: 11.5px; color: var(--ink-3); cursor: pointer; }
@@ -303,6 +307,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-switch input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
 .twk-switch--off { opacity: 0.5; cursor: default; }
 .twk-switch--off input { cursor: default; }
+/* One rule per line, the selector in mono because that is what it is. */
+.twk-rules { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.twk-rule { display: flex; align-items: center; gap: 8px; padding: 5px 6px 5px 9px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--sunken); }
+.twk-rule code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font-family: var(--mono); font-size: 11.5px; color: var(--ink); }
+.twk-rule button { flex: none; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 5px; background: none; color: var(--ink-3); font-size: 15px; line-height: 1; cursor: pointer; }
+.twk-rule button:hover { background: var(--surface); color: var(--ink); }
+.twk-rule-add { display: flex; gap: 6px; }
+.twk-rule-add input { flex: 1; min-width: 0; }
+.twk-rule-add button { flex: none; white-space: nowrap; padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11.5px; cursor: pointer; }
+.twk-rule-add button:hover { border-color: var(--border-strong); color: var(--ink); }
 .twk-settings-actions { display: flex; justify-content: flex-end; margin-bottom: 4px; }
 .twk-settings-actions button { padding: 5px 12px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11.5px; cursor: pointer; transition: border-color var(--ease), color var(--ease); }
 .twk-settings-actions button:hover { border-color: var(--border-strong); color: var(--ink); }

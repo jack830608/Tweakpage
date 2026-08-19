@@ -905,5 +905,50 @@
   },
   "settings_withdraw": {
     "message": "收回"
+  },
+  "settings_exclusions": {
+    "message": "不要選取的區域"
+  },
+  "settings_exclusions_hint": {
+    "message": "符合這些規則的元素、以及它裡面的所有東西,選取時都會跳過。這不是保護 —— 這一切都跑在你自己那份頁面上 —— 但改在客服按鈕或同意條上的東西,對任何人都重現不了,收到交付的人只會拿到一條做不了的項目。"
+  },
+  "settings_exclusions_count_one": {
+    "message": "1 條規則"
+  },
+  "settings_exclusions_count": {
+    "message": "$1 條規則"
+  },
+  "settings_exclusions_empty": {
+    "message": "目前沒有跳過任何東西,頁面上每個元素都選得到。"
+  },
+  "settings_exclusion_add": {
+    "message": "新增規則"
+  },
+  "settings_exclusion_add_button": {
+    "message": "新增"
+  },
+  "aria_exclusion_input": {
+    "message": "要跳過的頁面區域的 CSS selector"
+  },
+  "aria_exclusion_remove": {
+    "message": "不要再跳過 $1"
+  },
+  "exclude_empty": {
+    "message": "先輸入一個 selector。"
+  },
+  "exclude_too_long": {
+    "message": "這個 selector 長到不像是一個 selector。"
+  },
+  "exclude_not_a_selector": {
+    "message": "瀏覽器讀不懂這個 selector。"
+  },
+  "exclude_catches_everything": {
+    "message": "這會match整個頁面,等於什麼都不能改了。"
+  },
+  "exclude_already_there": {
+    "message": "這條規則已經在清單裡了。"
+  },
+  "outline_excluded": {
+    "message": "已跳過 · $1"
   }
 }

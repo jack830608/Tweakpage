@@ -4,6 +4,12 @@ import { t } from '../../../lib/i18n';
 
 interface OverlayProps {
   hovered: Element | null;
+  /**
+   * The exclusion rule refusing the hovered element, if one does. The outline says so
+   * and names it — an element that simply will not highlight reads as a broken picker,
+   * and the rule that did it is the one piece of information that makes it fixable.
+   */
+  refusedBy?: string | null;
   selected: Element | null;
   /** Elements carrying edits, outlined faintly so a reopened page shows its history. */
   edited?: Element[];
@@ -14,7 +20,7 @@ interface OverlayProps {
   editing?: Element | null;
 }
 
-export function Overlay({ hovered, selected, edited = [], canMove, onMove, editing }: OverlayProps) {
+export function Overlay({ hovered, refusedBy, selected, edited = [], canMove, onMove, editing }: OverlayProps) {
   const [, setTick] = useState(0);
   useEffect(() => {
     const update = () => setTick((t) => t + 1);
@@ -38,7 +44,13 @@ export function Overlay({ hovered, selected, edited = [], canMove, onMove, editi
           />
         ),
       )}
-      {hovered && hovered !== selected && <OutlineBox el={hovered} kind="hover" />}
+      {hovered && hovered !== selected && (
+        <OutlineBox
+          el={hovered}
+          kind={refusedBy ? 'excluded' : 'hover'}
+          label={refusedBy ? t('outline_excluded', [refusedBy]) : undefined}
+        />
+      )}
       {selected && (
         <OutlineBox el={selected} kind={selected === editing ? 'editing' : 'selected'}>
           {selected !== editing && onMove && canMove && (canMove(selected, -1) || canMove(selected, 1)) && (
@@ -76,12 +88,23 @@ function boxOf(el: Element) {
   return { top: r.top, left: r.left, width: r.width, height: r.height };
 }
 
-function OutlineBox({ el, kind, children }: { el: Element; kind: 'hover' | 'selected' | 'editing'; children?: ReactNode }) {
+function OutlineBox({
+  el,
+  kind,
+  label: given,
+  children,
+}: {
+  el: Element;
+  kind: 'hover' | 'selected' | 'editing' | 'excluded';
+  label?: string;
+  children?: ReactNode;
+}) {
   const r = el.getBoundingClientRect();
   const label =
-    el.tagName === 'IFRAME'
+    given ??
+    (el.tagName === 'IFRAME'
       ? 'iframe — not supported'
-      : `${buildElementLabel(el)} · ${Math.round(r.width)}×${Math.round(r.height)}`;
+      : `${buildElementLabel(el)} · ${Math.round(r.width)}×${Math.round(r.height)}`);
   return (
     <div
       className={`twk-outline twk-outline--${kind}`}

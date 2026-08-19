@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { safeSendMessage } from '../../../lib/extension-context';
+import { getExclusions, ruleProblem, saveExclusions, type RuleProblem } from '../../../lib/exclusions';
 import { hasConsented, withdrawConsent } from '../../../lib/share/consent';
 import {
   getShareStatus,
@@ -11,7 +12,7 @@ import type { PanelPrefs, ThemeChoice } from '../panel-position';
 import { CollapsibleSection } from './CollapsibleSection';
 import { ModeSwitch } from './ModeSwitch';
 import type { ToastContent } from './Toast';
-import { t } from '../../../lib/i18n';
+import { plural, t } from '../../../lib/i18n';
 
 /**
  * Settings, minus the things a website must never be able to read.
@@ -69,9 +70,117 @@ export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
           />
         </Row>
       </CollapsibleSection>
+      <ExclusionsGroup onToast={onToast} />
       {status && <SharingGroup status={status} />}
       {status && <ImagesGroup status={status} onChange={commit} onToast={onToast} />}
     </div>
+  );
+}
+
+/**
+ * Written as a switch of literal t() calls rather than a lookup table: the translation
+ * guard finds keys by scanning for t('...'), so a table would take these out of its
+ * sight and let one go missing from a locale unnoticed.
+ */
+function problemMessage(problem: RuleProblem): string {
+  switch (problem) {
+    case 'empty':
+      return t('exclude_empty');
+    case 'too long':
+      return t('exclude_too_long');
+    case 'not a selector':
+      return t('exclude_not_a_selector');
+    case 'catches everything':
+      return t('exclude_catches_everything');
+    case 'already there':
+      return t('exclude_already_there');
+  }
+}
+
+/**
+ * Parts of the page the picker will not offer. Not protection — this all runs on your
+ * own copy of the page — but an edit on a chat launcher or a consent banner reproduces
+ * for nobody, and the engineer receiving it gets a line they cannot act on.
+ */
+function ExclusionsGroup({ onToast }: { onToast: (toast: ToastContent) => void }) {
+  const [open, setOpen] = useState(false);
+  const [rules, setRules] = useState<string[]>([]);
+  const [draft, setDraft] = useState('');
+  useEffect(() => {
+    void getExclusions().then(setRules);
+  }, []);
+
+  const commit = (next: string[]) => {
+    setRules(next);
+    void saveExclusions(next);
+  };
+  const add = () => {
+    const rule = draft.trim();
+    const problem = ruleProblem(rule, rules);
+    if (problem) {
+      onToast({ message: problemMessage(problem), kind: 'error' });
+      return;
+    }
+    commit([...rules, rule]);
+    setDraft('');
+  };
+
+  return (
+    <CollapsibleSection
+      title={t('settings_exclusions')}
+      sectionId="set-exclusions"
+      open={open}
+      onToggle={() => setOpen((current) => !current)}
+      aside={
+        <span className="twk-chip" data-testid="exclusion-count">
+          {plural(rules.length, 'settings_exclusions_count_one', 'settings_exclusions_count')}
+        </span>
+      }
+    >
+      <p className="twk-settings-note">{t('settings_exclusions_hint')}</p>
+      {rules.length === 0 ? (
+        <p className="twk-settings-note twk-settings-note--tight">{t('settings_exclusions_empty')}</p>
+      ) : (
+        <ul className="twk-rules" data-testid="exclusion-list">
+          {rules.map((rule, i) => (
+            <li key={rule} className="twk-rule">
+              <code>{rule}</code>
+              <button
+                type="button"
+                aria-label={t('aria_exclusion_remove', [rule])}
+                data-testid={`remove-exclusion-${i}`}
+                onClick={() => commit(rules.filter((r) => r !== rule))}
+              >
+                {'\u00d7'}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="twk-setting">
+        <span className="twk-setting-label">{t('settings_exclusion_add')}</span>
+        <div className="twk-setting-control twk-rule-add">
+          <input
+            type="text"
+            aria-label={t('aria_exclusion_input')}
+            data-testid="exclusion-input"
+            placeholder=".chat-widget"
+            autoComplete="off"
+            spellCheck={false}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter') return;
+              e.preventDefault();
+              add();
+            }}
+          />
+          <button type="button" data-testid="add-exclusion" onClick={add}>
+            {t('settings_exclusion_add_button')}
+          </button>
+        </div>
+      </div>
+    </CollapsibleSection>
   );
 }
 

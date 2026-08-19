@@ -1,9 +1,14 @@
 import { useEffect } from 'react';
 import { isTweakpageNode } from '../../../lib/edits/dom';
+import { excludedBy } from '../../../lib/exclusions';
 import { isTextEntry } from './useUndoRedoShortcuts';
 
 export interface PickerCallbacks {
-  onHover: (el: Element | null) => void;
+  /**
+   * The second argument names the rule refusing this element, when one does. Refusing
+   * silently is indistinguishable from a picker that has stopped working.
+   */
+  onHover: (el: Element | null, refusedBy?: string | null) => void;
   onSelect: (el: Element) => void;
   onEscape: () => void;
 }
@@ -22,6 +27,7 @@ export function useElementPicker(
   host: HTMLElement,
   enabled: boolean,
   { onHover, onSelect, onEscape }: PickerCallbacks,
+  exclusions: string[] = [],
 ): void {
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -30,14 +36,18 @@ export function useElementPicker(
         onHover(null);
         return;
       }
-      onHover(eventTargetElement(e, host));
+      const el = eventTargetElement(e, host);
+      onHover(el, el && excludedBy(el, exclusions));
     };
     const onClick = (e: MouseEvent) => {
       if (!enabled || e.altKey) return;
       const el = eventTargetElement(e, host);
       if (!el) return;
+      // Swallowed either way: in edit mode a click is never the page's, and letting an
+      // excluded region keep its own click could navigate away mid-session.
       e.preventDefault();
       e.stopPropagation();
+      if (excludedBy(el, exclusions)) return;
       onSelect(el);
     };
     const onKeyDown = (e: KeyboardEvent) => {
@@ -59,5 +69,5 @@ export function useElementPicker(
       document.removeEventListener('click', onClick, true);
       document.removeEventListener('keydown', onKeyDown, true);
     };
-  }, [host, enabled, onHover, onSelect, onEscape]);
+  }, [host, enabled, onHover, onSelect, onEscape, exclusions]);
 }
