@@ -98,11 +98,34 @@ describe('identity guard: a unique selector hit still has to be the remembered e
     expect(el?.textContent).toBe('Edited target');
   });
 
-  test('a site rewriting the text in place is not drift — the hit is trusted', () => {
-    // Dynamic content: the price element is still the same element, its text just moved
-    // on. Refusing the hit here would stop edits from replaying on any live page.
+  test('a unique hit reading somebody else\'s words is refused', () => {
+    // This used to be trusted, on the grounds that a price element is still the same
+    // element when its text moves on. The cost showed up on a wizard that re-labels one
+    // list of buttons at every step: an edit on step one's second option appeared on the
+    // second option of every step after it, and went out in the shared link looking like
+    // a real proposal. Between a failure that announces itself in the change list and one
+    // that quietly puts your words on somebody else's content, take the first.
     document.body.innerHTML = '<div><p>First offer</p><p>Live price update</p></div>';
-    const el = resolveRecord(record(), document);
+    expect(resolveRecord(record(), document)).toBeNull();
+  });
+
+  test('and only text edits are held to it', () => {
+    // The narrowness is the point. Restyling an element whose copy the site rewrites —
+    // a price, a counter, a translated string — is ordinary and keeps working; it is
+    // rewriting such an element's words that cannot be checked any other way.
+    document.body.innerHTML = '<div><p>First offer</p><p>Live price update</p></div>';
+    const styled = resolveRecord(
+      record({ type: 'style', property: 'color', oldValue: 'red', newValue: 'blue' }),
+      document,
+    );
+    expect(styled?.textContent).toBe('Live price update');
+  });
+
+  test('nor a text edit with nothing to be recognised by', () => {
+    // No fingerprint means the element had no text when it was picked, or the record
+    // predates fingerprints. Those keep trusting the selector, which is all they had.
+    document.body.innerHTML = '<div><p>First offer</p><p>Live price update</p></div>';
+    const el = resolveRecord(record({ textFingerprint: undefined }), document);
     expect(el?.textContent).toBe('Live price update');
   });
 
@@ -112,11 +135,19 @@ describe('identity guard: a unique selector hit still has to be the remembered e
     expect(el?.textContent).toBe('Two');
   });
 
-  test('an ambiguous relocation falls back to the selector hit', () => {
-    // Two elements carry the remembered text; picking either would be a guess.
+  test('an ambiguous relocation is refused rather than guessed at', () => {
+    // Two elements carry the remembered text, so relocating would be a guess — and the
+    // selector hit reads "Other", which was never ours, so writing there is a guess too.
+    // The difference is that this one would be made silently.
     document.body.innerHTML =
       '<div><p>Inserted</p><p>Other</p><p>Target offer</p><p>Target offer</p></div>';
-    const el = resolveRecord(record(), document);
+    expect(resolveRecord(record(), document)).toBeNull();
+  });
+
+  test('a style edit still falls back to the selector hit when relocation is ambiguous', () => {
+    document.body.innerHTML =
+      '<div><p>Inserted</p><p>Other</p><p>Target offer</p><p>Target offer</p></div>';
+    const el = resolveRecord(record({ type: 'style', property: 'color' }), document);
     expect(el?.textContent).toBe('Other');
   });
 });

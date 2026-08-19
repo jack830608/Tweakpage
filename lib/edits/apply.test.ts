@@ -332,3 +332,77 @@ describe('selectors minted after our own structural edits', () => {
     expect(document.getElementById('c')!.getAttribute('alt'), 'the image that was third on load').toBe('edited');
   });
 });
+
+describe('a page that reuses its nodes for different content', () => {
+  // https://www.positivegrid.com/pages/product-selector is a wizard: one list of
+  // buttons, re-labelled at every step. Editing the second option on step one put the
+  // same words on the second option of step two, and of every step after it.
+  const OPTION = record({
+    id: 'opt',
+    selector: 'button:nth-of-type(2) > span',
+    fallbackSelectors: [],
+    elementLabel: 'span "Jamming"',
+    type: 'text',
+    property: 'textContent',
+    oldValue: 'Jamming',
+    newValue: 'JACK Jamming',
+    textFingerprint: 'Jamming',
+  });
+
+  const stepOne = () => {
+    document.body.innerHTML =
+      '<div id="step"><button><span>Live Performance</span></button>' +
+      '<button><span>Jamming</span></button></div>';
+  };
+  const secondSpan = () => document.querySelectorAll('#step span')[1]!;
+
+  test('the mark is not identity when the framework keeps the node and swaps the words', () => {
+    stepOne();
+    applyAll([OPTION], document);
+    expect(secondSpan().textContent).toBe('JACK Jamming');
+
+    // What React does to a keyed list whose items did not change shape: same elements,
+    // new words — and our mark attribute still sitting on them.
+    document.querySelectorAll('#step span')[0]!.textContent = 'Dial in a specific sound';
+    secondSpan().textContent = 'Explore and try different tones';
+
+    const statuses = applyAll([OPTION], document);
+    expect(statuses.get('opt'), 'this is a different question now').toBe('not-found');
+    expect(secondSpan().textContent).toBe('Explore and try different tones');
+  });
+
+  test('nor does a selector that still matches once, when the words are somebody else\'s', () => {
+    stepOne();
+    applyAll([OPTION], document);
+
+    // The same step change, but the framework replaced the nodes instead of reusing
+    // them, so there is no mark left to be wrong about.
+    document.body.innerHTML =
+      '<div id="step"><button><span>Dial in a specific sound</span></button>' +
+      '<button><span>Explore and try different tones</span></button></div>';
+
+    const statuses = applyAll([OPTION], document);
+    expect(statuses.get('opt')).toBe('not-found');
+    expect(secondSpan().textContent).toBe('Explore and try different tones');
+  });
+
+  test('and the edit comes back when the page comes back', () => {
+    // Refusing has to be about this arrangement of the page, not about the record.
+    stepOne();
+    applyAll([OPTION], document);
+    document.body.innerHTML = '<div id="step"><button><span>x</span></button></div>';
+    applyAll([OPTION], document);
+    stepOne();
+    expect(applyAll([OPTION], document).get('opt')).toBe('applied');
+    expect(secondSpan().textContent).toBe('JACK Jamming');
+  });
+
+  test('an already-applied edit is not undone by its own handiwork', () => {
+    // The element now reads "JACK Jamming", which is not the fingerprint. Re-applying
+    // must recognise what it wrote, or every second pass would drop the edit.
+    stepOne();
+    applyAll([OPTION], document);
+    expect(applyAll([OPTION], document).get('opt')).toBe('applied');
+    expect(secondSpan().textContent).toBe('JACK Jamming');
+  });
+});
