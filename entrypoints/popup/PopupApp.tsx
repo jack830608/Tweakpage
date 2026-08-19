@@ -103,7 +103,12 @@ export function PopupApp() {
           {t('pop_settings')}
         </button>
       </header>
-      <button type="button" className="pop-primary" onClick={() => void onEditThisPage()}>
+      <button
+        type="button"
+        className="pop-primary"
+        data-testid="edit-this-page"
+        onClick={() => void onEditThisPage()}
+      >
         {t('pop_edit_this_page')}
       </button>
       {blocked && (

@@ -50,6 +50,8 @@ export const MESSAGES: Record<string, string> = {
   opt_hide: "Hide",
   err_bucket: "Bucket names are lowercase letters, numbers, dots and dashes.",
   err_region: "A region looks like ap-northeast-1, not its display name.",
+  consent_page: "This page’s edits — its address, its wording, and any notes — will be uploaded to your S3 bucket “$1”.",
+  toast_share_declined: "Nothing was uploaded, so there is no link.",
   mode_edit: 'Edit',
   mode_browse: 'Browse',
   compare_edited: 'Edited',

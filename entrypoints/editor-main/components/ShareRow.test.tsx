@@ -1,5 +1,5 @@
 import { fakeBrowser } from 'wxt/testing';
-import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { describe, afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ShareRow } from './ShareRow';
 import { EditsController } from '../controller';
@@ -7,7 +7,10 @@ import { t } from '../../../lib/i18n';
 
 const NOW = () => '2026-08-15T10:00:00.000Z';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 beforeEach(() => {
   fakeBrowser.reset();
@@ -78,6 +81,9 @@ test('the share button says it is uploading, refuses re-entry, then confirms', a
     'tweakpage:share-settings': {
       bucket: 'demo-bucket', region: 'us-east-1', accessKeyId: 'k', secretAccessKey: 's',
     },
+    // Already answered: these two are about what the upload does, not about the
+    // question that now precedes it.
+    'tweakpage:transfer-consent': ['demo-bucket'],
   });
   let release!: (value: unknown) => void;
   const gate = new Promise((resolve) => (release = resolve));
@@ -116,6 +122,9 @@ test('a failed upload returns the button to idle with an error toast', async () 
     'tweakpage:share-settings': {
       bucket: 'demo-bucket', region: 'us-east-1', accessKeyId: 'k', secretAccessKey: 's',
     },
+    // Already answered: these two are about what the upload does, not about the
+    // question that now precedes it.
+    'tweakpage:transfer-consent': ['demo-bucket'],
   });
   vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockResolvedValue({ ok: false, reason: 'network' } as never);
 
@@ -183,4 +192,55 @@ test('pressing share without a bucket opens the place that fixes it', () => {
   fireEvent.click(button);
   expect(onNeedsSetup).toHaveBeenCalled();
   expect(onToast).toHaveBeenCalledWith(expect.objectContaining({ kind: 'info' }));
+});
+
+describe('what the consent prompt is actually about', () => {
+  const configured = {
+    bucket: 'demo-bucket', region: 'us-east-1', accessKeyId: 'k', secretAccessKey: 's',
+    tinypngKey: '', uploadImages: { summary: true, json: true, download: true, share: true },
+    compressImages: false,
+  };
+
+  test('a share with no images still asks, because the page itself goes up', async () => {
+    // The gate was images-only. With none, the first press uploaded the page URL, the
+    // title, every value and every note to a public object with no dialog at all.
+    await fakeBrowser.storage.local.set({ 'tweakpage:share-settings': configured });
+    const puts: string[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (url, init) => {
+      if ((init as RequestInit)?.method === 'PUT') puts.push(String(url));
+      return new Response('', { status: 200 });
+    });
+    const controller = new EditsController(null, document, NOW);
+    controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
+    render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={vi.fn()} onNeedsSetup={vi.fn()} />);
+    // The button reads the settings asynchronously; before that lands it routes to setup.
+    await waitFor(() =>
+      expect(screen.getByTestId('share-link').getAttribute('title')).toBe(t('tip_share_link')),
+    );
+
+    fireEvent.click(screen.getByTestId('share-link'));
+    await waitFor(() => expect(screen.getByTestId('transfer-consent')).toBeTruthy());
+    expect(puts, 'nothing may go before the question is answered').toEqual([]);
+  });
+
+  test('and declining it uploads nothing at all', async () => {
+    await fakeBrowser.storage.local.set({ 'tweakpage:share-settings': configured });
+    const puts: string[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (url, init) => {
+      if ((init as RequestInit)?.method === 'PUT') puts.push(String(url));
+      return new Response('', { status: 200 });
+    });
+    const controller = new EditsController(null, document, NOW);
+    controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
+    render(<ShareRow controller={controller} onToast={vi.fn()} onSnapshot={vi.fn()} onNeedsSetup={vi.fn()} />);
+    await waitFor(() =>
+      expect(screen.getByTestId('share-link').getAttribute('title')).toBe(t('tip_share_link')),
+    );
+
+    fireEvent.click(screen.getByTestId('share-link'));
+    await waitFor(() => expect(screen.getByTestId('consent-cancel')).toBeTruthy());
+    fireEvent.click(screen.getByTestId('consent-cancel'));
+    await waitFor(() => expect(screen.queryByTestId('transfer-consent')).toBeNull());
+    expect(puts, 'declining means nothing left the machine').toEqual([]);
+  });
 });

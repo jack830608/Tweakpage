@@ -12,6 +12,8 @@ import { t } from '../../../lib/i18n';
 interface TransferConsentProps {
   bucket: string;
   images: number;
+  /** The page's own contents go up, not only its pictures — a share link always does. */
+  page: boolean;
   compressing: boolean;
   onAgree: () => void;
   onCancel: () => void;
@@ -20,6 +22,7 @@ interface TransferConsentProps {
 export function TransferConsent({
   bucket,
   images,
+  page,
   compressing,
   onAgree,
   onCancel,
@@ -28,7 +31,8 @@ export function TransferConsent({
     <div className="twk-consent" role="alertdialog" aria-label={t('consent_title')} data-testid="transfer-consent">
       <strong>{t('consent_title')}</strong>
       <ul>
-        <li>{t('consent_where', [String(images), bucket])}</li>
+        {page && <li>{t('consent_page', [bucket])}</li>}
+        {images > 0 && <li>{t('consent_where', [String(images), bucket])}</li>}
         <li>{t('consent_public')}</li>
         <li>{t('consent_local')}</li>
         {compressing && <li>{t('consent_tinify')}</li>}

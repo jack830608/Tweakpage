@@ -267,10 +267,32 @@ function isValidRecord(value: unknown): value is EditRecord {
     return (
       withinLimit(r.newValue, limit) &&
       withinLimit(r.oldValue, limit) &&
-      !/javascript:/i.test(r.newValue)
+      // Both sides. oldValue is what a revert writes back into the page, and flipping to
+      // the Original preview is the first thing the recipient of a shared link does.
+      isSafeUrlValue(r.property, r.newValue) &&
+      isSafeUrlValue(r.property, r.oldValue)
     );
   }
   return false;
+}
+
+/**
+ * Whether this value is still harmless once a browser has read it.
+ *
+ * The old check was a substring test for "javascript:" — but the URL parser strips TAB,
+ * LF and CR before it reads the scheme, so `java&#9;script:` is a script URL and was not
+ * that string. Everything a parser ignores, this ignores too, and then it looks at what
+ * is left. srcset carries a list, so every entry is checked, not the first.
+ */
+function isSafeUrlValue(property: string, value: string): boolean {
+  const parts = property === 'srcset' ? value.split(',') : [value];
+  return parts.every((part) => {
+    const bare = part.replace(/[\u0000-\u0020]/g, '').toLowerCase();
+    if (/^(javascript|vbscript):/.test(bare)) return false;
+    // A picture may be inline; a link may not — data:text/html is a page of its own.
+    if (bare.startsWith('data:')) return property !== 'href' && bare.startsWith('data:image/');
+    return true;
+  });
 }
 
 function isSafeStyleValue(value: string): boolean {

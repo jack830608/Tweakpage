@@ -21,6 +21,8 @@ import { t } from '../../../lib/i18n';
 interface Pending {
   bucket: string;
   images: number;
+  /** The page's own contents go up, not only its pictures. */
+  page: boolean;
   compressing: boolean;
   run: (allowUpload: boolean) => Promise<unknown>;
 }
@@ -52,27 +54,42 @@ export function ShareRow({ controller, onToast, onSnapshot, onNeedsSetup }: Shar
    * Asks before anything leaves the machine, once per bucket.
    *
    * The question comes first and the work happens once: doing it and then offering to
-   * do it again would leave two shares behind, and one of them already public. Saying
-   * "not now" is not a failure — the hand-off runs with the images inside it, which is
-   * what it did before uploading existed.
+   * do it again would leave two shares behind, and one of them already public.
+   *
+   * What is being asked about is what actually leaves, and that is not only the images.
+   * A share link IS an upload — the page's addresses, titles, every old and new value
+   * and every note are written to a public object whether or not a picture is involved.
+   * Gated on images alone, a page with none was uploaded on the first press with no
+   * question asked at all, and pressing "not now" on a page with some uploaded it
+   * anyway while the toast said nothing had gone.
    */
   const withConsent = async (handOff: HandOff, run: (allowUpload: boolean) => Promise<unknown>) => {
     const status = await getShareStatus();
     const images = embeddedImages(controller.getPage()).length;
-    const uploads = status.configured && status.uploadImages[handOff] && images > 0;
-    if (!uploads || (await hasConsented(status.bucket))) return run(true);
+    // Only a share link sends the page itself; the other three are local files and a
+    // clipboard, and for those the images are the only thing that could travel.
+    const sendsPage = handOff === 'share' && status.configured;
+    const sendsImages = status.configured && status.uploadImages[handOff] && images > 0;
+    if ((!sendsPage && !sendsImages) || (await hasConsented(status.bucket))) return run(true);
 
     return new Promise<unknown>((resolve) => {
       setPending({
         bucket: status.bucket,
-        images,
-        compressing: status.compressImages && status.compressionAvailable,
+        images: sendsImages ? images : 0,
+        page: sendsPage,
+        compressing: sendsImages && status.compressImages && status.compressionAvailable,
         run: async (allowUpload) => {
           setPending(null);
           if (allowUpload) {
             safeSendMessage({ type: 'tweakpage:transfer-consent', bucket: status.bucket });
             // The worker reads consent from storage, so wait for the write to land.
             await recordConsent(status.bucket);
+          } else if (sendsPage) {
+            // There is no link without an upload. Running it "locally" would produce a
+            // link to an object that was never written, or write it after all.
+            onToast({ message: t('toast_share_declined'), kind: 'info' });
+            resolve(false);
+            return false;
           } else {
             onToast({ message: t('toast_transfer_declined'), kind: 'info' });
           }
@@ -175,6 +192,7 @@ export function ShareRow({ controller, onToast, onSnapshot, onNeedsSetup }: Shar
         <TransferConsent
           bucket={pending.bucket}
           images={pending.images}
+          page={pending.page}
           compressing={pending.compressing}
           onAgree={() => void pending.run(true)}
           onCancel={() => void pending.run(false)}
