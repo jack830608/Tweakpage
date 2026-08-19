@@ -48,6 +48,7 @@ async function openSettings() {
       onDismissOnboarding={vi.fn()}
       onSelect={vi.fn()}
       onHighlight={vi.fn()}
+      onPreviewSet={vi.fn()}
       onToast={vi.fn()}
       onSnapshot={vi.fn().mockResolvedValue(true)}
       onMinimize={vi.fn()}

@@ -13,6 +13,12 @@ interface OverlayProps {
   selected: Element | null;
   /** Elements carrying edits, outlined faintly so a reopened page shows its history. */
   edited?: Element[];
+  /**
+   * A set about to be acted on, shown while the pointer is over the control that would
+   * act on it. Ticking "apply to all 41 similar elements" restyled forty elements the
+   * user had never been shown.
+   */
+  preview?: Element[];
   /** Whether the selected element can swap with a sibling in that direction. */
   canMove?: (el: Element, direction: -1 | 1) => boolean;
   onMove?: (el: Element, direction: -1 | 1) => void;
@@ -20,7 +26,16 @@ interface OverlayProps {
   editing?: Element | null;
 }
 
-export function Overlay({ hovered, refusal, selected, edited = [], canMove, onMove, editing }: OverlayProps) {
+export function Overlay({
+  hovered,
+  refusal,
+  selected,
+  edited = [],
+  preview = [],
+  canMove,
+  onMove,
+  editing,
+}: OverlayProps) {
   const [, setTick] = useState(0);
   useEffect(() => {
     const update = () => setTick((t) => t + 1);
@@ -44,6 +59,9 @@ export function Overlay({ hovered, refusal, selected, edited = [], canMove, onMo
           />
         ),
       )}
+      {preview.map((el, i) => (
+        <div key={`p${i}`} className="twk-preview-mark" style={boxOf(el)} aria-hidden="true" />
+      ))}
       {hovered && hovered !== selected && (
         <OutlineBox
           el={hovered}

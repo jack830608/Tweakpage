@@ -9,11 +9,21 @@ interface SelectionCardProps {
   element: Element;
   controller: EditsController;
   onSelect: (el: Element) => void;
+  onPreviewSet: (els: Element[]) => void;
+}
+
+/** The family this selector names, from the document the element is actually in. */
+function matches(el: Element, selector: string): Element[] {
+  try {
+    return Array.from(el.ownerDocument.querySelectorAll(selector));
+  } catch {
+    return [];
+  }
 }
 
 // Ternary titles slip past the hard-coded-label guard, so these go through t() by hand.
 
-export function SelectionCard({ element, controller, onSelect }: SelectionCardProps) {
+export function SelectionCard({ element, controller, onSelect, onPreviewSet }: SelectionCardProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
   const similar = controller.similarTo(element);
   const hiddenRecord = controller.recordFor(element, 'display');
@@ -59,12 +69,20 @@ export function SelectionCard({ element, controller, onSelect }: SelectionCardPr
       </div>
       <Breadcrumb element={element} onSelect={onSelect} />
       {similar && (
-        <label className="twk-similar">
+        // Shown before it is done. Ticking this restyled elements the user had never
+        // been shown and could not name — the count was the only evidence they existed.
+        <label
+          className="twk-similar"
+          onPointerEnter={() => onPreviewSet(matches(element, similar.selector))}
+          onPointerLeave={() => onPreviewSet([])}
+        >
           <input
             type="checkbox"
             aria-label={t('aria_apply_similar')}
             data-testid="apply-to-similar"
             checked={controller.appliesToSimilar(element)}
+            onFocus={() => onPreviewSet(matches(element, similar.selector))}
+            onBlur={() => onPreviewSet([])}
             onChange={(e) => controller.setSimilarScope(element, e.target.checked)}
           />
           {t('apply_similar', [similar.count])}

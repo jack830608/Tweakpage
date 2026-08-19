@@ -48,6 +48,8 @@ export interface PanelProps {
   onDismissOnboarding: () => void;
   onSelect: (el: Element) => void;
   onHighlight: (el: Element | null) => void;
+  /** Outlines a set the user is about to act on, before they do. */
+  onPreviewSet: (els: Element[]) => void;
   onToast: (toast: ToastContent) => void;
   onSnapshot: () => Promise<boolean>;
   showMarks?: boolean;
@@ -384,6 +386,7 @@ export function Panel(props: PanelProps) {
             showOnboarding={props.showOnboarding}
             onDismissOnboarding={props.onDismissOnboarding}
             onSelect={props.onSelect}
+            onPreviewSet={props.onPreviewSet}
             openSections={openSections}
             onToggleSection={(title) =>
               setOpenSections((open) => {
@@ -430,6 +433,7 @@ export function Panel(props: PanelProps) {
 }
 
 interface EditViewProps {
+  onPreviewSet: (els: Element[]) => void;
   controller: EditsController;
   selected: Element | null;
   previewing: boolean;
@@ -447,6 +451,7 @@ function EditView({
   showOnboarding,
   onDismissOnboarding,
   onSelect,
+  onPreviewSet,
   openSections,
   onToggleSection,
 }: EditViewProps) {
@@ -472,7 +477,12 @@ function EditView({
   const hidden = controller.recordFor(selected, 'display')?.newValue === 'none';
   return (
     <div className="twk-sections">
-      <SelectionCard element={selected} controller={controller} onSelect={onSelect} />
+      <SelectionCard
+        element={selected}
+        controller={controller}
+        onSelect={onSelect}
+        onPreviewSet={onPreviewSet}
+      />
       {hidden ? (
         <p className="twk-preview-note">{t('hidden_note')}</p>
       ) : (
