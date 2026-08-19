@@ -17,11 +17,32 @@ export function toMarkdown(page: PageEdits, exportedAt: string): string {
     lines.push(`## ${label}`);
     lines.push('');
     lines.push(`\`${records[0].selector}\``);
+    const where = whereLine(records[0]);
+    if (where) lines.push(where);
     lines.push('');
     for (const record of records) lines.push(formatLine(record));
     lines.push('');
   }
   return lines.join('\n');
+}
+
+/**
+ * Where to go and look, in one line.
+ *
+ * A selector says which element on the page. It does not say which component in a
+ * repository, and that is the question somebody holding this list is actually asking.
+ * Two things answer it: the nearest ancestor its author gave a name to, and a class that
+ * looks written rather than generated — an underscore separates a CSS Modules or BEM
+ * name from the utility classes around it, and it is what to grep for.
+ */
+function whereLine(record: EditRecord): string | null {
+  const chain = record.context ?? [];
+  const named = chain.find((node) => node.label ?? node.testId ?? node.id);
+  const region = named?.label ?? named?.testId ?? named?.id;
+  const component = chain.flatMap((node) => node.classes ?? []).find((cls) => cls.includes('_'));
+  if (!region && !component) return null;
+  const parts = [region ? `in **${region}**` : null, component ? `grep \`${component}\`` : null];
+  return `_${parts.filter(Boolean).join(' · ')}_`;
 }
 
 /**

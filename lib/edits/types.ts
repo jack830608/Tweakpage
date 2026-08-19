@@ -2,6 +2,10 @@
  * 'move' reorders an element among its siblings; old/newValue hold its index.
  * 'clone' inserts a copy of the element right after it; the record's id stamps the copy.
  */
+import type { ContextNode } from '../selector/context';
+
+export type { ContextNode };
+
 export type EditType = 'style' | 'text' | 'attr' | 'move' | 'clone';
 
 /** 'similar' points a style edit at every element the selector matches, not just one. */
@@ -29,6 +33,15 @@ export interface EditRecord {
   viewport?: number;
   /** Why this change: written by the author, read by whoever receives the hand-off. */
   note?: string;
+  /**
+   * Where this element lives, for whoever has to go and change it.
+   *
+   * A selector proves which element on this page; it does not say which component in a
+   * repository. The chain of ancestors does: a CSS Modules class names the file, an
+   * aria-label names the region in the author's words. Recorded only — resolution never
+   * consults it.
+   */
+  context?: ContextNode[];
   createdAt: string;
   updatedAt: string;
 }

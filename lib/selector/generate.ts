@@ -1,4 +1,5 @@
 import { finder } from '@medv/finder';
+import { buildContext, type ContextNode } from './context';
 import { isStableClass } from './stable-class';
 
 export interface GeneratedSelector {
@@ -6,6 +7,7 @@ export interface GeneratedSelector {
   fallbackSelectors: string[];
   textFingerprint?: string;
   elementLabel: string;
+  context?: ContextNode[];
 }
 
 export function generateSelector(el: Element): GeneratedSelector {
@@ -19,6 +21,7 @@ export function generateSelector(el: Element): GeneratedSelector {
       fallbackSelectors: [],
       textFingerprint: el.textContent?.trim().slice(0, 60) || undefined,
       elementLabel: buildElementLabel(el),
+      context: buildContext(el),
     };
   }
   // Elements INSIDE a copy are addressed through its stamp too, relative to it. Their
@@ -33,6 +36,7 @@ export function generateSelector(el: Element): GeneratedSelector {
       fallbackSelectors: [],
       textFingerprint: el.textContent?.trim().slice(0, 60) || undefined,
       elementLabel: buildElementLabel(el),
+      context: buildContext(el),
     };
   }
   let primary: string | null = dataAttrSelector(el);
@@ -50,6 +54,7 @@ export function generateSelector(el: Element): GeneratedSelector {
     fallbackSelectors: fallbacks,
     textFingerprint: text,
     elementLabel: buildElementLabel(el),
+    context: buildContext(el),
   };
 }
 
