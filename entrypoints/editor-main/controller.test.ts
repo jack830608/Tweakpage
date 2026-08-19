@@ -1,5 +1,5 @@
 import { fakeBrowser } from 'wxt/testing';
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { EditsController } from './controller';
 import { loadPageEdits } from '../../lib/edits/storage';
 
@@ -204,4 +204,67 @@ test('toggling a style record off removes its css rule', () => {
   expect(document.querySelector('style[data-tweakpage-style]')).toBeNull();
   c.toggleRecord(id);
   expect(document.querySelector('style[data-tweakpage-style]')!.textContent).toContain('#ff0000');
+});
+
+describe('two elements that a selector cannot tell apart', () => {
+  // The wizard again: step one's first option and step three's first option are the same
+  // shape in the same place, so they mint the same selector. The page was right — the fix
+  // to resolution saw to that — but the panel was reading the other one's record.
+  const step = (text: string) =>
+    `<div class="flex"><button class="opt"><span>${text}</span></button></div>`;
+  const span = () => document.querySelector('span')!;
+
+  const afterEditingStepOne = () => {
+    document.body.innerHTML = step('Live Performance / Busking');
+    const c = controller();
+    c.recordEdit(
+      span(),
+      'text',
+      'textContent',
+      'Live Performance / Busking',
+      'JACK Live Performance / Busking',
+    );
+    const minted = c.getPage().records[0]!.selector;
+    document.body.innerHTML = step("Yes, I'm ready to buy");
+    return { c, minted };
+  };
+
+  test('the panel shows nothing for an element that was never edited', () => {
+    const { c, minted } = afterEditingStepOne();
+    // The precondition this whole case rests on.
+    expect(document.querySelectorAll(minted), 'the selector really does match both').toHaveLength(1);
+    expect(c.recordFor(span(), 'textContent')).toBeUndefined();
+  });
+
+  test('and editing it writes a second record instead of overwriting the first', () => {
+    // The worse half: the lookup that fed the panel also decided update-versus-create,
+    // so typing here rewrote the step-one edit and lost it.
+    const { c } = afterEditingStepOne();
+    c.recordEdit(span(), 'text', 'textContent', "Yes, I'm ready to buy", 'JACK ready');
+    const records = c.getPage().records;
+    expect(records).toHaveLength(2);
+    expect(records.map((r) => r.newValue).sort()).toEqual([
+      'JACK Live Performance / Busking',
+      'JACK ready',
+    ]);
+  });
+
+  test('the element that was edited still finds its own record', () => {
+    // The guard against over-correcting: the point is to stop reading somebody else's
+    // record, not to stop reading your own.
+    document.body.innerHTML = step('Live Performance / Busking');
+    const c = controller();
+    c.recordEdit(span(), 'text', 'textContent', 'Live Performance / Busking', 'JACK Live');
+    expect(c.recordFor(span(), 'textContent')?.newValue).toBe('JACK Live');
+  });
+
+  test('and keeps finding it after the page is rebuilt around it', () => {
+    // Same element, same words, new nodes: a reload, or a framework remount. The record
+    // is still about this element and the panel has to say so.
+    document.body.innerHTML = step('Live Performance / Busking');
+    const c = controller();
+    c.recordEdit(span(), 'text', 'textContent', 'Live Performance / Busking', 'JACK Live');
+    document.body.innerHTML = step('JACK Live');
+    expect(c.recordFor(span(), 'textContent')?.newValue).toBe('JACK Live');
+  });
 });
