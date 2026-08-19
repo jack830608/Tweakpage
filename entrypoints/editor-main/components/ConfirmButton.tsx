@@ -7,6 +7,13 @@ interface ConfirmButtonProps {
   onConfirm: () => void;
   className?: string;
   testId?: string;
+  disabled?: boolean;
+  /**
+   * What the second click will destroy, in words. "Sure?" is the same four characters
+   * whether one page's edits or every page's edits and your keys are about to go; where
+   * the caller knows the damage, it should say it.
+   */
+  confirmLabel?: string;
 }
 
 const RESET_MS = 4000;
@@ -17,7 +24,15 @@ const RESET_MS = 4000;
  * A second click rather than a dialog: the click is already in the right place, and a
  * dialog inside a page we don't own would have to fight that page's styles and focus.
  */
-export function ConfirmButton({ label, ariaLabel, onConfirm, className, testId }: ConfirmButtonProps) {
+export function ConfirmButton({
+  label,
+  ariaLabel,
+  onConfirm,
+  className,
+  testId,
+  disabled,
+  confirmLabel,
+}: ConfirmButtonProps) {
   const [armed, setArmed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -35,9 +50,11 @@ export function ConfirmButton({ label, ariaLabel, onConfirm, className, testId }
     <button
       type="button"
       data-testid={testId}
+      disabled={disabled}
       className={armed ? `${className ?? ''} is-armed`.trim() : className}
       aria-label={armed ? t('aria_confirm_suffix', [ariaLabel]) : ariaLabel}
       onClick={() => {
+        if (disabled) return;
         if (armed) {
           disarm();
           onConfirm();
@@ -48,7 +65,7 @@ export function ConfirmButton({ label, ariaLabel, onConfirm, className, testId }
       }}
       onBlur={disarm}
     >
-      {armed ? t('confirm_again') : label}
+      {armed ? confirmLabel ?? t('confirm_again') : label}
     </button>
   );
 }

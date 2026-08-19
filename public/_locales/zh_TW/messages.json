@@ -637,7 +637,7 @@
     "message": "已清除 AWS 資訊,分享功能關閉。"
   },
   "not_saved_preview": {
-    "message": "未儲存"
+    "message": "預覽原始版"
   },
   "settings_share_on": {
     "message": "已開啟"
@@ -961,7 +961,7 @@
     "message": "把東西放回它們原本的樣子。勾選要清掉的項目 —— 只有第一項可以靠重做救回來。"
   },
   "reset_preferences": {
-    "message": "偏好設定"
+    "message": "編輯器偏好、你的排除規則,以及上傳授權"
   },
   "reset_edits": {
     "message": "所有頁面的改動"
@@ -989,5 +989,14 @@
   },
   "toast_reset_done": {
     "message": "完成,勾選的項目已經清掉。"
+  },
+  "reset_confirm": {
+    "message": "清除 $1 項 —— 確定?"
+  },
+  "opt_clear_confirm": {
+    "message": "刪除兩把金鑰?"
+  },
+  "toast_share_needs_setup": {
+    "message": "分享連結需要一個你自己的 S3 bucket。設定已經打開了,從那裡開始。"
   }
 }

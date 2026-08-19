@@ -288,13 +288,15 @@ export function Panel(props: PanelProps) {
             onChange={(e) => props.onToggleMarks?.(e.target.checked)}
           />
           {t('show_marks')}
-          <span className="twk-viewport" data-testid="viewport-width" title={t('tip_viewport')}>
-            {viewport}px
-          </span>
         </label>
       )}
       <VariantsRow controller={controller} />
-      <ShareRow controller={controller} onToast={props.onToast} onSnapshot={props.onSnapshot} />
+      <ShareRow
+        controller={controller}
+        onToast={props.onToast}
+        onSnapshot={props.onSnapshot}
+        onNeedsSetup={() => setView('settings')}
+      />
         </>
       )}
       {stale > 0 && view === 'edit' && (
@@ -370,7 +372,14 @@ export function Panel(props: PanelProps) {
             onClick={() => setView('changes')}
           >
             {plural(count, 'footer_changes_one', 'footer_changes')}
+            {/* Two facts about the page, side by side, where the page's other facts
+                live. The width used to sit inside the "mark edited elements" label,
+                reading as part of that label rather than as a fact of its own. */}
             {count > 0 && (
+              <>
+              <span className="twk-viewport" data-testid="viewport-width" title={t('tip_viewport')}>
+                {viewport}px
+              </span>
               <span className="twk-saved" data-testid="save-state">
                 {saveState.state === 'failed'
                   ? t('toast_save_failed')
@@ -380,6 +389,7 @@ export function Panel(props: PanelProps) {
                       ? t('saving')
                       : t('saved_just_now')}
               </span>
+              </>
             )}
           </button>
         </>

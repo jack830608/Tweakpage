@@ -637,7 +637,7 @@
     "message": "AWS details cleared. Sharing is off."
   },
   "not_saved_preview": {
-    "message": "Not saved"
+    "message": "Previewing original"
   },
   "settings_share_on": {
     "message": "On"
@@ -961,7 +961,7 @@
     "message": "Put things back the way they came. Tick what should go — only the first is safe to undo by doing it again."
   },
   "reset_preferences": {
-    "message": "Preferences"
+    "message": "Editor preferences, your exclusion rules, and the upload permission"
   },
   "reset_edits": {
     "message": "Every page of changes"
@@ -989,5 +989,14 @@
   },
   "toast_reset_done": {
     "message": "Done. The ticked items are gone."
+  },
+  "reset_confirm": {
+    "message": "Clear $1 — sure?"
+  },
+  "opt_clear_confirm": {
+    "message": "Delete both keys?"
+  },
+  "toast_share_needs_setup": {
+    "message": "Share links need an S3 bucket of your own. Settings is open — start there."
   }
 }

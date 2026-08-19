@@ -292,29 +292,23 @@ test('two proposals can be saved and switched between', async ({ context }) => {
   await expect(page.locator('.twk-variant')).toHaveCount(1);
 });
 
-test('the share button is dead until a bucket is configured', async ({ context }) => {
+test('pressing share without a bucket lands you where you can get one', async ({ context }) => {
+  // It used to be disabled, explained only by a native title on a button nobody has a
+  // reason to hover: the headline feature failing silently and anonymously.
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
   await activateEditor(context);
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited');
 
   const button = page.locator('[data-testid="share-link"]');
-  await expect(button, 'a button that can only fail should not invite a click').toBeDisabled();
+  await expect(button, 'live, because it has somewhere to send you').toBeEnabled();
+  await button.click();
 
-  // The attribute alone proved nothing a person could see: this button was disabled and
-  // looked exactly like its neighbours — same opacity, same colour, same pointer cursor.
-  const [share, neighbour] = await Promise.all([
-    button.evaluate((el) => {
-      const cs = getComputedStyle(el);
-      return { opacity: Number(cs.opacity), cursor: cs.cursor };
-    }),
-    page.locator('[data-testid="copy-summary"]').evaluate((el) => Number(getComputedStyle(el).opacity)),
-  ]);
-  expect(share.opacity, 'it should read as unavailable').toBeLessThan(neighbour);
-  expect(share.cursor).not.toBe('pointer');
-
-  // The tooltip is translated, so assert that it says something rather than what.
-  const explained = await button.getAttribute('title');
-  expect(explained?.length ?? 0, 'a disabled button must say why').toBeGreaterThan(10);
+  // The place that fixes it, already open at the part that needs filling in.
+  await expect(page.locator('[data-testid="open-secure-settings"]')).toBeVisible();
+  await expect(page.locator('[data-section="set-sharing"]')).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('#tweakpage-host .twk-toast')).toBeVisible();
 });
 
 test('the popup can reach the settings the share button needs', async ({ context }) => {
@@ -754,7 +748,9 @@ test('credentials are entered on the extension page, and the panel notices', asy
   await page.locator('[data-testid="text"]').fill('Edited headline');
 
   const share = page.locator('[data-testid="share-link"]');
-  const before = await share.evaluate((el) => getComputedStyle(el).opacity);
+  // The share button is live either way now — unconfigured it routes you to setup —
+  // so what changes is what it says it will do, not whether it can be pressed.
+  const before = await share.getAttribute('title');
   await page.locator('[data-testid="open-settings"]').click();
   await expect(page.locator('.twk-settings')).toBeVisible();
 
@@ -786,8 +782,8 @@ test('credentials are entered on the extension page, and the panel notices', asy
   // Back on the page, the button that needs them wakes up without a reload. (The share
   // row is part of the editing view, so leave settings first.)
   await page.locator('[data-testid="back-from-settings"]').click();
-  await expect.poll(() => share.evaluate((el) => getComputedStyle(el).opacity)).not.toBe(before);
-  expect(Number(await share.evaluate((el) => getComputedStyle(el).opacity))).toBe(1);
+  await expect.poll(() => share.getAttribute('title')).not.toBe(before);
+  await expect(share).toBeEnabled();
 });
 test('clearing from the popup puts the open page back, with no reload', async ({ context }) => {
   const page = await context.newPage();
@@ -1907,11 +1903,14 @@ test('starting over takes what was ticked and nothing else', async ({ context })
   await expect(page.locator('[data-testid="exclusion-list"] .twk-rule')).toHaveCount(2);
 
   await page.locator('[data-section="set-reset"]').click();
-  // Only the cheap one starts ticked; the two that cost something do not.
-  await expect(page.locator('[data-testid="reset-preferences"]')).toBeChecked();
-  await expect(page.locator('[data-testid="reset-edits"]')).not.toBeChecked();
-  await expect(page.locator('[data-testid="reset-credentials"]')).not.toBeChecked();
+  // Nothing starts ticked — each of the three costs a different amount to undo, and
+  // "preferences" was neither safe nor named after what it takes.
+  for (const box of ['reset-preferences', 'reset-edits', 'reset-credentials']) {
+    await expect(page.locator(`[data-testid="${box}"]`)).not.toBeChecked();
+  }
+  await expect(page.locator('[data-testid="run-reset"]')).toBeDisabled();
 
+  await page.locator('[data-testid="reset-preferences"]').click();
   await page.locator('[data-testid="reset-edits"]').click();
   const run = page.locator('[data-testid="run-reset"]');
   await run.click(); // arms

@@ -8,7 +8,17 @@ import {
   SHARE_FIELDS,
   type ShareSettings,
 } from '../../lib/share/settings';
+import { ConfirmButton } from '../editor-main/components/ConfirmButton';
 import { t } from '../../lib/i18n';
+
+/** The five values this page owns. Everything else in the object belongs to the panel. */
+const CREDENTIALS_ONLY = {
+  bucket: '',
+  region: '',
+  accessKeyId: '',
+  secretAccessKey: '',
+  tinypngKey: '',
+} as const;
 
 export function OptionsApp() {
   const [settings, setSettings] = useState<ShareSettings>(EMPTY_SETTINGS);
@@ -58,17 +68,22 @@ export function OptionsApp() {
         ))}
         <div className="opt-actions">
           <button type="submit" data-testid="save-settings">{t('opt_save')}</button>
-          <button
-            type="button"
+          {/* Two steps, and only the keys. One click used to throw away a secret AWS
+              will never show again — while clearing a single page's edits, which you can
+              simply make again, asked twice. It also wrote the whole settings object, so
+              it silently reset the upload switches set over in the panel. */}
+          <ConfirmButton
+            label={t('opt_clear')}
+            ariaLabel={t('opt_clear')}
+            confirmLabel={t('opt_clear_confirm')}
             className="opt-clear"
-            data-testid="clear-settings"
-            onClick={() => {
-              setSettings(EMPTY_SETTINGS);
-              void saveShareSettings(EMPTY_SETTINGS);
+            testId="clear-settings"
+            onConfirm={() => {
+              const cleared = { ...settings, ...CREDENTIALS_ONLY };
+              setSettings(cleared);
+              void saveShareSettings(cleared);
             }}
-          >
-            {t('opt_clear')}
-          </button>
+          />
           {saved && <span className="opt-saved">{t('saved_just_now')}</span>}
           {!isConfigured(settings) && <span className="opt-status">{t('opt_incomplete')}</span>}
         </div>
