@@ -33,6 +33,10 @@ DevTools for a copy tweak. Every edit is recorded as a structured diff
   siblings; Duplicate inserts an editable copy right after it; Hide removes it
   non-destructively.
 - **Apply to every similar element** — style a card once, restyle the family.
+- **Leave parts of the page alone** — a list of CSS selectors the picker skips, so a chat
+  launcher or a consent banner stops absorbing clicks meant for the page. Not protection:
+  an edit on a third-party widget reproduces for nobody, and this keeps it out of the
+  hand-off in the first place.
 - **Compare** — flip the whole page between Edited and Original with one switch.
 - **Edits persist** — saved locally per page, replayed on reload and across client-side
   navigation. A page is its address without the query string, so a `?variant=` a shop
@@ -83,6 +87,13 @@ pnpm install && pnpm build   # output in .output/chrome-mv3/
 you use the page normally (menus, tabs, links). Holding `⌥ Alt` in Edit mode is a
 temporary Browse. Use the breadcrumb in the selection card to reach parents and
 children, or `⌥` + arrow keys to walk the DOM without a mouse.
+
+**Areas to leave alone** (Settings) is a list of CSS selectors the picker skips, along
+with everything inside them — a chat launcher, a consent banner, an embedded widget.
+Hovering one outlines it in grey and names the rule, so a refusal never looks like a
+broken picker. Rules apply to picking only: edits you already made keep working, and
+switching a rule on never deletes them. `[data-tweakpage-ignore]` ships as an ordinary
+entry, so a page can mark its own volatile regions — and you can delete it.
 
 ### Editing
 

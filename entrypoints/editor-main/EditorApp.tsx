@@ -6,6 +6,7 @@ import { Panel, type InteractionMode } from './components/Panel';
 import { StatusBadge } from './components/StatusBadge';
 import { Toast, type ToastContent } from './components/Toast';
 import { eventTargetElement, useElementPicker } from './hooks/useElementPicker';
+import { getExclusions, watchExclusions } from '../../lib/exclusions';
 import { useKeyboardPicker } from './hooks/useKeyboardPicker';
 import { useExtensionAlive } from './hooks/useExtensionAlive';
 import { captureBeforeAfter } from './snapshot';
@@ -30,6 +31,8 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
   const sharedPreview = useSyncExternalStore(controller.subscribe, controller.isPreviewingShared);
   const [hovered, setHovered] = useState<Element | null>(null);
+  const [refusedBy, setRefusedBy] = useState<string | null>(null);
+  const [exclusions, setExclusions] = useState<string[]>([]);
   const [selected, setSelected] = useState<Element | null>(null);
   // The live inline-edit session, if any. A ref, not state: focusout and dblclick race
   // each other, and the session's identity must be checked synchronously inside them.
@@ -176,11 +179,19 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     };
   }, [mode, alive, host, controller, finishInlineEdit]);
 
+  // Read once and then followed by both pickers; Settings is a different view of the
+  // same session, so a rule added there has to arrive without a reload.
+  useEffect(() => {
+    void getExclusions().then(setExclusions);
+    return watchExclusions(setExclusions);
+  }, []);
+
   const onHover = useCallback(
-    (el: Element | null) => {
+    (el: Element | null, refused?: string | null) => {
       // While typing, outlining whatever the mouse drifts over is just noise.
       if (inlineSession.current && el && inlineSession.current.element.contains(el)) return;
       setHovered(el);
+      setRefusedBy(refused ?? null);
     },
     [],
   );
@@ -202,9 +213,9 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     });
   }, [mode, onRequestClose]);
 
-  useElementPicker(host, mode === 'edit' && alive, { onHover, onSelect, onEscape });
+  useElementPicker(host, mode === 'edit' && alive, { onHover, onSelect, onEscape }, exclusions);
   useUndoRedoShortcuts(host, controller);
-  useKeyboardPicker(host, { enabled: mode === 'edit' && alive, selected, onSelect });
+  useKeyboardPicker(host, { enabled: mode === 'edit' && alive, selected, onSelect, exclusions });
 
   const activeSelected = selected?.isConnected ? selected : null;
 
@@ -212,6 +223,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     <>
       <Overlay
         hovered={mode === 'edit' && alive && hovered?.isConnected ? hovered : null}
+        refusedBy={refusedBy}
         selected={mode === 'edit' && alive ? activeSelected : null}
         editing={editingEl?.isConnected ? editingEl : null}
         edited={mode === 'edit' && showMarks ? Array.from(document.querySelectorAll('[data-tweakpage]')) : []}

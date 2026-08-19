@@ -3,6 +3,21 @@ import { browser } from 'wxt/browser';
 // English is the source of truth and the fallback for contexts without
 // chrome.i18n (unit tests, plain DOM). _locales/en is generated from this map.
 export const MESSAGES: Record<string, string> = {
+  settings_exclusions: "Areas to leave alone",
+  settings_exclusions_hint: "The picker skips anything matching these, and everything inside it. Nothing is protected — this all runs on your copy of the page — but an edit on a chat launcher or a consent banner reproduces for nobody, and whoever receives the hand-off gets a line they cannot act on.",
+  settings_exclusions_count_one: "1 rule",
+  settings_exclusions_count: "$1 rules",
+  settings_exclusions_empty: "Nothing is skipped. Every element on the page can be picked.",
+  settings_exclusion_add: "Add a rule",
+  settings_exclusion_add_button: "Add",
+  aria_exclusion_input: "A CSS selector for a part of the page to skip",
+  aria_exclusion_remove: "Stop skipping $1",
+  exclude_empty: "Type a selector first.",
+  exclude_too_long: "That selector is too long to be one.",
+  exclude_not_a_selector: "The browser cannot read that as a selector.",
+  exclude_catches_everything: "That matches the whole page, which would leave nothing to edit.",
+  exclude_already_there: "That rule is already in the list.",
+  outline_excluded: "Skipped by $1",
   mode_edit: 'Edit',
   mode_browse: 'Browse',
   compare_edited: 'Edited',

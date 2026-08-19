@@ -1688,3 +1688,80 @@ test('the settings page holds its shape in a narrow window', async ({ context })
     expect(overflow, 'nothing spills out of its row').toBeLessThanOrEqual(1);
   }
 });
+
+test('a part of the page can be put out of reach of the picker', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  const selected = page.locator('.twk-outline--selected');
+
+  // It is selectable before there is a rule about it.
+  await page.locator('#perk-a').click();
+  await expect(selected).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(selected).toHaveCount(0);
+
+  await page.locator('[data-testid="open-settings"]').click();
+  await page.locator('[data-section="set-exclusions"]').click();
+  await page.locator('[data-testid="exclusion-input"]').fill('#perks');
+  await page.locator('[data-testid="add-exclusion"]').click();
+  await expect(page.locator('[data-testid="exclusion-list"] .twk-rule')).toHaveCount(2);
+  await page.locator('[data-testid="back-from-settings"]').click();
+
+  // The rule names the list, so the item inside it goes too — and the outline says which
+  // rule did it rather than simply refusing to appear.
+  await page.locator('#perk-a').hover();
+  const refused = page.locator('.twk-outline--excluded');
+  await expect(refused).toBeVisible();
+  expect(await refused.locator('.twk-outline-label').textContent()).toContain('#perks');
+
+  await page.locator('#perk-a').click();
+  await expect(selected).toHaveCount(0);
+
+  // Everything outside the rule is untouched.
+  await page.locator('#headline').click();
+  await expect(selected).toBeVisible();
+});
+
+test('the arrow keys obey the same rules the mouse does', async ({ context }) => {
+  // Two ways into a selection must not mean one way around the rules.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  await page.locator('[data-testid="open-settings"]').click();
+  await page.locator('[data-section="set-exclusions"]').click();
+  await page.locator('[data-testid="exclusion-input"]').fill('#perk-b');
+  await page.locator('[data-testid="add-exclusion"]').click();
+  await page.locator('[data-testid="back-from-settings"]').click();
+
+  await page.locator('#perk-a').click();
+  const label = page.locator('.twk-outline--selected .twk-outline-label');
+  expect(await label.textContent()).toContain('perk-a');
+  // Right from perk-a would land on perk-b; the rule sends it to perk-c instead.
+  await page.keyboard.press('Alt+ArrowRight');
+  expect(await label.textContent()).toContain('perk-c');
+});
+
+test('an edit already made survives the rule that would have prevented it', async ({ context }) => {
+  // Switching a rule on says what you want to edit next. Reading it as permission to
+  // discard finished work would lose edits without asking.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  await page.locator('#perk-a').click();
+  await openSection(page, 'typography');
+  await page.locator('[data-testid="color-hex"]').fill('#ff0000');
+  await expect(page.locator('#perk-a')).toHaveCSS('color', 'rgb(255, 0, 0)');
+
+  await page.locator('[data-testid="open-settings"]').click();
+  await page.locator('[data-section="set-exclusions"]').click();
+  await page.locator('[data-testid="exclusion-input"]').fill('#perks');
+  await page.locator('[data-testid="add-exclusion"]').click();
+  await page.locator('[data-testid="back-from-settings"]').click();
+
+  await expect(page.locator('#perk-a')).toHaveCSS('color', 'rgb(255, 0, 0)');
+  await page.reload();
+  await expect(page.locator('#perk-a')).toHaveCSS('color', 'rgb(255, 0, 0)');
+});
