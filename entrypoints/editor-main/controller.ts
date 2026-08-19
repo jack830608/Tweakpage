@@ -1,6 +1,7 @@
 import { applyAll, revertAll, revertRemoved, type ApplyStatus } from '../../lib/edits/apply';
 
 export type SaveState = 'idle' | 'saving' | 'saved' | 'failed' | 'preview';
+import { MARK_ATTRIBUTE } from '../../lib/edits/css';
 import { findRecord, upsertRecord } from '../../lib/edits/coalesce';
 import { mergeRecords } from '../../lib/edits/import';
 import { revertDomEdit } from '../../lib/edits/dom';
@@ -36,6 +37,8 @@ export class EditsController {
   private undoStack: EditRecord[][] = [];
   private redoStack: EditRecord[][] = [];
   private lastEditTarget: string | null = null;
+  private elementKeys = new WeakMap<Element, string>();
+  private nextElementKey = 0;
 
   constructor(
     initial: PageEdits | null,
@@ -75,8 +78,43 @@ export class EditsController {
     return () => this.listeners.delete(fn);
   };
 
-  recordFor = (el: Element, property: string): EditRecord | undefined =>
-    findRecord(this.page.records, this.genFor(el).selector, property);
+  /**
+   * The record this element carries for this property, if it carries one.
+   *
+   * Keyed on the selector alone, this answered with somebody else's edit: on a wizard
+   * that re-labels one list of buttons, step three's first option mints the selector
+   * step one's first option did, and the panel showed step one's words under step
+   * three's element. The lookup has to name the element, and it has to name it the same
+   * way the page does, or the panel and the page describe different things.
+   *
+   * Our mark is that answer where it exists — applyAll puts it on the node it actually
+   * changed. Where it does not, a record may still be about this element: not applied
+   * yet, or applied and then the page rebuilt around it. That falls to the same
+   * resolution the page is drawn with.
+   */
+  recordFor = (el: Element, property: string): EditRecord | undefined => {
+    const marked = (el.getAttribute(MARK_ATTRIBUTE) ?? '').split(' ').filter(Boolean);
+    const own = this.page.records.find((r) => marked.includes(r.id) && r.property === property);
+    if (own) return own;
+    const candidate = findRecord(this.page.records, this.genFor(el).selector, property);
+    return candidate && resolveRecord(candidate, el.ownerDocument) === el ? candidate : undefined;
+  };
+
+  /**
+   * A name for an element that no two elements share.
+   *
+   * Only used to tell one keystroke's target from the last one's. A selector cannot do
+   * it — that is the whole bug above — and the element itself cannot be a Map key
+   * without pinning the page's nodes in memory.
+   */
+  private keyFor(el: Element): string {
+    let key = this.elementKeys.get(el);
+    if (!key) {
+      key = `e${(this.nextElementKey += 1)}`;
+      this.elementKeys.set(el, key);
+    }
+    return key;
+  }
 
   isPreviewingOriginal = (): boolean => this.previewing;
 
@@ -145,8 +183,8 @@ export class EditsController {
     this.sharedPreview = false;
     if (this.previewing) this.setPreviewOriginal(false);
     const gen = this.genFor(el);
-    const target = `${gen.selector}\u0000${property}`;
-    const existing = findRecord(this.page.records, gen.selector, property);
+    const target = `${this.keyFor(el)}\u0000${property}`;
+    const existing = this.recordFor(el, property);
     if (existing && newValue === existing.oldValue) {
       this.deleteRecord(existing.id);
       return;
@@ -161,6 +199,7 @@ export class EditsController {
         this.page.records,
         { ...gen, type, property, oldValue, newValue, absent, viewport: this.viewportWidth() },
         this.now(),
+        existing,
       ),
       { mergeSnapshot: target === this.lastEditTarget },
     );
