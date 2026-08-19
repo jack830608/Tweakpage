@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Shadow</title></head>
+<body>
+  <h1 id="plain">Plain heading</h1>
+  <my-card id="card"></my-card>
+  <script>
+    class MyCard extends HTMLElement {
+      connectedCallback() {
+        const root = this.attachShadow({ mode: 'open' });
+        root.innerHTML = '<style>p{color:#333}</style><p id="inside">Inside a shadow root</p>';
+      }
+    }
+    customElements.define('my-card', MyCard);
+  </script>
+</body></html>

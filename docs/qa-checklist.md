@@ -18,3 +18,9 @@ the automated suites cannot reach: real sites, real files, real S3.
       nothing set up: preview shows, nothing saved until Keep
 - [ ] A page whose own CSS is hostile (`* { visibility: hidden }` in DevTools) — the
       panel and the corner chip stay usable
+
+## Selection, before a release
+
+`pnpm audit:selectors` — eight real sites, six ways a page can move, 40 elements each.
+The number that must stay zero is **landed elsewhere**; refusals are the safe failure.
+Numbers and the reasoning behind them: [selection.md](selection.md).

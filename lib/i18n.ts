@@ -18,6 +18,7 @@ export const MESSAGES: Record<string, string> = {
   exclude_catches_everything: "That matches the whole page, which would leave nothing to edit.",
   exclude_already_there: "That rule is already in the list.",
   outline_excluded: "Skipped by $1",
+  outline_shadow: "Inside a web component — cannot be replayed",
   mode_edit: 'Edit',
   mode_browse: 'Browse',
   compare_edited: 'Edited',

@@ -31,7 +31,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   const previewing = useSyncExternalStore(controller.subscribe, controller.isPreviewingOriginal);
   const sharedPreview = useSyncExternalStore(controller.subscribe, controller.isPreviewingShared);
   const [hovered, setHovered] = useState<Element | null>(null);
-  const [refusedBy, setRefusedBy] = useState<string | null>(null);
+  const [refusal, setRefusal] = useState<string | null>(null);
   const [exclusions, setExclusions] = useState<string[]>([]);
   const [selected, setSelected] = useState<Element | null>(null);
   // The live inline-edit session, if any. A ref, not state: focusout and dblclick race
@@ -187,11 +187,11 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   }, []);
 
   const onHover = useCallback(
-    (el: Element | null, refused?: string | null) => {
+    (el: Element | null, why?: string | null) => {
       // While typing, outlining whatever the mouse drifts over is just noise.
       if (inlineSession.current && el && inlineSession.current.element.contains(el)) return;
       setHovered(el);
-      setRefusedBy(refused ?? null);
+      setRefusal(why ?? null);
     },
     [],
   );
@@ -223,7 +223,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
     <>
       <Overlay
         hovered={mode === 'edit' && alive && hovered?.isConnected ? hovered : null}
-        refusedBy={refusedBy}
+        refusal={refusal}
         selected={mode === 'edit' && alive ? activeSelected : null}
         editing={editingEl?.isConnected ? editingEl : null}
         edited={mode === 'edit' && showMarks ? Array.from(document.querySelectorAll('[data-tweakpage]')) : []}

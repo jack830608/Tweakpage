@@ -950,5 +950,8 @@
   },
   "outline_excluded": {
     "message": "Skipped by $1"
+  },
+  "outline_shadow": {
+    "message": "Inside a web component — cannot be replayed"
   }
 }

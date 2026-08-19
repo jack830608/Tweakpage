@@ -950,5 +950,8 @@
   },
   "outline_excluded": {
     "message": "已跳過 · $1"
+  },
+  "outline_shadow": {
+    "message": "在 web component 內部 —— 無法重現"
   }
 }

@@ -5,11 +5,11 @@ import { t } from '../../../lib/i18n';
 interface OverlayProps {
   hovered: Element | null;
   /**
-   * The exclusion rule refusing the hovered element, if one does. The outline says so
-   * and names it — an element that simply will not highlight reads as a broken picker,
-   * and the rule that did it is the one piece of information that makes it fixable.
+   * Why the hovered element cannot be picked, if it cannot. The outline says it — an
+   * element that simply will not highlight reads as a broken picker, and the reason is
+   * the one piece of information that makes it actionable.
    */
-  refusedBy?: string | null;
+  refusal?: string | null;
   selected: Element | null;
   /** Elements carrying edits, outlined faintly so a reopened page shows its history. */
   edited?: Element[];
@@ -20,7 +20,7 @@ interface OverlayProps {
   editing?: Element | null;
 }
 
-export function Overlay({ hovered, refusedBy, selected, edited = [], canMove, onMove, editing }: OverlayProps) {
+export function Overlay({ hovered, refusal, selected, edited = [], canMove, onMove, editing }: OverlayProps) {
   const [, setTick] = useState(0);
   useEffect(() => {
     const update = () => setTick((t) => t + 1);
@@ -47,8 +47,8 @@ export function Overlay({ hovered, refusedBy, selected, edited = [], canMove, on
       {hovered && hovered !== selected && (
         <OutlineBox
           el={hovered}
-          kind={refusedBy ? 'excluded' : 'hover'}
-          label={refusedBy ? t('outline_excluded', [refusedBy]) : undefined}
+          kind={refusal ? 'excluded' : 'hover'}
+          label={refusal ?? undefined}
         />
       )}
       {selected && (

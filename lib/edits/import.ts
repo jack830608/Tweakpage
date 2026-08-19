@@ -150,7 +150,7 @@ function isValidVariant(value: unknown): value is Variant {
   );
 }
 
-const CONTEXT_KEYS = new Set(['tag', 'id', 'role', 'label', 'testId', 'classes']);
+const CONTEXT_KEYS = new Set(['tag', 'id', 'role', 'label', 'testId', 'classes', 'heading']);
 const MAX_CONTEXT_VALUE = 120;
 const MAX_CONTEXT_CLASSES = 8;
 
@@ -166,7 +166,7 @@ function isValidContext(value: unknown): value is ContextNode[] {
     const n = node as Record<string, unknown>;
     if (Object.keys(n).some((key) => !CONTEXT_KEYS.has(key))) return false;
     if (typeof n.tag !== 'string' || n.tag.length === 0 || n.tag.length > 40) return false;
-    for (const key of ['id', 'role', 'label', 'testId']) {
+    for (const key of ['id', 'role', 'label', 'testId', 'heading']) {
       const held = n[key];
       if (held !== undefined && (typeof held !== 'string' || held.length > MAX_CONTEXT_VALUE)) {
         return false;
