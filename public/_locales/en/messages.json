@@ -1052,5 +1052,8 @@
   },
   "toast_share_declined": {
     "message": "Nothing was uploaded, so there is no link."
+  },
+  "tip_similar_needs_edit": {
+    "message": "Change something first — this widens the changes you have made."
   }
 }

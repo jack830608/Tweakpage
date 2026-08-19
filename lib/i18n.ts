@@ -52,6 +52,7 @@ export const MESSAGES: Record<string, string> = {
   err_region: "A region looks like ap-northeast-1, not its display name.",
   consent_page: "This page’s edits — its address, its wording, and any notes — will be uploaded to your S3 bucket “$1”.",
   toast_share_declined: "Nothing was uploaded, so there is no link.",
+  tip_similar_needs_edit: "Change something first — this widens the changes you have made.",
   mode_edit: 'Edit',
   mode_browse: 'Browse',
   compare_edited: 'Edited',

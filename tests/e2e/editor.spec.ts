@@ -2235,3 +2235,125 @@ test('the toolbar button says why when it cannot open', async ({ context }) => {
   await popup.locator('[data-testid="edit-this-page"]').click();
   await expect(popup.locator('[data-testid="blocked-reason"]')).toBeVisible();
 });
+
+test('apply to every similar element actually restyles the family', async ({ context }) => {
+  // Only the hover preview was covered. If the fan-out stopped, or fanned out to the
+  // wrong family, nothing would have caught it — and it is a headline feature.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('#perk-a').click();
+  // Nothing to widen yet: the box re-points edits that exist, so it waits for one.
+  await expect(page.locator('[data-testid="apply-to-similar"]')).toBeDisabled();
+
+  await openSection(page, 'typography');
+  await page.locator('[data-testid="color-hex"]').fill('#ff0000');
+  await expect(page.locator('#perk-a')).toHaveCSS('color', 'rgb(255, 0, 0)');
+  await expect(page.locator('#perk-b'), 'one element until asked').not.toHaveCSS('color', 'rgb(255, 0, 0)');
+
+  await page.locator('[data-testid="apply-to-similar"]').click();
+  await expect(page.locator('[data-testid="apply-to-similar"]')).toBeChecked();
+
+  for (const id of ['#perk-a', '#perk-b', '#perk-c']) {
+    await expect(page.locator(id), id).toHaveCSS('color', 'rgb(255, 0, 0)');
+  }
+  await expect(page.locator('h1'), 'and nothing outside it').not.toHaveCSS('color', 'rgb(255, 0, 0)');
+
+  await page.reload();
+  await expect(page.locator('#perk-c'), 'and it survives a reload').toHaveCSS('color', 'rgb(255, 0, 0)');
+});
+
+test('hide takes an element off the page, and unhide brings it back', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('#perk-b').click();
+  await page.locator('[data-testid="hide-element"]').click();
+  await expect(page.locator('#perk-b')).toBeHidden();
+
+  await page.reload();
+  await expect(page.locator('#perk-b'), 'still hidden after a reload').toBeHidden();
+
+  await activateEditor(context);
+  await page.locator('[data-testid="review-changes"]').click();
+  await page.locator('[data-testid^="toggle-change-"]').first().uncheck();
+  await expect(page.locator('#perk-b'), 'switching the change off brings it back').toBeVisible();
+});
+
+test('a change can be switched off, back on, and deleted', async ({ context }) => {
+  // The whole "toggle an edit off and on, delete it" claim had no coverage at all.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited headline');
+  await expect(page.locator('h1')).toHaveText('Edited headline');
+
+  await page.locator('[data-testid="review-changes"]').click();
+  const row = page.locator('[data-testid^="toggle-change-"]').first();
+  await row.uncheck();
+  await expect(page.locator('h1'), 'off puts the page back').toHaveText('Original Headline');
+  await row.check();
+  await expect(page.locator('h1'), 'and on puts it back again').toHaveText('Edited headline');
+
+  await page.locator('[data-testid^="delete-change-"]').first().click();
+  await expect(page.locator('h1'), 'deleting it puts the page back for good').toHaveText('Original Headline');
+  await page.reload();
+  await expect(page.locator('h1')).toHaveText('Original Headline');
+});
+
+test('the layout controls and box-shadow record and replay', async ({ context }) => {
+  // Six layout controls and shadows are named in the store listing and were exercised by
+  // nothing at all.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  // Clicking a list lands on one of its items; the parent is one step up.
+  await page.locator('#perk-a').click();
+  await page.keyboard.press('Alt+ArrowUp');
+  expect(
+    await page.locator('.twk-outline--selected .twk-outline-label').textContent(),
+    'the list itself, not one of its items',
+  ).toContain('perks');
+  await openSection(page, 'layout');
+
+  await page.locator('[data-testid="display"]').selectOption('flex');
+  await expect(page.locator('#perks')).toHaveCSS('display', 'flex');
+  // The flex controls only exist once it is a flex container.
+  await page.locator('[data-testid="flex-direction"]').selectOption('column');
+  await expect(page.locator('#perks')).toHaveCSS('flex-direction', 'column');
+  await page.locator('[data-testid="gap"]').fill('12');
+  await expect(page.locator('#perks')).toHaveCSS('gap', '12px');
+  await page.locator('[data-testid="box-shadow"]').fill('0 8px 24px rgba(0, 0, 0, 0.25)');
+  await expect(page.locator('#perks')).toHaveCSS('box-shadow', 'rgba(0, 0, 0, 0.25) 0px 8px 24px 0px');
+
+  await page.reload();
+  await expect(page.locator('#perks')).toHaveCSS('flex-direction', 'column');
+  await expect(page.locator('#perks')).toHaveCSS('gap', '12px');
+});
+
+test('a link and an image description record and replay', async ({ context }) => {
+  // The only two attribute edits besides src, and neither was covered. A broken href
+  // edit sends a wrong URL into an engineer's ticket.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  await page.locator('#anchor-link').click();
+  await openSection(page, 'link');
+  await page.locator('[data-testid="href"]').fill('https://example.com/pricing');
+  await page.locator('[data-testid="href"]').press('Enter');
+  await expect(page.locator('#anchor-link')).toHaveAttribute('href', 'https://example.com/pricing');
+
+  await page.locator('#hero').click();
+  await expect(page.locator('[data-testid="alt"]')).toBeVisible();
+  await page.locator('[data-testid="alt"]').fill('A guitar amplifier');
+  // Every other text field in the panel commits on Enter; this one only did on blur.
+  await page.locator('[data-testid="alt"]').press('Enter');
+  await expect(page.locator('#hero')).toHaveAttribute('alt', 'A guitar amplifier');
+
+  await page.reload();
+  await expect(page.locator('#anchor-link')).toHaveAttribute('href', 'https://example.com/pricing');
+  await expect(page.locator('#hero')).toHaveAttribute('alt', 'A guitar amplifier');
+});

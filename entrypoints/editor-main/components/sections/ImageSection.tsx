@@ -41,6 +41,12 @@ export function ImageSection({ element, controller }: SectionProps) {
   };
 
   const picked = embeddedIn(src.applied);
+  const commitAlt = () => {
+    if (alt.value !== element.getAttribute('alt')) {
+      controller.recordEdit(element, 'attr', 'alt', alt.original, alt.value);
+    }
+  };
+
   return (
     <section className="twk-section">
       <Field name="src" property="src" controller={controller} element={element} error={src.error}>
@@ -77,10 +83,13 @@ export function ImageSection({ element, controller }: SectionProps) {
           placeholder={t('alt_placeholder')}
           value={alt.value}
           onChange={(e) => alt.setDraft(e.target.value)}
-          onBlur={() => {
-            if (alt.value !== element.getAttribute('alt')) {
-              controller.recordEdit(element, 'attr', 'alt', alt.original, alt.value);
-            }
+          onBlur={commitAlt}
+          // Every other text field in the panel commits on Enter. This one only committed
+          // on blur, so typing a description and pressing Enter did nothing at all.
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            commitAlt();
           }}
         />
       </Field>

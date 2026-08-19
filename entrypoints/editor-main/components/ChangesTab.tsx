@@ -120,6 +120,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
                 <input
                   type="checkbox"
                   className="twk-change-switch"
+                  data-testid={`toggle-change-${record.id}`}
                   checked={record.enabled}
                   aria-label={t('aria_toggle_change', [labelFor(record)])}
                   onClick={(e) => e.stopPropagation()}
@@ -155,6 +156,7 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
               <button
                 type="button"
                 aria-label={t('aria_delete_change', [labelFor(record)])}
+                data-testid={`delete-change-${record.id}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   controller.deleteRecord(record.id);
