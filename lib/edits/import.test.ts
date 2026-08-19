@@ -269,3 +269,64 @@ describe('what a link is allowed to hand the tab', () => {
     expect(result.ok && result.page.title.length).toBeLessThanOrEqual(300);
   });
 });
+
+describe('context arriving over a link', () => {
+  const withContext = (context: unknown) =>
+    parseImport(
+      JSON.stringify({
+        version: 1,
+        url: 'https://a.com/p',
+        title: '',
+        updatedAt: 'n',
+        records: [
+          {
+            id: 'c1',
+            selector: '.t',
+            fallbackSelectors: [],
+            elementLabel: 'span',
+            type: 'text',
+            property: 'textContent',
+            oldValue: 'a',
+            newValue: 'b',
+            enabled: true,
+            createdAt: 'n',
+            updatedAt: 'n',
+            context,
+          },
+        ],
+      }),
+    );
+
+  test('a well-formed chain comes through intact', () => {
+    const chain = [{ tag: 'span' }, { tag: 'div', label: 'Goals', classes: ['card_root'] }];
+    const parsed = withContext(chain);
+    expect(parsed.ok && parsed.page.records[0]!.context).toEqual(chain);
+  });
+
+  test('a record with no context is still a record', () => {
+    const parsed = withContext(undefined);
+    expect(parsed.ok && parsed.page.records).toHaveLength(1);
+  });
+
+  test('an unbounded one is refused', () => {
+    // Nothing here shows up as an edit, so without a bound it is free weight in a share.
+    expect(withContext(Array.from({ length: 40 }, () => ({ tag: 'div' }))).ok).toBe(true);
+    const parsed = withContext(Array.from({ length: 40 }, () => ({ tag: 'div' })));
+    expect(parsed.ok && parsed.page.records, 'the whole record goes, as with any other bad field').toHaveLength(0);
+  });
+
+  test('so is one carrying anything that is not a string', () => {
+    for (const bad of [
+      'not an array',
+      [{ tag: 42 }],
+      [{ tag: 'div', label: { toString: 1 } }],
+      [{ tag: 'div', classes: 'flex' }],
+      [{ tag: 'div', classes: Array.from({ length: 30 }, () => 'x') }],
+      [{ tag: 'div', onclick: 'alert(1)' }],
+      [{ tag: 'div', label: 'x'.repeat(500) }],
+    ]) {
+      const parsed = withContext(bad);
+      expect(parsed.ok && parsed.page.records.length, JSON.stringify(bad).slice(0, 40)).toBe(0);
+    }
+  });
+});

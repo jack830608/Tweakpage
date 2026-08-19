@@ -1,6 +1,7 @@
 import { isSafeRecordId } from './css';
 import { MAX_IMAGE_BYTES } from '../image-file';
 import { isCustomProperty, isSafeCustomValue } from './custom-css';
+import { MAX_CONTEXT_DEPTH, type ContextNode } from '../selector/context';
 import { textNodeIndex } from './text-nodes';
 import { loadPageEdits, normalizePageUrl, savePageEdits } from './storage';
 import type { EditRecord, PageEdits, Variant } from './types';
@@ -149,6 +150,37 @@ function isValidVariant(value: unknown): value is Variant {
   );
 }
 
+const CONTEXT_KEYS = new Set(['tag', 'id', 'role', 'label', 'testId', 'classes']);
+const MAX_CONTEXT_VALUE = 120;
+const MAX_CONTEXT_CLASSES = 8;
+
+/**
+ * Context is carried for a reader and never resolved against, so what has to hold is
+ * that it is strings and that it is bounded: an unbounded one is a way to make a share
+ * heavy with nothing in it that shows up as an edit.
+ */
+function isValidContext(value: unknown): value is ContextNode[] {
+  if (!Array.isArray(value) || value.length > MAX_CONTEXT_DEPTH) return false;
+  return value.every((node) => {
+    if (typeof node !== 'object' || node === null) return false;
+    const n = node as Record<string, unknown>;
+    if (Object.keys(n).some((key) => !CONTEXT_KEYS.has(key))) return false;
+    if (typeof n.tag !== 'string' || n.tag.length === 0 || n.tag.length > 40) return false;
+    for (const key of ['id', 'role', 'label', 'testId']) {
+      const held = n[key];
+      if (held !== undefined && (typeof held !== 'string' || held.length > MAX_CONTEXT_VALUE)) {
+        return false;
+      }
+    }
+    if (n.classes === undefined) return true;
+    return (
+      Array.isArray(n.classes) &&
+      n.classes.length <= MAX_CONTEXT_CLASSES &&
+      n.classes.every((cls) => typeof cls === 'string' && cls.length <= MAX_CONTEXT_VALUE)
+    );
+  });
+}
+
 const IMPOSSIBLE_IN_A_SELECTOR = /[{}<]|@|\/\*/;
 
 function isPlausibleSelector(selector: string): boolean {
@@ -174,6 +206,7 @@ function isValidRecord(value: unknown): value is EditRecord {
   if (r.textFingerprint !== undefined && typeof r.textFingerprint !== 'string') return false;
   if (r.absent !== undefined && typeof r.absent !== 'boolean') return false;
   if (r.note !== undefined && (typeof r.note !== 'string' || r.note.length > 500)) return false;
+  if (r.context !== undefined && !isValidContext(r.context)) return false;
   if (!Array.isArray(r.fallbackSelectors) || !r.fallbackSelectors.every((s) => typeof s === 'string')) {
     return false;
   }

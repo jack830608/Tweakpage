@@ -254,6 +254,27 @@ credentials, exactly as a recipient would, and refuses to hand you a link that w
   so it can only resolve to an address Tweakpage builds itself, and what arrives is
   validated exactly like an imported file.
 
+## The hand-off format
+
+`Copy JSON` / `Download JSON` produce one object per page, `version: 1`, with a `records`
+array. Each record says what changed — `type`, `property`, `oldValue`, `newValue` — and
+carries what is needed to find the element again (`selector`, `fallbackSelectors`,
+`textFingerprint`) and what is needed to find it in a repository (`context`).
+
+`context` is the chain from the edited element outwards, six deep at most, with each
+ancestor's `tag`, `id`, `role`, `aria-label`, test id and authored class names. It exists
+because the element you edit is often bare — a `<span>` with no class and no id, whose
+selector can only be positional — while its ancestors carry the two things a reader
+needs: the region named in the author's own words, and a class naming the component.
+
+Build hashes are stripped from those class names: `product-selector_optIn__qe980` is
+recorded as `product-selector_optIn`, because the hash changes on every build that
+touches the file and `optIn` does not. Classes that are nothing but a hash —
+styled-components, emotion — are dropped, since they say nothing about the source.
+
+`context` is recorded and never resolved against. Replay is the selectors' job; giving
+these a vote would mean more chances to land on the wrong element, not fewer.
+
 ## How it works
 
 - A tiny always-on content script replays saved edits and draws the corner chip; the
