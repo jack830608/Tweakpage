@@ -51,6 +51,7 @@ function setup(selected: Element | null = document.getElementById('target')) {
       showOnboarding={false}
       onDismissOnboarding={vi.fn()}
       onSelect={vi.fn()}
+      onPreviewSet={vi.fn()}
       onHighlight={vi.fn()}
       onToast={vi.fn()}
       onSnapshot={vi.fn()}

@@ -78,6 +78,7 @@ function setup() {
       onDismissOnboarding={vi.fn()}
       onSelect={vi.fn()}
       onHighlight={vi.fn()}
+      onPreviewSet={vi.fn()}
       onToast={vi.fn()}
       onSnapshot={vi.fn()}
       onMinimize={vi.fn()}

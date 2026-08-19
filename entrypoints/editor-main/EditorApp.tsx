@@ -32,6 +32,8 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
   const sharedPreview = useSyncExternalStore(controller.subscribe, controller.isPreviewingShared);
   const [hovered, setHovered] = useState<Element | null>(null);
   const [refusal, setRefusal] = useState<string | null>(null);
+  /** Shown while the pointer is on "apply to all similar" — see Overlay's `preview`. */
+  const [previewSet, setPreviewSet] = useState<Element[]>([]);
   const [exclusions, setExclusions] = useState<string[]>([]);
   const [selected, setSelected] = useState<Element | null>(null);
   // The live inline-edit session, if any. A ref, not state: focusout and dblclick race
@@ -224,6 +226,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
       <Overlay
         hovered={mode === 'edit' && alive && hovered?.isConnected ? hovered : null}
         refusal={refusal}
+        preview={previewSet}
         selected={mode === 'edit' && alive ? activeSelected : null}
         editing={editingEl?.isConnected ? editingEl : null}
         edited={mode === 'edit' && showMarks ? Array.from(document.querySelectorAll('[data-tweakpage]')) : []}
@@ -255,6 +258,7 @@ export function EditorApp({ controller, host, onRequestClose }: EditorAppProps) 
         onDismissOnboarding={dismissOnboarding}
         onSelect={setSelected}
         onHighlight={setHovered}
+        onPreviewSet={setPreviewSet}
         onToast={setToast}
         onSnapshot={onSnapshot}
         showMarks={showMarks}

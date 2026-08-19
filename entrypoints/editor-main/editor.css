@@ -73,6 +73,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
    lighter shade, so a page with several edits and the marks on became a field of dashed
    boxes and hover stopped meaning "the one under your cursor". A different shape cannot
    be confused with a different state. */
+/* The family, while the pointer is on the control that would restyle it. Solid rather
+   than the edited tick, because these are not edited — they are what is about to be. */
+.twk-preview-mark { position: fixed; pointer-events: none; z-index: 2147483644; outline: 2px solid var(--outline); outline-offset: 1px; box-shadow: 0 0 0 1px var(--ring-dark), 0 0 0 4px var(--ring-light); }
 .twk-edited-mark { position: fixed; pointer-events: none; z-index: 2147483645; }
 .twk-edited-mark::before { content: ''; position: absolute; left: -2px; top: -2px; width: 8px; height: 8px; background: var(--outline); border-radius: 3px 0 3px 0; box-shadow: 0 0 0 1.5px var(--ring-light), 0 0 0 2.5px var(--ring-dark); }
 .twk-marks-toggle { display: flex; align-items: center; gap: 6px; margin: 2px 12px 12px; font-size: 11.5px; color: var(--ink-3); cursor: pointer; }

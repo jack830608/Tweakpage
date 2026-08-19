@@ -2100,3 +2100,27 @@ test('the path to an element ends at the element', async ({ context }) => {
   // And a crumb is named after something on the page, not just its tag.
   expect(texts.some((crumb) => crumb.startsWith('#') || crumb.startsWith('.')), texts.join(' ')).toBe(true);
 });
+
+test('what "apply to all similar" would touch is shown before it touches it', async ({ context }) => {
+  // A checkbox that restyles forty elements the user has never been shown, where the
+  // count was the only evidence they existed.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('#perk-a').click();
+
+  const marks = page.locator('.twk-preview-mark');
+  await expect(marks).toHaveCount(0);
+
+  const box = page.locator('[data-testid="apply-to-similar"]');
+  await box.hover();
+  const shown = await marks.count();
+  expect(shown, 'the family is outlined on the page').toBeGreaterThan(1);
+
+  // As many as the label claims.
+  const label = (await page.locator('.twk-similar').textContent()) ?? '';
+  expect(label).toContain(String(shown));
+
+  await page.locator('h1').hover();
+  await expect(marks).toHaveCount(0);
+});
