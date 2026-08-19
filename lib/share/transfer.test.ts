@@ -184,3 +184,20 @@ test('agreeing to one bucket does not open another', async () => {
   };
   expect((await hostImages(page, 'share')).report.needsConsent).toBe(true);
 });
+
+test('a request that never answers gives up while somebody is still watching', async () => {
+  // None of these calls had a deadline. A stalled upload spun its button for as long as
+  // the network cared to keep the socket open, and when Chrome eventually killed the
+  // worker the user was told to check credentials that were fine.
+  const { fetchWithin } = await import('../net');
+  vi.spyOn(globalThis, 'fetch').mockImplementation(
+    (_input, init) =>
+      new Promise((_resolve, reject) => {
+        (init as RequestInit).signal?.addEventListener('abort', () =>
+          reject(new DOMException('aborted', 'AbortError')),
+        );
+      }),
+  );
+  await expect(fetchWithin('https://example.com/', {}, 20)).rejects.toThrow();
+  vi.restoreAllMocks();
+});

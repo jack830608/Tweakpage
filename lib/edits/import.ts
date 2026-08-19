@@ -77,10 +77,14 @@ const MAX_TITLE_LENGTH = 300;
  * The most a share or an export may weigh.
  *
  * Whoever controls the object controls its size, so this is both what we refuse to send
- * and what we refuse to read — one constant, so the two cannot drift. Generous by
- * design: 500 records, several of them carrying a 1.5MB picture, still fits.
+ * and what we refuse to read — one constant, so the two cannot drift.
+ *
+ * Bounded by what chrome.storage.local will actually hold. It was 24MB, which is more
+ * than the 10MB an extension gets without unlimitedStorage, so a large file passed every
+ * check here and then failed to save with nowhere for that failure to appear. Better to
+ * refuse it while there is still somebody to tell.
  */
-export const MAX_SHARE_BYTES = 24 * 1024 * 1024;
+export const MAX_SHARE_BYTES = 8 * 1024 * 1024;
 
 export type ParseImportResult =
   | { ok: true; page: PageEdits; skipped: number }

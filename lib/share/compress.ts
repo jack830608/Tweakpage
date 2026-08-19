@@ -1,3 +1,5 @@
+import { fetchWithin } from '../net';
+
 /**
  * Optional image compression on the way to the bucket, via tinify.com.
  *
