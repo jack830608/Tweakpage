@@ -26,6 +26,9 @@ function matches(el: Element, selector: string): Element[] {
 export function SelectionCard({ element, controller, onSelect, onPreviewSet }: SelectionCardProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
   const similar = controller.similarTo(element);
+  const hasStyleEdit = controller.getPage().records.some(
+    (r) => r.type === 'style' && r.enabled && controller.recordFor(element, r.property)?.id === r.id,
+  );
   const hiddenRecord = controller.recordFor(element, 'display');
   const hidden = hiddenRecord?.newValue === 'none';
 
@@ -60,6 +63,7 @@ export function SelectionCard({ element, controller, onSelect, onPreviewSet }: S
           <button
             type="button"
             aria-label={hidden ? t('aria_unhide_element') : t('aria_hide_element')}
+            data-testid="hide-element"
             title={hidden ? t('tip_unhide') : t('tip_hide')}
             onClick={onToggleHide}
           >
@@ -80,6 +84,9 @@ export function SelectionCard({ element, controller, onSelect, onPreviewSet }: S
             type="checkbox"
             aria-label={t('aria_apply_similar')}
             data-testid="apply-to-similar"
+            // It re-points style edits that exist, so with none it silently did nothing.
+            disabled={!hasStyleEdit}
+            title={hasStyleEdit ? undefined : t('tip_similar_needs_edit')}
             checked={controller.appliesToSimilar(element)}
             onFocus={() => onPreviewSet(matches(element, similar.selector))}
             onBlur={() => onPreviewSet([])}

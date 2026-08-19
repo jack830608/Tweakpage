@@ -1052,5 +1052,8 @@
   },
   "toast_share_declined": {
     "message": "沒有上傳任何東西,所以也沒有連結。"
+  },
+  "tip_similar_needs_edit": {
+    "message": "先改一個東西 —— 這是把你已經做的改動擴大到整組。"
   }
 }
