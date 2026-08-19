@@ -359,6 +359,9 @@ test('a shared link works for someone who has set nothing up', async ({ context 
         accessKeyId: 'AKIAIOSFODNN7EXAMPLE',
         secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
       },
+      // A share link is itself an upload, so it asks before the first one. This test is
+      // about what the link carries, not about the question that precedes it.
+      'tweakpage:transfer-consent': ['demo-bucket'],
     });
   });
   await activateEditor(context);
@@ -1168,6 +1171,7 @@ test("restyling inside a copy survives the share round-trip — the recipient's 
         bucket: 'demo-bucket', region: 'ap-northeast-1',
         accessKeyId: 'AKIAIOSFODNN7EXAMPLE', secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
       },
+      'tweakpage:transfer-consent': ['demo-bucket'],
     });
   });
   await activateEditor(context);
@@ -2123,4 +2127,111 @@ test('what "apply to all similar" would touch is shown before it touches it', as
 
   await page.locator('h1').hover();
   await expect(marks).toHaveCount(0);
+});
+
+test('the selection ring keeps two bands far enough apart to see', async ({ context }) => {
+  // WCAG Technique C40: an indicator that cannot rely on the page's background needs two
+  // bands, each at least 2px, with at least 9:1 between them. Ours used to be the accent
+  // and white — about 2.5:1 — which is why on a band of that same accent the whole
+  // outline collapsed to the halo.
+  const page = await context.newPage();
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('http://localhost:4173/dark.html');
+  await activateEditor(context);
+
+  const luminance = (r: number, g: number, b: number) => {
+    const channel = (v: number) => {
+      const c = v / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  };
+
+  for (const [state, act] of [
+    ['selected', async () => page.locator('#on-green').click()],
+    ['hover', async () => page.locator('#on-card').hover()],
+  ] as const) {
+    await act();
+    const shadow = await page.evaluate((cls) => {
+      const root = document.getElementById('tweakpage-host')?.shadowRoot;
+      const box = root?.querySelector(`.twk-outline--${cls}`);
+      return box ? getComputedStyle(box).boxShadow : '';
+    }, state);
+
+    const colours = [...shadow.matchAll(/rgba?\((\d+),\s*(\d+),\s*(\d+)/g)].map((m) => [
+      Number(m[1]), Number(m[2]), Number(m[3]),
+    ]);
+    expect(colours.length, `${state} draws at least two bands`).toBeGreaterThanOrEqual(2);
+
+    const levels = colours.map(([r, g, b]) => luminance(r, g, b));
+    const best = Math.max(...levels.map((a) => Math.max(...levels.map((b) => {
+      const [hi, lo] = a > b ? [a, b] : [b, a];
+      return (hi + 0.05) / (lo + 0.05);
+    }))));
+    expect(best, `${state}: the two bands must be tellable apart on any page`).toBeGreaterThanOrEqual(9);
+  }
+});
+
+test('a first install is met by the welcome card, and it goes away for good', async ({ context }) => {
+  // The first screen every new user sees was rendered by nothing in the suite: every
+  // other test sets the onboarded flag before opening the panel.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context, { fresh: true });
+
+  const card = page.locator('.twk-onboarding');
+  await expect(card).toBeVisible();
+  const steps = await card.locator('li').count();
+  expect(steps, 'it teaches something').toBeGreaterThanOrEqual(3);
+  // The fields are not competing with it for the same space.
+  await expect(page.locator('[data-testid="text"]')).toHaveCount(0);
+
+  await card.locator('button').click();
+  await expect(card).toHaveCount(0);
+  await expect(page.locator('.twk-empty').first(), 'and what to do next is there').toBeVisible();
+
+  // Closing and reopening does not bring it back, and neither does a reload.
+  await page.locator('[data-testid="close"]').click();
+  await activateEditor(context);
+  await expect(page.locator('.twk-onboarding')).toHaveCount(0);
+  await page.reload();
+  await activateEditor(context);
+  await expect(page.locator('.twk-onboarding')).toHaveCount(0);
+});
+
+test('the toolbar button is how the editor actually opens', async ({ context }) => {
+  // Every other test toggles the editor through the service worker. If the one control a
+  // real user has stopped working, the suite would not have noticed.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  const [worker] = context.serviceWorkers().length
+    ? context.serviceWorkers()
+    : [await context.waitForEvent('serviceworker')];
+  await worker.evaluate(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (globalThis as any).chrome.storage.local.set({ 'tweakpage:onboarded': true });
+  });
+
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${new URL(worker.url()).host}/popup.html`);
+  // The popup acts on the active tab, which is the page and not itself.
+  await page.bringToFront();
+  await popup.locator('[data-testid="edit-this-page"]').click();
+
+  await expect(page.locator('#tweakpage-host aside')).toBeVisible();
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Opened from the toolbar');
+  await expect(page.locator('h1')).toHaveText('Opened from the toolbar');
+});
+
+test('the toolbar button says why when it cannot open', async ({ context }) => {
+  // A browser-owned page refuses content scripts; the button has to say so rather than
+  // appear to do nothing.
+  const [worker] = context.serviceWorkers().length
+    ? context.serviceWorkers()
+    : [await context.waitForEvent('serviceworker')];
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${new URL(worker.url()).host}/popup.html`);
+  await popup.locator('[data-testid="edit-this-page"]').click();
+  await expect(popup.locator('[data-testid="blocked-reason"]')).toBeVisible();
 });

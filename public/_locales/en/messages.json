@@ -1046,5 +1046,11 @@
   },
   "err_region": {
     "message": "A region looks like ap-northeast-1, not its display name."
+  },
+  "consent_page": {
+    "message": "This page’s edits — its address, its wording, and any notes — will be uploaded to your S3 bucket “$1”."
+  },
+  "toast_share_declined": {
+    "message": "Nothing was uploaded, so there is no link."
   }
 }

@@ -1046,5 +1046,11 @@
   },
   "err_region": {
     "message": "region 長得像 ap-northeast-1,不是它的顯示名稱。"
+  },
+  "consent_page": {
+    "message": "這一頁的改動 —— 網址、文字內容、以及你寫的備註 —— 會上傳到你的 S3 bucket「$1」。"
+  },
+  "toast_share_declined": {
+    "message": "沒有上傳任何東西,所以也沒有連結。"
   }
 }
