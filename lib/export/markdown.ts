@@ -37,8 +37,8 @@ export function toMarkdown(page: PageEdits, exportedAt: string): string {
  */
 function whereLine(record: EditRecord): string | null {
   const chain = record.context ?? [];
-  const named = chain.find((node) => node.label ?? node.testId ?? node.id);
-  const region = named?.label ?? named?.testId ?? named?.id;
+  const named = chain.find((node) => node.label ?? node.testId ?? node.id ?? node.heading);
+  const region = named?.heading ?? named?.label ?? named?.testId ?? named?.id;
   const component = chain.flatMap((node) => node.classes ?? []).find((cls) => cls.includes('_'));
   if (!region && !component) return null;
   const parts = [region ? `in **${region}**` : null, component ? `grep \`${component}\`` : null];

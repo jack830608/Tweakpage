@@ -272,8 +272,15 @@ recorded as `product-selector_optIn`, because the hash changes on every build th
 touches the file and `optIn` does not. Classes that are nothing but a hash —
 styled-components, emotion — are dropped, since they say nothing about the source.
 
+`context` also carries the nearest heading above the element, which on stacks where
+every class is a utility is the only thing naming where you are. Across eight real sites
+it takes the share of records that name their region from as low as 8% to 93–100%.
+
 `context` is recorded and never resolved against. Replay is the selectors' job; giving
-these a vote would mean more chances to land on the wrong element, not fewer.
+these a vote would mean more chances to land on the wrong element, not fewer — and the
+audit puts a number on what that would buy: 38 of 661 refusals. See
+[docs/selection.md](docs/selection.md) for how an element is found again, what survives
+a rebuild, and what 1920 resolutions across eight real sites measured.
 
 ## How it works
 

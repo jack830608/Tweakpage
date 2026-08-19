@@ -1818,3 +1818,33 @@ test('an edit at every step of a wizard, in a real browser', async ({ context })
   await expect(options().first()).toHaveText(`${edited[0]} JACK`);
   expect(await options().nth(1).textContent()).not.toContain('JACK');
 });
+
+test('an element inside a web component is refused where it can be seen', async ({ context }) => {
+  // A shadow root is out of reach of document.querySelector, so a record made inside one
+  // can never replay. It used to select, accept an edit, and quietly do nothing, with
+  // only a line in the change list to explain afterwards.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/shadow.html');
+  await activateEditor(context);
+
+  await page.locator('#card p').hover();
+  const refused = page.locator('.twk-outline--excluded');
+  await expect(refused).toBeVisible();
+  const said = await refused.locator('.twk-outline-label').textContent();
+  expect(said, 'the reason is on screen, not in a list later').not.toBe('');
+
+  await page.locator('#card p').click();
+  await expect(page.locator('.twk-outline--selected')).toHaveCount(0);
+
+  // Alt+arrows must not walk in either.
+  await page.locator('#plain').click();
+  await expect(page.locator('.twk-outline--selected')).toBeVisible();
+  await page.keyboard.press('Alt+ArrowRight');
+  const label = await page.locator('.twk-outline--selected .twk-outline-label').textContent();
+  expect(label, 'the arrows stayed in the document').not.toContain('shadow');
+
+  // And the rest of the page is unaffected.
+  await page.locator('#plain').click();
+  await page.locator('[data-testid="text"]').fill('Edited');
+  await expect(page.locator('#plain')).toHaveText('Edited');
+});

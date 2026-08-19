@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
 import { isTweakpageNode } from '../../../lib/edits/dom';
 import { excludedBy } from '../../../lib/exclusions';
+import { t } from '../../../lib/i18n';
 import { isTextEntry } from './useUndoRedoShortcuts';
 
 export interface PickerCallbacks {
   /**
-   * The second argument names the rule refusing this element, when one does. Refusing
-   * silently is indistinguishable from a picker that has stopped working.
+   * The second argument says why this element is refused, when it is. Refusing silently
+   * is indistinguishable from a picker that has stopped working.
    */
-  onHover: (el: Element | null, refusedBy?: string | null) => void;
+  onHover: (el: Element | null, refusal?: string | null) => void;
   onSelect: (el: Element) => void;
   onEscape: () => void;
 }
@@ -16,11 +17,26 @@ export interface PickerCallbacks {
 export function eventTargetElement(e: Event, host: HTMLElement): Element | null {
   const path = e.composedPath();
   if (path.includes(host)) return null;
+  // The whole path, not the target: the on-page marker draws itself in a shadow root of
+  // its own, and closest() cannot see out of one. Testing only the target left the chip
+  // looking like part of the page — refused as unreachable, its click swallowed with it.
+  if (path.some((node) => node instanceof Element && isTweakpageNode(node))) return null;
   const target = path[0] ?? e.target;
-  if (!(target instanceof Element)) return null;
-  // The on-page marker is ours too: offering to edit it would record UI that is not in
-  // the page and will not exist on the next load.
-  return isTweakpageNode(target) ? null : target;
+  return target instanceof Element ? target : null;
+}
+
+/**
+ * Why this element cannot be picked, or null.
+ *
+ * A shadow root is not reachable by document.querySelector, so a record made inside one
+ * can never be replayed. It used to select and accept an edit and then quietly do
+ * nothing, with only a line in the change list to explain — the same treatment an iframe
+ * gets, said at the moment it matters instead of afterwards.
+ */
+function refusalFor(el: Element, exclusions: string[]): string | null {
+  if (el.getRootNode() !== el.ownerDocument) return t('outline_shadow');
+  const rule = excludedBy(el, exclusions);
+  return rule ? t('outline_excluded', [rule]) : null;
 }
 
 export function useElementPicker(
@@ -37,7 +53,7 @@ export function useElementPicker(
         return;
       }
       const el = eventTargetElement(e, host);
-      onHover(el, el && excludedBy(el, exclusions));
+      onHover(el, el && refusalFor(el, exclusions));
     };
     const onClick = (e: MouseEvent) => {
       if (!enabled || e.altKey) return;
@@ -47,7 +63,7 @@ export function useElementPicker(
       // excluded region keep its own click could navigate away mid-session.
       e.preventDefault();
       e.stopPropagation();
-      if (excludedBy(el, exclusions)) return;
+      if (refusalFor(el, exclusions)) return;
       onSelect(el);
     };
     const onKeyDown = (e: KeyboardEvent) => {

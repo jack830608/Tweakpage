@@ -79,3 +79,52 @@ describe('the chain recorded for whoever has to make the change', () => {
     expect(buildContext(document.querySelector('span')!)[0]).toEqual({ tag: 'span' });
   });
 });
+
+describe('the heading a reader would name', () => {
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <main>
+        <h1>Find your amp</h1>
+        <section>
+          <h2>What is your primary goal?</h2>
+          <div class="opts"><button><span id="target">Jamming</span></button></div>
+        </section>
+      </main>`;
+  });
+
+  test('is the nearest one above, not the biggest one', () => {
+    const chain = buildContext(document.getElementById('target')!);
+    expect(chain.map((n) => n.heading).find(Boolean)).toBe('What is your primary goal?');
+  });
+
+  test('is recorded once, on the element\'s own entry', () => {
+    const chain = buildContext(document.getElementById('target')!);
+    expect(chain.filter((n) => n.heading)).toHaveLength(1);
+    expect(chain[0]!.heading).toBe('What is your primary goal?');
+  });
+
+  test('is found however deep the element sits', () => {
+    // The recorded chain stops at six ancestors; the heading search must not. On MDN
+    // the only heading above a sampled element was routinely further out than that,
+    // and bounding the search left the record with no region at all.
+    document.body.innerHTML =
+      '<main><h1>Deep page</h1>' +
+      '<div><div><div><div><div><div><div><div><span id="deep">x</span></div></div></div></div></div></div></div></div>' +
+      '</main>';
+    expect(buildContext(document.getElementById('deep')!)[0]!.heading).toBe('Deep page');
+  });
+
+  test('is found from further out when nothing nearby has one', () => {
+    document.body.innerHTML = '<main><h1>Find your amp</h1><div><p><span id="t">x</span></p></div></main>';
+    const chain = buildContext(document.getElementById('t')!);
+    expect(chain.map((n) => n.heading).find(Boolean)).toBe('Find your amp');
+  });
+
+  test('and is simply absent on a page with no headings', () => {
+    // Measured at 19 of 20 elements on tailwindcss.com and 18 of 20 on nuxt.com, where
+    // an ancestor with an id, a role or an aria-label was there for 13% and 8%. It is
+    // not always there; it must not invent one when it is not.
+    document.body.innerHTML = '<div><span id="t">x</span></div>';
+    expect(buildContext(document.getElementById('t')!).some((n) => n.heading)).toBe(false);
+  });
+});
