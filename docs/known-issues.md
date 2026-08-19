@@ -57,11 +57,9 @@ follows the text.
 
 ## Failure paths that are silent
 
-- **No network call has a timeout.** A hung upload spins until Chrome kills the worker,
-  then reports a credentials problem to someone whose credentials are fine.
-- **An import that fails is invisible.** No toast, no message. The import limit is 24MB
-  while `chrome.storage.local` without `unlimitedStorage` is 10MB, so a large valid file
-  validates and then vanishes.
+- **An import that fails is invisible.** No toast, no message — the file is simply not
+  there. (The limit itself is fixed: it was 24MB against a 10MB quota, and is now 8MB, so
+  a file that validates is one that can be stored.)
 - **Escape during an upload** tears down the editor but not the request: the clipboard
   still ends up holding a link to an object the user thought they had cancelled.
 - **An out-of-range move index** makes the applier reapply about twenty times a second

@@ -7,6 +7,7 @@ import { MAX_SHARE_BYTES } from '../edits/import';
 import type { PageEdits } from '../edits/types';
 import { getShareSettings, isConfigured, type HandOff, type ShareSettings } from './settings';
 import { signRequest } from './sigv4';
+import { fetchWithin } from '../net';
 
 export type TransferFailure =
   | 'not-configured'
@@ -105,7 +106,7 @@ async function hostOne(
 /** Asks the way a recipient would: no credentials. */
 async function isReadable(url: string): Promise<boolean> {
   try {
-    return (await fetch(url, { method: 'HEAD' })).ok;
+    return (await fetchWithin(url, { method: 'HEAD' })).ok;
   } catch {
     return false;
   }
@@ -128,10 +129,10 @@ async function putBytes(
       headers: { 'content-type': contentType, ...(acl ? { 'x-amz-acl': acl } : {}) },
     });
     try {
-      const response = await fetch(url.toString(), { method: 'PUT', headers, body: bytes as unknown as BodyInit });
+      const response = await fetchWithin(url.toString(), { method: 'PUT', headers, body: bytes as unknown as BodyInit });
       if (!response.ok) continue;
       // The recipient reads it with no credentials, so that is how it gets checked.
-      if ((await fetch(url.toString(), { method: 'HEAD' })).ok) return true;
+      if ((await fetchWithin(url.toString(), { method: 'HEAD' })).ok) return true;
     } catch {
       return false;
     }
@@ -194,7 +195,7 @@ export async function putShared(
  */
 export async function getShared(ref: ShareRef): Promise<TransferResult> {
   try {
-    const response = await fetch(objectUrl(ref).toString());
+    const response = await fetchWithin(objectUrl(ref).toString());
     if (response.status === 403 || response.status === 404) {
       return { ok: false, reason: 'not-found' };
     }
@@ -256,7 +257,7 @@ async function upload(
     },
   });
   try {
-    const response = await fetch(url.toString(), { method: 'PUT', headers, body });
+    const response = await fetchWithin(url.toString(), { method: 'PUT', headers, body });
     return response.ok ? { ok: true, body: '', ref } : { ok: false, reason: 'rejected' };
   } catch {
     return { ok: false, reason: 'offline' };
@@ -266,7 +267,7 @@ async function upload(
 /** Asks the way a stranger would: no credentials, no signature. */
 async function isPubliclyReadable(ref: ShareRef): Promise<boolean> {
   try {
-    const response = await fetch(objectUrl(ref).toString(), { method: 'HEAD' });
+    const response = await fetchWithin(objectUrl(ref).toString(), { method: 'HEAD' });
     return response.ok;
   } catch {
     return false;
