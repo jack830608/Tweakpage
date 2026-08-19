@@ -127,7 +127,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Reachable by keyboard, so focus has to be visible — a 6px strip needs a hard colour. */
 .twk-resize:focus-visible { outline: none; background: var(--accent); }
 .twk-theme { max-width: 84px; padding: 2px 4px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11px; }
-.twk-viewport { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }
+.twk-viewport { margin-left: 10px; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; font-weight: 400; }
 .twk-header-divider { width: 1px; height: 14px; margin: 0 3px; background: var(--border); }
 
 /* ---------- mode switches ---------- */
