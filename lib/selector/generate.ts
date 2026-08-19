@@ -1,5 +1,6 @@
 import { finder } from '@medv/finder';
 import { buildContext, type ContextNode } from './context';
+import { escapeIdent } from './escape';
 import { isStableClass } from './stable-class';
 
 export interface GeneratedSelector {
@@ -116,6 +117,4 @@ export function buildElementLabel(el: Element): string {
   return text ? `${base} "${text}"` : base;
 }
 
-function escapeIdent(id: string): string {
-  return id.replace(/([^a-zA-Z0-9_-])/g, '\\$1');
-}
+

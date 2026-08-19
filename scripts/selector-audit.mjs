@@ -55,6 +55,19 @@ const SCENARIOS = [
 
 const STAMP = 'data-twk-audit';
 
+/**
+ * Records are not all text records.
+ *
+ * The first version of this audit modelled every sample as a whole-element text edit,
+ * which is the one kind held to its words — so it reported zero wrong answers while a
+ * colour edit could still take a positional hit and land on a stranger. A review found
+ * that by hand. Both kinds run now.
+ */
+const KINDS = [
+  { key: 'text', patch: { type: 'text', property: 'textContent', newValue: '' } },
+  { key: 'style', patch: { type: 'style', property: 'color', newValue: 'red' } },
+];
+
 const browser = await chromium.launch({ channel: 'chromium' });
 const bundle = readFileSync(BUNDLE, 'utf8');
 const urls = process.argv.slice(2);
@@ -69,7 +82,14 @@ for (const [name, url] of sites) {
   const page = await context.newPage();
   try {
     for (const scenario of SCENARIOS) {
-      rows.push({ site: name, ...scenario, ...(await run(page, url, scenario.key)) });
+      for (const kind of KINDS) {
+        rows.push({
+          site: name,
+          ...scenario,
+          kind: kind.key,
+          ...(await run(page, url, scenario.key, kind.patch)),
+        });
+      }
     }
   } catch (error) {
     rows.push({ site: name, key: '—', error: String(error).split('\n')[0].slice(0, 80) });
@@ -80,7 +100,7 @@ for (const [name, url] of sites) {
 await browser.close();
 report(rows);
 
-async function run(page, url, scenario) {
+async function run(page, url, scenario, patch) {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForTimeout(5000);
 
@@ -88,18 +108,31 @@ async function run(page, url, scenario) {
     ([sample, stamp]) => {
       document.querySelectorAll(`[${stamp}]`).forEach((el) => el.removeAttribute(stamp));
       const candidates = [...document.body.querySelectorAll('*')].filter((el) => {
-        if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'SVG', 'PATH', 'HEAD'].includes(el.tagName)) return false;
+        if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'HEAD', 'LINK', 'META'].includes(el.tagName)) return false;
+        // Inside a drawing is not a thing the picker offers; the drawing itself is.
+        if (el.closest('svg') && el.tagName.toLowerCase() !== 'svg') return false;
         const r = el.getBoundingClientRect();
-        if (r.width < 4 || r.height < 4) return false;
-        return (el.textContent ?? '').trim().length > 0;
+        // No text requirement. Images, icons and empty boxes have no fingerprint and so
+        // nothing to relocate by — leaving them out measured only the easy half.
+        return r.width >= 4 && r.height >= 4;
       });
       const step = Math.max(1, Math.floor(candidates.length / sample));
       const chosen = candidates.filter((_, i) => i % step === 0).slice(0, sample);
+      // Where an element sits, as child indexes from the root. Stamps die with the
+      // document, so a reload is graded against this: a page that renders the same twice
+      // puts the same element at the same path.
+      const pathOf = (el) => {
+        const parts = [];
+        for (let cur = el; cur && cur.parentElement; cur = cur.parentElement) {
+          parts.unshift([...cur.parentElement.children].indexOf(cur));
+        }
+        return parts.join('.');
+      };
       return chosen.map((el, i) => {
         // Minted before anything moves, exactly as the editor would mint it.
         const record = window.__twk.generateSelector(el);
         el.setAttribute(stamp, String(i));
-        return { id: String(i), record, tag: el.tagName.toLowerCase() };
+        return { id: String(i), record, tag: el.tagName.toLowerCase(), path: pathOf(el) };
       });
     },
     [SAMPLE, STAMP],
@@ -110,7 +143,7 @@ async function run(page, url, scenario) {
     // the same sample and checking each record lands on the element it was made from.
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(5000);
-    return grade(page, picked, 'same', true);
+    return grade(page, picked, patch, true);
   }
 
   await page.evaluate(
@@ -176,24 +209,25 @@ async function run(page, url, scenario) {
     [scenario, STAMP],
   );
   await page.waitForTimeout(300);
-  return grade(page, picked, SCENARIOS.find((s) => s.key === scenario).expect, false);
+  return grade(page, picked, patch, false);
 }
 
-async function grade(page, picked, expect, reloaded) {
+async function grade(page, picked, patch, reloaded) {
   return page.evaluate(
-    ([items, want, stamp, wasReloaded]) => {
+    ([items, patchInto, stamp, wasReloaded]) => {
       // Four outcomes rather than a pass mark, because two of them are correct for
       // different reasons and only one of them is a bug.
       let exact = 0; // the element the record was made from
       let sameWords = 0; // a different element now holding the remembered words: drift,
       let elsewhere = 0; // by design — versus somebody else's element, which is the bug
       let refused = 0;
+      let elsewhereNoText = 0; // landed elsewhere, and had no words to be checked against
       let recoverable = 0; // refused, but the recorded chain names exactly one candidate
       let gone = 0; // refused because those words are nowhere on the page any more
       const wrong = [];
       for (const item of items) {
         const el = window.__twk.resolveRecord(
-          { ...item.record, id: `audit-${item.id}`, type: 'text', property: 'textContent', newValue: '' },
+          { ...item.record, id: `audit-${item.id}`, ...patchInto },
           document,
         );
         if (el === null) {
@@ -225,13 +259,27 @@ async function grade(page, picked, expect, reloaded) {
           continue;
         }
         const words = (el.textContent ?? '').trim().slice(0, 60);
-        if (wasReloaded ? words === item.record.textFingerprint : el.getAttribute(stamp) === item.id) {
+        const pathOf = (node) => {
+          const parts = [];
+          for (let cur = node; cur && cur.parentElement; cur = cur.parentElement) {
+            parts.unshift([...cur.parentElement.children].indexOf(cur));
+          }
+          return parts.join('.');
+        };
+        // A reload is graded by position, not by words: an image, an icon or an empty box
+        // has no words, and grading those against an absent fingerprint counted every one
+        // of them as a wrong answer.
+        if (wasReloaded ? pathOf(el) === item.path : el.getAttribute(stamp) === item.id) {
           exact += 1;
-        } else if (words === item.record.textFingerprint) {
+        } else if (words !== '' && words === item.record.textFingerprint) {
           sameWords += 1;
         } else {
           elsewhere += 1;
-          wrong.push(`${item.tag} ${item.record.selector.slice(0, 42)} -> "${words.slice(0, 22)}"`);
+          if (!item.record.textFingerprint) elsewhereNoText += 1;
+          wrong.push(
+            `${item.tag}${item.record.textFingerprint ? '' : ' [no text]'} ` +
+              `${item.record.selector.slice(0, 38)} -> "${words.slice(0, 20)}"`,
+          );
         }
       }
       const found = exact + sameWords + elsewhere;
@@ -244,6 +292,7 @@ async function grade(page, picked, expect, reloaded) {
         exact,
         sameWords,
         elsewhere,
+        elsewhereNoText,
         refused,
         recoverable,
         gone,
@@ -261,38 +310,45 @@ async function grade(page, picked, expect, reloaded) {
         depth: context.length,
       };
     },
-    [picked, expect, STAMP, reloaded],
+    [picked, patch, STAMP, reloaded],
   );
 }
 
 function report(rows) {
   const pct = (n, d) => (d ? `${String(Math.round((n / d) * 100)).padStart(3)}%` : '   —');
-  console.log(
-    '\nsite                          scenario          n   exact  drift  refused  ELSEWHERE',
-  );
-  console.log('-'.repeat(84));
-  let lastSite = '';
-  for (const r of rows) {
-    if (r.error) {
-      console.log(`${r.site.padEnd(29)} ${r.error}`);
-      continue;
-    }
-    const label = r.site === lastSite ? '' : r.site;
-    lastSite = r.site;
-    console.log(
-      `${label.padEnd(29)} ${r.key.padEnd(15)} ${String(r.sampled).padStart(3)}` +
-        `   ${pct(r.exact, r.sampled)}  ${pct(r.sameWords, r.sampled)}  ${pct(r.refused, r.sampled)}` +
-        `   ${String(r.elsewhere).padStart(6)}`,
-    );
-    for (const e of r.examples ?? []) console.log(`${' '.repeat(48)}${e}`);
-  }
-
   const graded = rows.filter((r) => !r.error);
-  const total = (k) => graded.reduce((n, r) => n + r[k], 0);
-  console.log('-'.repeat(84));
+  for (const r of rows.filter((row) => row.error)) {
+    console.log(`${r.site.padEnd(29)} ${r.error}`);
+  }
+  // By scenario and edit type: which way the page moved matters, and so does what kind
+  // of record was asked to survive it.
   console.log(
-    `${'ALL'.padEnd(46)} ${pct(total('exact'), total('sampled'))}  ${pct(total('sameWords'), total('sampled'))}` +
-      `  ${pct(total('refused'), total('sampled'))}   ${String(total('elsewhere')).padStart(6)}`,
+    '\nscenario         kind      n   exact  drift  refused  ELSEWHERE  of those,\n' +
+      ' '.repeat(63) + 'no text',
+  );
+  console.log('-'.repeat(73));
+  for (const scenario of SCENARIOS) {
+    for (const kind of KINDS) {
+      const set = graded.filter((r) => r.key === scenario.key && r.kind === kind.key);
+      if (set.length === 0) continue;
+      const sum = (k) => set.reduce((n, r) => n + r[k], 0);
+      const n = sum('sampled');
+      console.log(
+        `${scenario.key.padEnd(16)} ${kind.key.padEnd(6)} ${String(n).padStart(4)}` +
+          `   ${pct(sum('exact'), n)}  ${pct(sum('sameWords'), n)}  ${pct(sum('refused'), n)}` +
+          `   ${String(sum('elsewhere')).padStart(6)}`,
+      );
+      for (const e of set.flatMap((r) => r.examples ?? []).slice(0, 2)) {
+        console.log(`${' '.repeat(30)}${e}`);
+      }
+    }
+  }
+  const total = (k) => graded.reduce((n, r) => n + r[k], 0);
+  console.log('-'.repeat(73));
+  console.log(
+    `${'ALL'.padEnd(24)} ${String(total('sampled')).padStart(4)}   ${pct(total('exact'), total('sampled'))}` +
+      `  ${pct(total('sameWords'), total('sampled'))}  ${pct(total('refused'), total('sampled'))}` +
+      `   ${String(total('elsewhere')).padStart(6)}  ${String(total('elsewhereNoText')).padStart(7)}`,
   );
 
   const refusedRows = graded.filter((r) => r.refused > 0);
@@ -306,7 +362,7 @@ function report(rows) {
 
   console.log('\nwhat a reader of the hand-off gets (per site, from the `reload` sample)');
   console.log('-'.repeat(84));
-  for (const r of graded.filter((row) => row.key === 'reload')) {
+  for (const r of graded.filter((row) => row.key === 'reload' && row.kind === 'text')) {
     console.log(
       `${r.site.padEnd(29)} named region ${pct(r.named, r.sampled)}` +
         `   greppable ${pct(r.greppable, r.sampled)}   ancestors/record ${(r.depth / r.sampled).toFixed(1)}`,

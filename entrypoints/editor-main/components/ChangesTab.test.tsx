@@ -168,3 +168,17 @@ test('an embedded image is named in the change list, not spelled out', () => {
   expect(diff.textContent).toMatch(/image\/png/);
   expect(diff.textContent).toMatch(/2[12][0-9] KB/);
 });
+
+test('two elements that share a label are two groups', () => {
+  // A dialog's Save and a toolbar's Save are both `button "Save"`. Grouped by the label
+  // they read as one element with two changes, which is a hand-off pointing at the
+  // wrong component — the same fault the Markdown export had.
+  const controller = new EditsController(null, document, () => '2026-08-19T10:00:00.000Z');
+  document.body.innerHTML =
+    '<div id="dialog"><button>Save</button></div><div id="toolbar"><button>Save</button></div>';
+  controller.recordEdit(document.querySelector('#dialog button')!, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
+  controller.recordEdit(document.querySelector('#toolbar button')!, 'style', 'color', 'rgb(0, 0, 0)', '#00ff00');
+
+  render(<ChangesTab controller={controller} onToast={vi.fn()} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
+  expect(document.querySelectorAll('.twk-change-group')).toHaveLength(2);
+});

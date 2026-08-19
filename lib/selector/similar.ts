@@ -1,3 +1,4 @@
+import { escapeIdent } from './escape';
 import { isStableClass } from './stable-class';
 
 export interface SimilarSet {
@@ -15,12 +16,18 @@ export interface SimilarSet {
  */
 export function similarSelector(el: Element): SimilarSet | null {
   const doc = el.ownerDocument;
-  const classes = Array.from(el.classList).filter(isStableClass);
-  const candidates = [
-    classes.length > 0 ? `${el.tagName.toLowerCase()}.${classes.join('.')}` : null,
-    classes.length > 0 ? `.${classes.join('.')}` : null,
-    el.tagName.toLowerCase(),
-  ].filter((s): s is string => s !== null);
+  const classes = Array.from(el.classList).filter(isStableClass).map(escapeIdent);
+  const tag = el.tagName.toLowerCase();
+  // A Tailwind variant carries a colon, which is not a selector until it is escaped.
+  // Unescaped, every class candidate threw, the throw was swallowed, and the offer fell
+  // through to the bare tag: "the two cards like this one" became "every button on the
+  // page", one click away from restyling a family the user never meant. An element with
+  // classes is only ever offered its class family; the tag alone is a different promise
+  // and is not made on its behalf.
+  const candidates =
+    classes.length > 0
+      ? [`${tag}.${classes.join('.')}`, `.${classes.join('.')}`]
+      : [tag];
 
   for (const selector of candidates) {
     let matches: NodeListOf<Element>;

@@ -84,10 +84,10 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
         <p className="twk-empty">{t('no_changes')}</p>
       ) : (
         <ul>
-          {groupByElement(visible).map(([label, group]) => (
-            <li key={label} className="twk-change-group">
+          {groupByElement(visible).map(([key, group]) => (
+            <li key={key} className="twk-change-group">
               <div className="twk-change-group-head">
-                <span className="twk-change-group-label">{label}</span>
+                <span className="twk-change-group-label">{group[0].elementLabel}</span>
                 <span className="twk-change-group-count">{group.length}</span>
               </div>
               <ul>
@@ -178,11 +178,18 @@ function farFromNow(width: number): boolean {
   return Math.abs(width - window.innerWidth) > 200;
 }
 
-/** Several edits to one element belong together — a flat list buried that. */
+/**
+ * Several edits to one element belong together — a flat list buried that.
+ *
+ * Grouped by the label, they buried something else: a dialog's Save and a toolbar's Save
+ * are both `button "Save"`, and under one heading two elements read as one. The key is
+ * what tells elements apart; the label is only what the group is called.
+ */
 function groupByElement(records: EditRecord[]): Array<[string, EditRecord[]]> {
   const groups = new Map<string, EditRecord[]>();
   for (const record of records) {
-    groups.set(record.elementLabel, [...(groups.get(record.elementLabel) ?? []), record]);
+    const key = `${record.selector} ${record.textFingerprint ?? ''}`;
+    groups.set(key, [...(groups.get(key) ?? []), record]);
   }
   return [...groups];
 }

@@ -144,10 +144,22 @@ describe('identity guard: a unique selector hit still has to be the remembered e
     expect(resolveRecord(record(), document)).toBeNull();
   });
 
-  test('a style edit still falls back to the selector hit when relocation is ambiguous', () => {
+  test('a style edit is refused too, when the words name more than one element', () => {
+    // Written earlier the other way round, on the grounds that only text edits are
+    // identified by their words. That is true of what they carry and false of what the
+    // page can tell us: the remembered words being on two elements means the page has
+    // two candidates, and the positional hit is one of them chosen at random. A colour
+    // landing on a button nobody touched is as silent as a caption doing it.
     document.body.innerHTML =
       '<div><p>Inserted</p><p>Other</p><p>Target offer</p><p>Target offer</p></div>';
+    expect(resolveRecord(record({ type: 'style', property: 'color' }), document)).toBeNull();
+  });
+
+  test('but not when those words have simply left the page', () => {
+    // The live-content case the narrow gate was protecting: this element is the same
+    // element, its words moved on, and they are nowhere else to be confused with.
+    document.body.innerHTML = '<div><p>First offer</p><p>Live price update</p></div>';
     const el = resolveRecord(record({ type: 'style', property: 'color' }), document);
-    expect(el?.textContent).toBe('Other');
+    expect(el?.textContent).toBe('Live price update');
   });
 });

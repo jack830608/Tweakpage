@@ -22,7 +22,23 @@ export function eventTargetElement(e: Event, host: HTMLElement): Element | null 
   // looking like part of the page — refused as unreachable, its click swallowed with it.
   if (path.some((node) => node instanceof Element && isTweakpageNode(node))) return null;
   const target = path[0] ?? e.target;
-  return target instanceof Element ? target : null;
+  return target instanceof Element ? outermostDrawing(target) : null;
+}
+
+/**
+ * An icon is one thing, however many shapes it is made of.
+ *
+ * Clicking the middle of an icon lands on a <path>, which has no text, no padding and
+ * no box to speak of — an element the panel cannot offer anything useful for, and one
+ * whose selector is meaningless to anyone reading the hand-off. The <svg> is what a
+ * person means and what an engineer can act on.
+ */
+function outermostDrawing(el: Element): Element {
+  let outer = el;
+  for (let cursor: Element | null = el; cursor; cursor = cursor.parentElement) {
+    if (cursor.tagName.toLowerCase() === 'svg') outer = cursor;
+  }
+  return outer;
 }
 
 /**

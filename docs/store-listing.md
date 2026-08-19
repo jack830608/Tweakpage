@@ -35,6 +35,10 @@ not a storage product, not a credential manager.
 > lookup and does nothing else — it does not read, transmit or store page content.
 > Browsing data is never sold and never used for advertising.
 
+Do not describe selection as universal. Shadow DOM, iframes and canvas are out of
+reach and the product says so in the UI; a listing that claims otherwise is a complaint
+waiting to happen. `docs/selection.md` has the measured limits.
+
 Reviewer notes worth adding:
 
 - The always-on content script is small; the editor itself is lazily loaded and only when

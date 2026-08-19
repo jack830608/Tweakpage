@@ -254,6 +254,22 @@ credentials, exactly as a recipient would, and refuses to hand you a link that w
   so it can only resolve to an address Tweakpage builds itself, and what arrives is
   validated exactly like an imported file.
 
+## What it cannot reach
+
+Tweakpage edits the DOM of the page you are looking at. Three kinds of content are
+outside that, and it says so at the moment you hover rather than accepting an edit that
+can never replay:
+
+- **Inside a web component.** A shadow root is out of reach of `document.querySelector`,
+  so a record made there could never be found again.
+- **Inside an iframe.** A different document; the editor runs in the top one.
+- **Canvas, WebGL, video** — pixels, not elements. There is nothing to select.
+
+Everything else is fair game, but "fair game" is not "guaranteed". An element with no
+text has no fingerprint, so if the page's structure moves under it the record is
+reported as not found rather than guessed at. See [docs/selection.md](docs/selection.md)
+for what survives what, measured.
+
 ## The hand-off format
 
 `Copy JSON` / `Download JSON` produce one object per page, `version: 1`, with a `records`

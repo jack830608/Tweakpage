@@ -62,16 +62,27 @@ fingerprint and cannot be relocated when its position stops being true.
 the page the way pages move, and asks the resolver to find them again. Ground truth is a
 stamp put on each element before anything is disturbed.
 
-Eight sites, six scenarios, 40 elements each — 1920 resolutions:
+Eight sites, six scenarios, two kinds of record, 40 elements each — 3840 resolutions.
+The sample is every element with a box, not only the ones with words: images, icons and
+empty containers are in it, and they turn out to be where the remaining trouble is.
 
 | the page moved by | exact | drift | refused | **landed elsewhere** |
 | --- | --- | --- | --- | --- |
-| a reload | 100% | 0% | 0% | **0** |
+| a reload | 99% | 1% | 1% | **0** |
 | every class renamed by a rebuild | 100% | 0% | 0% | **0** |
-| a block inserted above it | 83% | 0% | 17% | **0** |
-| an extra wrapper div | 81% | 3% | 16% | **0** |
-| a keyed list re-labelled in place | 14% | 12% | 74% | **0** |
-| that copy replaced everywhere | 1% | 0% | 99% | **0** |
+| a block inserted above it | 82% | 1% | 12% | **40** |
+| an extra wrapper div | 74% | 2% | 20% | **22** |
+| a keyed list re-labelled in place | 14% | 17% | 70% | **0** |
+| that copy replaced everywhere | 48% | 0% | 52% | **1** |
+
+**63 wrong answers in 3840, and 60 of them are elements that had no words when they
+were picked.** On elements with text — which is what a change list is usually about —
+it is 3.
+
+Both kinds of record are measured because the first version of this audit modelled every
+sample as a whole-element text edit, which is the one kind held to its words. It reported
+zero wrong answers while a colour edit could still take a positional hit and land on a
+stranger; a review found that by hand, and the gate now covers every kind.
 
 *exact* is the element the record was made from. *drift* is a different element now
 holding the remembered words, which is the intended answer when an element moves.
@@ -83,6 +94,22 @@ layout, no framework), wordpress.org.
 
 Of 661 refusals, 557 were because those words had left the page entirely — there was
 nothing to find, and refusing is the only correct answer.
+
+### The limit that is left: an element with nothing to say
+
+A record identifies its element by the words it held. An image, an icon, a spacer or an
+empty container has none, so there is nothing to hold a candidate against, and when the
+structure moves the positional selector's answer is taken on trust. That is all 60 of
+the wrong answers above.
+
+The obvious fix — hold those elements to their recorded class names instead — trades one
+failure for another: a rebuild that renames every class currently costs nothing at all
+(100% above), and making classes part of identity would turn that column into zeroes.
+Which of the two matters more is a product decision, not a technical one, so it is
+written down here rather than guessed at.
+
+Until then: **an edit on an element with no text is positional, and structural drift can
+move it.** Edits on text are not.
 
 ### A change that was measured and then not made
 

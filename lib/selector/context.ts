@@ -80,6 +80,12 @@ const HEADINGS = 'h1, h2, h3, h4, h5, h6, [role="heading"]';
  */
 function nearestHeading(el: Element): string | undefined {
   for (let cursor: Element | null = el; cursor; cursor = cursor.parentElement) {
+    // The element may be inside the heading rather than after it — a chip in an <h2>,
+    // a link in a title. Looking only backwards walked straight past it.
+    if (cursor !== el && cursor.matches(HEADINGS)) {
+      const own = clip(cursor.textContent, MAX_LABEL);
+      if (own) return own;
+    }
     for (
       let sibling = cursor.previousElementSibling;
       sibling;

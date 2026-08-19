@@ -47,7 +47,7 @@ test('copy summary writes the change list to the clipboard', async () => {
   fireEvent.click(screen.getByRole('button', { name: /Copy summary/ }));
   await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
   expect(writeText.mock.calls[0][0]).toContain('# Page edits —');
-  expect(writeText.mock.calls[0][0]).toContain('"Original" → "Changed"');
+  expect(writeText.mock.calls[0][0]).toContain('`Original` → `Changed`');
 });
 
 

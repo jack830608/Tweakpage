@@ -1848,3 +1848,21 @@ test('an element inside a web component is refused where it can be seen', async 
   await page.locator('[data-testid="text"]').fill('Edited');
   await expect(page.locator('#plain')).toHaveText('Edited');
 });
+
+test('clicking an icon selects the icon, not one of its shapes', async ({ context }) => {
+  // A <path> or <circle> has no text, no padding and no box worth editing, and its
+  // selector means nothing to anyone reading the hand-off.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  await page.locator('#icon-shape').click({ force: true });
+  const label = await page.locator('.twk-outline--selected .twk-outline-label').textContent();
+  expect(label, 'the drawing, not the shape inside it').toContain('svg');
+  expect(label).not.toContain('circle');
+
+  // The arrows do not walk into one either.
+  await page.keyboard.press('Alt+ArrowDown');
+  const after = await page.locator('.twk-outline--selected .twk-outline-label').textContent();
+  expect(after).not.toContain('circle');
+});

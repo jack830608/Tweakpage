@@ -35,16 +35,21 @@ export function resolveRecord(record: Resolvable, root: Document | Element): Ele
     const el = queryUnique(root, selector);
     if (!el) continue;
     if (identities.length === 0 || identities.includes(textOf(el))) return el;
-    const moved = relocated(record, root, identities);
-    if (moved) return moved;
+    const others = elsewhereWithSameWords(record, root, identities);
+    if (others.length === 1) return others[0];
     // A unique match is not the same as the right element. Where the words are the
     // identity, one reading something else belongs to somebody else — a wizard that
     // re-labels one list of buttons at every step put a single edit on every step.
     // Everything else sits on text that is free to change and keeps the match.
     if (isTextIdentified(record) && !ourOwnHandiwork(record, el)) continue;
+    // Not a text edit, so the words are not this record's identity — but they are still
+    // evidence. Where they name several elements, taking the positional hit is choosing
+    // one of them at random.
+    if (others.length > 1) continue;
     return el;
   }
-  return relocated(record, root, identities);
+  const last = elsewhereWithSameWords(record, root, identities);
+  return last.length === 1 ? last[0] : null;
 }
 
 /**
@@ -123,14 +128,29 @@ function rememberedTexts(record: Resolvable): string[] {
   return texts;
 }
 
-function relocated(record: Resolvable, root: Document | Element, identities: string[]): Element | null {
+/**
+ * Everywhere the remembered words still are, in one scan.
+ *
+ * Two questions are answered from the same list, and they are the two reasons a hit's
+ * words can disagree with the record. Exactly one match means the element moved and the
+ * record follows it. More than one means the page holds several candidates and the
+ * selector's positional guess is a guess — three buttons, two of them Save, one inserted
+ * above, and a colour edit lands on a button nobody touched. None at all means a live
+ * page rewrote its own content, there is nothing to be confused with, and the hit stands.
+ */
+function elsewhereWithSameWords(
+  record: Resolvable,
+  root: Document | Element,
+  identities: string[],
+): Element[] {
   const tag = tagForRecord(record);
-  if (!tag) return null;
+  if (!tag) return [];
+  const all = Array.from(root.querySelectorAll(tag));
   for (const text of identities) {
-    const matches = Array.from(root.querySelectorAll(tag)).filter((el) => textOf(el) === text);
-    if (matches.length === 1) return matches[0];
+    const matches = all.filter((el) => textOf(el) === text);
+    if (matches.length > 0) return matches;
   }
-  return null;
+  return [];
 }
 
 const textOf = (el: Element): string => el.textContent?.trim().slice(0, 60) ?? '';

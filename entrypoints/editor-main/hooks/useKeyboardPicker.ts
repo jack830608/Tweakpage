@@ -17,6 +17,8 @@ function isPickable(el: Element | null, host: HTMLElement, exclusions: string[] 
   if (el.getRootNode() !== el.ownerDocument) return false;
   if (excludedBy(el, exclusions)) return false;
   if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return false;
+  // Inside an icon rather than on it: see outermostDrawing in useElementPicker.
+  if (el.closest('svg') && el.tagName.toLowerCase() !== 'svg') return false;
   const rect = el.getBoundingClientRect();
   return rect.width > 0 || rect.height > 0;
 }
