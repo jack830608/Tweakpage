@@ -317,7 +317,12 @@ export function Panel(props: PanelProps) {
           >
             {t('back_row')}
           </button>
-          <SettingsView prefs={prefs} onPrefs={updatePrefs} onToast={props.onToast} />
+          <SettingsView
+            prefs={prefs}
+            onPrefs={updatePrefs}
+            onToast={props.onToast}
+            onDiscardEdits={() => props.controller.revertAllEdits()}
+          />
         </div>
       ) : view === 'changes' ? (
         <div>

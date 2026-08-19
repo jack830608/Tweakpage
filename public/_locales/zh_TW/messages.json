@@ -953,5 +953,41 @@
   },
   "outline_shadow": {
     "message": "在 web component 內部 —— 無法重現"
+  },
+  "settings_reset": {
+    "message": "回復原廠"
+  },
+  "settings_reset_hint": {
+    "message": "把東西放回它們原本的樣子。勾選要清掉的項目 —— 只有第一項可以靠重做救回來。"
+  },
+  "reset_preferences": {
+    "message": "偏好設定"
+  },
+  "reset_edits": {
+    "message": "所有頁面的改動"
+  },
+  "reset_edits_none": {
+    "message": "所有頁面的改動 —— 目前沒有"
+  },
+  "reset_credentials": {
+    "message": "AWS 與 TinyPNG 金鑰"
+  },
+  "reset_credentials_none": {
+    "message": "AWS 與 TinyPNG 金鑰 —— 沒有存過"
+  },
+  "reset_work_one": {
+    "message": "1 個頁面上的 1 筆改動"
+  },
+  "reset_work": {
+    "message": "$2 個頁面上的 $1 筆改動"
+  },
+  "reset_run": {
+    "message": "回復原廠"
+  },
+  "aria_reset_run": {
+    "message": "清除勾選的項目"
+  },
+  "toast_reset_done": {
+    "message": "完成,勾選的項目已經清掉。"
   }
 }

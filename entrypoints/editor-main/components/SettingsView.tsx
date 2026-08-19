@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { safeSendMessage } from '../../../lib/extension-context';
 import { getExclusions, ruleProblem, saveExclusions, type RuleProblem } from '../../../lib/exclusions';
+import { resetTo, takeInventory, type ResetInventory, type ResetTarget } from '../../../lib/reset';
 import { hasConsented, withdrawConsent } from '../../../lib/share/consent';
 import {
   getShareStatus,
@@ -8,8 +9,9 @@ import {
   saveSharePreferences,
   type ShareStatus,
 } from '../../../lib/share/settings';
-import type { PanelPrefs, ThemeChoice } from '../panel-position';
+import { DEFAULT_PREFS, type PanelPrefs, type ThemeChoice } from '../panel-position';
 import { CollapsibleSection } from './CollapsibleSection';
+import { ConfirmButton } from './ConfirmButton';
 import { ModeSwitch } from './ModeSwitch';
 import type { ToastContent } from './Toast';
 import { plural, t } from '../../../lib/i18n';
@@ -30,6 +32,8 @@ interface SettingsViewProps {
   prefs: PanelPrefs;
   onPrefs: (next: PanelPrefs) => void;
   onToast: (toast: ToastContent) => void;
+  /** Puts this page back before the records are deleted from under it. */
+  onDiscardEdits: () => void;
 }
 
 const THEME_OPTIONS = [
@@ -38,7 +42,7 @@ const THEME_OPTIONS = [
   { value: 'dark', label: t('theme_dark'), ariaLabel: t('theme_dark') },
 ] as const;
 
-export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
+export function SettingsView({ prefs, onPrefs, onToast, onDiscardEdits }: SettingsViewProps) {
   const [appearanceOpen, setAppearanceOpen] = useState(true);
   const [status, setStatus] = useState<ShareStatus | null>(null);
   useEffect(() => {
@@ -73,6 +77,13 @@ export function SettingsView({ prefs, onPrefs, onToast }: SettingsViewProps) {
       <ExclusionsGroup onToast={onToast} />
       {status && <SharingGroup status={status} />}
       {status && <ImagesGroup status={status} onChange={commit} onToast={onToast} />}
+      <ResetGroup
+        prefs={prefs}
+        onPrefs={onPrefs}
+        onToast={onToast}
+        onDiscardEdits={onDiscardEdits}
+        onReloadStatus={() => void getShareStatus().then(setStatus)}
+      />
     </div>
   );
 }
@@ -179,6 +190,106 @@ function ExclusionsGroup({ onToast }: { onToast: (toast: ToastContent) => void }
             {t('settings_exclusion_add_button')}
           </button>
         </div>
+      </div>
+    </CollapsibleSection>
+  );
+}
+
+/**
+ * Putting it back the way it came.
+ *
+ * Settings accumulate, and somewhere in there is the one that broke something. But
+ * "everything" spans three things with wildly different costs — a theme is a click, a
+ * bucket key is a trip to the AWS console, a month of edits is a month — so what goes is
+ * ticked rather than assumed. Only the cheap one is ticked to begin with, and the other
+ * two carry the count of what they would take.
+ */
+function ResetGroup({
+  prefs,
+  onPrefs,
+  onToast,
+  onDiscardEdits,
+  onReloadStatus,
+}: {
+  prefs: PanelPrefs;
+  onPrefs: (next: PanelPrefs) => void;
+  onToast: (toast: ToastContent) => void;
+  onDiscardEdits: () => void;
+  onReloadStatus: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [inventory, setInventory] = useState<ResetInventory | null>(null);
+  const [targets, setTargets] = useState<ResetTarget[]>(['preferences']);
+  useEffect(() => {
+    void takeInventory().then(setInventory);
+  }, []);
+
+  const toggle = (target: ResetTarget, on: boolean) =>
+    setTargets((current) => (on ? [...current, target] : current.filter((t) => t !== target)));
+  const has = (target: ResetTarget) => targets.includes(target);
+
+  const run = () => {
+    // The page first, storage second: deleting the records without putting the page
+    // back leaves the edits on screen until something reloads, which reads as the
+    // reset having done nothing.
+    if (has('preferences')) onPrefs({ ...DEFAULT_PREFS });
+    if (has('edits')) onDiscardEdits();
+    void resetTo(targets).then(async () => {
+      setInventory(await takeInventory());
+      onReloadStatus();
+      onToast({ message: t('toast_reset_done'), kind: 'info' });
+    });
+  };
+
+  // "Delete all your changes" means nothing until it says two sites and three changes.
+  const work = inventory
+    ? inventory.records === 1
+      ? t('reset_work_one', [String(inventory.pages)])
+      : t('reset_work', [String(inventory.records), String(inventory.pages)])
+    : '';
+
+  return (
+    <CollapsibleSection
+      title={t('settings_reset')}
+      sectionId="set-reset"
+      open={open}
+      onToggle={() => setOpen((current) => !current)}
+    >
+      <p className="twk-settings-note">{t('settings_reset_hint')}</p>
+      <div className="twk-switch-set">
+        <div className="twk-switch-grid twk-switch-grid--stacked">
+          <Switch
+            label={t('reset_preferences')}
+            ariaLabel={t('reset_preferences')}
+            testId="reset-preferences"
+            checked={has('preferences')}
+            onChange={(on) => toggle('preferences', on)}
+          />
+          <Switch
+            label={inventory?.records ? `${t('reset_edits')} · ${work}` : t('reset_edits_none')}
+            ariaLabel={t('reset_edits')}
+            testId="reset-edits"
+            checked={has('edits')}
+            disabled={!inventory?.records}
+            onChange={(on) => toggle('edits', on)}
+          />
+          <Switch
+            label={inventory?.hasCredentials ? t('reset_credentials') : t('reset_credentials_none')}
+            ariaLabel={t('reset_credentials')}
+            testId="reset-credentials"
+            checked={has('credentials')}
+            disabled={!inventory?.hasCredentials}
+            onChange={(on) => toggle('credentials', on)}
+          />
+        </div>
+      </div>
+      <div className="twk-settings-actions">
+        <ConfirmButton
+          label={t('reset_run')}
+          ariaLabel={t('aria_reset_run')}
+          testId="run-reset"
+          onConfirm={run}
+        />
       </div>
     </CollapsibleSection>
   );

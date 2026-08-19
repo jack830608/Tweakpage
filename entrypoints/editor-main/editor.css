@@ -293,6 +293,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
    plain checkbox above four others says nothing about what it does to them. */
 .twk-switch-set { margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--r-card); overflow: hidden; }
 .twk-switch-set .twk-switch-grid { padding: 8px 10px; }
+/* One per line: these labels carry a count and do not survive being squeezed into a
+   118px column. */
+.twk-switch-grid--stacked { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .twk-switch--all { width: 100%; padding: 7px 10px; background: var(--sunken); border-bottom: 1px solid var(--border); font-weight: 600; color: var(--ink); }
 /* Help belonging to one switch, indented to start where that switch's label starts
    (15px box + 8px gap). It was pulled up by a negative margin instead, which collided
