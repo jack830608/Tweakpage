@@ -203,23 +203,31 @@ function syncMarks(doc: Document, marks: Map<Element, string[]>): void {
 export function revertRemoved(previous: EditRecord[], next: EditRecord[], doc: Document): void {
   const doomed = previous.filter((record) => {
     if (record.type === 'style' || !record.enabled) return false;
-    return !next.some((r) =>
-      // Two copies of one element share a selector and a property; only the id says
-      // which copy a clone record is.
-      record.type === 'clone'
-        ? r.id === record.id && r.enabled
-        : r.selector === record.selector && r.property === record.property && r.enabled,
-    );
+    // By id, for every kind. Selector-and-property was only ever a guess at identity,
+    // and two records can share both — a wizard step re-labelled in place produces
+    // exactly that. Deleting one then looked like it was still there, so the page kept
+    // the words with nothing in the change list accounting for them.
+    return !next.some((r) => r.id === record.id && r.enabled);
   });
   revertInOrder(doomed, doc);
 }
 
-/** Non-moves first, then moves lowest original index first — exact restoration. */
+/**
+ * The reverse of applying, step for step.
+ *
+ * Apply inserts copies and then places moves, lowest target first. Undoing it the same
+ * way round removed the copy before the move's index was read — and that index had been
+ * measured in a page that still had the copy in it, so the element went back to a
+ * position that no longer meant what it did. Reverting a duplicate-then-reorder left the
+ * page in an order it had never been in.
+ *
+ * So: moves first, highest target first, then everything else.
+ */
 function revertInOrder(records: EditRecord[], doc: Document): void {
   const moves = records
     .filter((r) => r.type === 'move')
-    .sort((a, b) => Number(a.oldValue) - Number(b.oldValue));
-  for (const record of [...records.filter((r) => r.type !== 'move'), ...moves]) {
+    .sort((a, b) => Number(b.newValue) - Number(a.newValue));
+  for (const record of [...moves, ...records.filter((r) => r.type !== 'move')]) {
     const el = resolveTarget(record, doc);
     if (el) revertDomEdit(el, record);
   }
@@ -227,8 +235,8 @@ function revertInOrder(records: EditRecord[], doc: Document): void {
 
 export function revertAll(records: EditRecord[], doc: Document): void {
   doc.querySelector(STYLE_TAG_SELECTOR)?.remove();
-  // Moves are undone while the marks still exist — a moved element with no text is
-  // findable only by its mark. Only then are the marks stripped.
+  // Undone while the marks still exist — a moved element with no text is findable only
+  // by its mark. Only then are the marks stripped.
   revertInOrder(records.filter((r) => r.type !== 'style'), doc);
   for (const el of Array.from(doc.querySelectorAll(MARKED_SELECTOR))) {
     el.removeAttribute(MARK_ATTRIBUTE);

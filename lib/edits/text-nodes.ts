@@ -53,16 +53,26 @@ export function textRuns(el: Element): TextRun[] {
     const text = node as Text;
     if ((text.nodeValue ?? '').trim().length > 0) {
       runs.push({ index, node: text, label: labelFor(el, text) });
-      index++;
     }
+    // Every text node takes a number, blank or not — and a run emptied by an edit is
+    // blank. Numbering only the visible ones meant such a run stopped counting, the run
+    // after it inherited its number, and the record wrote there instead: deleting a word
+    // inside a heading ate the words that followed it, on the very next pass, while the
+    // user was still typing.
+    index++;
     node = walker.nextNode();
   }
   return runs;
 }
 
-/** Resolves the nth run again at apply time, when only the element is known. */
+/**
+ * Resolves the nth run again at apply time, when only the element is known.
+ *
+ * By its number, not by its place in the list — a blank run is numbered and not listed,
+ * so the two stopped agreeing the moment an edit emptied one.
+ */
 export function textNodeAt(el: Element, index: number): Text | null {
-  return textRuns(el)[index]?.node ?? null;
+  return textRuns(el).find((run) => run.index === index)?.node ?? null;
 }
 
 /** True when editing the whole element would flatten markup. */
