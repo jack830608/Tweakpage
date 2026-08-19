@@ -100,19 +100,36 @@ function OutlineBox({
   children?: ReactNode;
 }) {
   const r = el.getBoundingClientRect();
+  const named = buildElementLabel(el);
+  // The quoted words first. They are the only part of this a person who did not write
+  // the page can match to what they are looking at; the tag and the id are for whoever
+  // receives the hand-off, and they were arriving first.
+  const quoted = named.match(/"(.*)"$/)?.[1];
   const label =
     given ??
     (el.tagName === 'IFRAME'
       ? 'iframe — not supported'
-      : `${buildElementLabel(el)} · ${Math.round(r.width)}×${Math.round(r.height)}`);
+      : `${quoted ? `"${quoted}" · ` : ''}${quoted ? named.slice(0, named.indexOf(' "')) : named} · ${Math.round(r.width)}×${Math.round(r.height)}`);
+  // Above by default, below when there is no room above — an element near the top of the
+  // viewport had its label rendered off-screen entirely. Held inside the left edge for
+  // the same reason: anchored at the element's left, an element starting off-screen
+  // took its label with it.
+  const below = r.top < 30;
   return (
     <div
       className={`twk-outline twk-outline--${kind}`}
       style={{ top: r.top, left: r.left, width: r.width, height: r.height }}
     >
-      {/* One bar above the box, anchored left — the right edge is where the panel
-          floats, and buttons under the panel cannot be clicked. */}
-      <span className="twk-outline-top">
+      {/* Anchored left — the right edge is where the panel floats, and buttons under the
+          panel cannot be clicked. */}
+      <span
+        className="twk-outline-top"
+        style={{
+          top: below ? '100%' : undefined,
+          marginTop: below ? 6 : undefined,
+          left: Math.max(0, 6 - r.left),
+        }}
+      >
         <span className="twk-outline-label">{label}</span>
         {children}
       </span>
