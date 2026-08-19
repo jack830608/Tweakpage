@@ -88,6 +88,12 @@ you use the page normally (menus, tabs, links). Holding `⌥ Alt` in Edit mode i
 temporary Browse. Use the breadcrumb in the selection card to reach parents and
 children, or `⌥` + arrow keys to walk the DOM without a mouse.
 
+**Start over** (Settings) puts things back the way they came. What goes is ticked rather
+than assumed, because the three things it can clear cost wildly different amounts to
+redo: preferences are a click, an AWS key is a trip to the console, and a month of edits
+is a month. Only preferences start ticked; the other two carry the count of what they
+would take — "4 changes across 2 pages" — and the button asks twice.
+
 **Areas to leave alone** (Settings) is a list of CSS selectors the picker skips, along
 with everything inside them — a chat launcher, a consent banner, an embedded widget.
 Hovering one outlines it in grey and names the rule, so a refusal never looks like a

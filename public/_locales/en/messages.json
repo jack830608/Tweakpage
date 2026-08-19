@@ -953,5 +953,41 @@
   },
   "outline_shadow": {
     "message": "Inside a web component — cannot be replayed"
+  },
+  "settings_reset": {
+    "message": "Start over"
+  },
+  "settings_reset_hint": {
+    "message": "Put things back the way they came. Tick what should go — only the first is safe to undo by doing it again."
+  },
+  "reset_preferences": {
+    "message": "Preferences"
+  },
+  "reset_edits": {
+    "message": "Every page of changes"
+  },
+  "reset_edits_none": {
+    "message": "Every page of changes — there are none"
+  },
+  "reset_credentials": {
+    "message": "AWS and TinyPNG keys"
+  },
+  "reset_credentials_none": {
+    "message": "AWS and TinyPNG keys — none saved"
+  },
+  "reset_work_one": {
+    "message": "1 change on 1 page"
+  },
+  "reset_work": {
+    "message": "$1 changes across $2 pages"
+  },
+  "reset_run": {
+    "message": "Start over"
+  },
+  "aria_reset_run": {
+    "message": "Clear the ticked items"
+  },
+  "toast_reset_done": {
+    "message": "Done. The ticked items are gone."
   }
 }

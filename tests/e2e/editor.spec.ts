@@ -1866,3 +1866,65 @@ test('clicking an icon selects the icon, not one of its shapes', async ({ contex
   const after = await page.locator('.twk-outline--selected .twk-outline-label').textContent();
   expect(after).not.toContain('circle');
 });
+
+test('starting over takes what was ticked and nothing else', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  const [worker] = context.serviceWorkers().length
+    ? context.serviceWorkers()
+    : [await context.waitForEvent('serviceworker')];
+  const storage = () =>
+    worker.evaluate(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const all = await (globalThis as any).chrome.storage.local.get(null);
+      return {
+        pages: Object.keys(all).filter((k) => k.startsWith('page:')).length,
+        exclusions: all['tweakpage:exclusions'],
+        keys: all['tweakpage:share-settings']?.accessKeyId ?? '',
+      };
+    });
+
+  await worker.evaluate(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (globalThis as any).chrome.storage.local.set({
+      'tweakpage:share-settings': {
+        bucket: 'b', region: 'r', accessKeyId: 'AKIA_KEEP', secretAccessKey: 's',
+        tinypngKey: '', uploadImages: { summary: true, json: true, download: true, share: true },
+        compressImages: false,
+      },
+    });
+  });
+
+  await page.locator('h1').click();
+  await page.locator('[data-testid="text"]').fill('Edited headline');
+  await expect(page.locator('h1')).toHaveText('Edited headline');
+
+  await page.locator('[data-testid="open-settings"]').click();
+  await page.locator('[data-section="set-exclusions"]').click();
+  await page.locator('[data-testid="exclusion-input"]').fill('.chat-widget');
+  await page.locator('[data-testid="add-exclusion"]').click();
+  await expect(page.locator('[data-testid="exclusion-list"] .twk-rule')).toHaveCount(2);
+
+  await page.locator('[data-section="set-reset"]').click();
+  // Only the cheap one starts ticked; the two that cost something do not.
+  await expect(page.locator('[data-testid="reset-preferences"]')).toBeChecked();
+  await expect(page.locator('[data-testid="reset-edits"]')).not.toBeChecked();
+  await expect(page.locator('[data-testid="reset-credentials"]')).not.toBeChecked();
+
+  await page.locator('[data-testid="reset-edits"]').click();
+  const run = page.locator('[data-testid="run-reset"]');
+  await run.click(); // arms
+  await run.click(); // confirms
+
+  // The page itself goes back, without waiting for a reload.
+  await expect(page.locator('h1')).toHaveText('Original Headline');
+  await expect.poll(async () => (await storage()).pages).toBe(0);
+  const after = await storage();
+  expect(after.exclusions, 'preferences went back to what ships').toEqual(['[data-tweakpage-ignore]']);
+  expect(after.keys, 'the key was not ticked, so it stays').toBe('AKIA_KEEP');
+
+  // And it survives a reload, rather than the old records coming back.
+  await page.reload();
+  await expect(page.locator('h1')).toHaveText('Original Headline');
+});
