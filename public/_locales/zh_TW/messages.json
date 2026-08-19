@@ -526,10 +526,10 @@
     "message": "刪除 $1"
   },
   "opt_title": {
-    "message": "分享連結"
+    "message": "分享設定"
   },
   "opt_intro": {
-    "message": "把一頁的改動上傳到你自己的 S3,再把連結給別人。對方只需要裝 Tweakpage,不需要 AWS 帳號,也不用做任何設定。"
+    "message": "分享連結是一份你的改動,上傳到一個屬於你的 bucket。對方只要裝 Tweakpage 就能打開 —— 不用 AWS 帳號、不用設定。三個步驟,做一次。"
   },
   "opt_risk_title": {
     "message": "這些金鑰在這台電腦上是讀得到的"
@@ -1001,5 +1001,50 @@
   },
   "compare": {
     "message": "對照"
+  },
+  "opt_step1_title": {
+    "message": "開一個 bucket 來放它們"
+  },
+  "opt_step1_body": {
+    "message": "在你自己的 AWS 帳號裡,名字和區域都隨你。不會有別的東西進去 —— Tweakpage 只寫在 tweakpage/ 這個 prefix 底下。"
+  },
+  "opt_step1_link": {
+    "message": "開啟 S3 console →"
+  },
+  "opt_step2_title": {
+    "message": "開一把只能寫進那裡的金鑰"
+  },
+  "opt_step2_body": {
+    "message": "建一個 IAM user,只給下面這份 policy,然後拿它的 access key。權限收到這麼窄之後,金鑰就算外流,最多也只能寫進那一個 prefix。"
+  },
+  "opt_step2_link": {
+    "message": "開啟 IAM console →"
+  },
+  "opt_policy_show": {
+    "message": "要貼上的 policy"
+  },
+  "opt_policy_copy": {
+    "message": "複製 policy"
+  },
+  "opt_step3_title": {
+    "message": "貼到這裡"
+  },
+  "opt_step3_body": {
+    "message": "步驟 1 的 bucket 名稱和區域,步驟 2 的金鑰和密鑰。它們留在這台電腦上,永遠不會被渲染進你正在編輯的頁面。"
+  },
+  "opt_check_values": {
+    "message": "每個值都要是 AWS 認得的格式,分享功能才會啟用。"
+  },
+  "opt_show": {
+    "message": "顯示"
+  },
+  "opt_hide": {
+    "message": "隱藏"
+  },
+  "err_bucket": {
+    "message": "bucket 名稱只能有小寫字母、數字、點和連字號。"
+  },
+  "err_region": {
+    "message": "region 長得像 ap-northeast-1,不是它的顯示名稱。"
   }
 }

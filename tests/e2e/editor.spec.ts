@@ -2014,3 +2014,37 @@ test('an untouched page offers nothing to hand off', async ({ context }) => {
   expect(share.y).toBeGreaterThan(hint.y);
   await expect(page.locator('[data-testid="mode-original"]')).toBeVisible();
 });
+
+test('the settings page says what it is asking for, and which value is wrong', async ({ context }) => {
+  const page = await context.newPage();
+  await page.setViewportSize({ width: 820, height: 1000 });
+  const [worker] = context.serviceWorkers().length
+    ? context.serviceWorkers()
+    : [await context.waitForEvent('serviceworker')];
+  await page.goto(`${worker.url().slice(0, worker.url().lastIndexOf('/'))}/options.html`);
+
+  // A sequence, not four fields presented as though you already had the values.
+  await expect(page.locator('.opt-steps li')).toHaveCount(3);
+  for (const href of ['s3.console.aws.amazon.com', 'console.aws.amazon.com/iam']) {
+    await expect(page.locator(`.opt-steps a[href*="${href}"]`)).toBeVisible();
+  }
+  // The IAM policy is available, not the first thing you meet.
+  await expect(page.locator('.opt-policy pre')).toBeHidden();
+  await page.locator('.opt-policy summary').click();
+  await expect(page.locator('.opt-policy pre')).toBeVisible();
+
+  // A region's display name is a wrong value, not a missing one, and the message used
+  // to tell you to fill in fields that were already full.
+  await page.locator('[data-testid="region"]').fill('Asia Pacific (Tokyo)');
+  await page.locator('[data-testid="bucket"]').click();
+  await expect(page.locator('[data-testid="problem-region"]')).toBeVisible();
+  await page.locator('[data-testid="region"]').fill('ap-northeast-1');
+  await page.locator('[data-testid="bucket"]').click();
+  await expect(page.locator('[data-testid="problem-region"]')).toHaveCount(0);
+
+  // A secret you cannot read is a secret you cannot check.
+  const secret = page.locator('[data-testid="secretAccessKey"]');
+  await expect(secret).toHaveAttribute('type', 'password');
+  await page.locator('[data-testid="show-secretAccessKey"]').click();
+  await expect(secret).toHaveAttribute('type', 'text');
+});

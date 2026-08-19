@@ -15,7 +15,7 @@ h1 { font-size: 20px; letter-spacing: -0.01em; }
 .opt-warning p { font-size: 13px; }
 .opt-warning pre { font-family: var(--mono); font-size: 11.5px; line-height: 1.5; overflow-x: auto; background: rgba(0,0,0,.06); border-radius: 8px; padding: 10px 12px; }
 .opt-form { display: flex; flex-direction: column; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
-.opt-form label { display: grid; grid-template-columns: 220px minmax(0, 1fr); align-items: center; gap: 12px; }
+.opt-form label { display: grid; grid-template-columns: 200px minmax(0, 1fr); align-items: center; gap: 6px 14px; }
 /* The name and its environment variable stack: side by side they fought for one column
    and broke "Access key ID" across three lines. */
 .opt-form label span { display: flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 500; color: var(--ink); }
@@ -41,3 +41,28 @@ h1 { font-size: 20px; letter-spacing: -0.01em; }
   .opt { padding: 28px 16px 48px; }
   .opt-form label { grid-template-columns: minmax(0, 1fr); gap: 6px; }
 }
+
+/* Numbered because it is a sequence, and every step happens somewhere else. */
+.opt-steps { counter-reset: step; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 22px; }
+.opt-steps li { counter-increment: step; position: relative; padding-left: 42px; }
+.opt-steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--accent); color: #fff; font-size: 14px; font-weight: 600; }
+.opt-steps h2 { margin: 3px 0 4px; font-size: 15px; font-weight: 600; }
+.opt-steps p { color: var(--ink-2); font-size: 13.5px; }
+.opt-link { display: inline-block; margin-top: 4px; color: var(--accent-ink); font-size: 13px; font-weight: 500; }
+.opt-policy { margin-top: 10px; }
+.opt-policy summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
+/* Its own surface in both themes. On dark it inherited an amber foreground on a
+   near-transparent black, which is unreadable. */
+.opt-policy pre { margin-top: 8px; padding: 12px 14px; border-radius: 8px; background: var(--sunken); border: 1px solid var(--border); color: var(--ink-2); font-family: var(--mono); font-size: 11.5px; line-height: 1.6; overflow-x: auto; }
+.opt-copy { margin-top: 8px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink-2); font-size: 12.5px; cursor: pointer; }
+.opt-copy:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+/* A secret is 40 characters of noise; you cannot check a paste you cannot see. */
+.opt-input { display: flex; gap: 6px; align-items: center; }
+.opt-input input { flex: 1; min-width: 0; }
+.opt-reveal { flex: none; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink-2); font-size: 12px; cursor: pointer; }
+.opt-reveal:hover { border-color: var(--ink-3); color: var(--ink); }
+/* Under the field it is about. A single line for every kind of wrong told somebody who
+   pasted a region's display name to fill in fields that were already full. */
+.opt-problem { grid-column: 2; font-size: 12.5px; color: var(--warn-ink); }
+.opt-form input[aria-invalid='true'] { border-color: var(--warn-ink); }
