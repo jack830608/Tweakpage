@@ -1647,3 +1647,44 @@ test('an entry left behind by an older rule can still be found and cleared', asy
   });
   expect(left, 'gone for good').toEqual([]);
 });
+
+test('the settings page holds its shape in a narrow window', async ({ context }) => {
+  // The row carries a hint that only exists while the four AWS fields are empty — which
+  // is every first visit. It shared a flex line with the two buttons and, being a flex
+  // item like them, took its space out of theirs: Save and Clear shrank until their
+  // labels broke across lines.
+  const page = await context.newPage();
+  const [worker] = context.serviceWorkers().length
+    ? context.serviceWorkers()
+    : [await context.waitForEvent('serviceworker')];
+  await page.goto(`chrome-extension://${new URL(worker.url()).host}/options.html`);
+
+  const box = async (selector: string) =>
+    (await page.locator(selector).first().boundingBox())!;
+  const buttons = ['[data-testid="save-settings"]', '[data-testid="clear-settings"]'];
+
+  await page.setViewportSize({ width: 1100, height: 800 });
+  await expect(page.locator('[data-testid="save-settings"]')).toBeVisible();
+  const roomy = await Promise.all(buttons.map(box));
+
+  await page.setViewportSize({ width: 400, height: 800 });
+  const cramped = await Promise.all(buttons.map(box));
+
+  // A control is the size its label needs, whether or not the window has room for the
+  // sentence beside it.
+  for (const [i, selector] of buttons.entries()) {
+    expect(cramped[i]!.height, `${selector} grew taller, so its label wrapped`).toBe(
+      roomy[i]!.height,
+    );
+    expect(cramped[i]!.width, `${selector} was squeezed`).toBe(roomy[i]!.width);
+  }
+
+  // Same cause, same row: a fixed label column left the inputs too narrow to show even
+  // a bucket name.
+  expect((await box('.opt-form input')).width, 'the fields are still usable').toBeGreaterThan(200);
+
+  for (const row of await page.locator('.opt-actions, .opt-form label').all()) {
+    const overflow = await row.evaluate((el) => el.scrollWidth - el.clientWidth);
+    expect(overflow, 'nothing spills out of its row').toBeLessThanOrEqual(1);
+  }
+});

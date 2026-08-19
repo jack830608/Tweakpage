@@ -23,9 +23,21 @@ h1 { font-size: 20px; letter-spacing: -0.01em; }
 .opt-form label code { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
 .opt-form input { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--sunken); color: var(--ink); font-family: var(--mono); font-size: 12.5px; }
 .opt-form input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.opt-actions { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
-.opt-actions button { padding: 7px 16px; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+/* The buttons are sized by their labels and nothing else. They share this row with a
+   sentence that exists only while the fields are empty — every first visit — and as
+   ordinary flex items they were handing their width to it until "Save" broke in half.
+   The sentence takes the leftover instead, and drops to its own line when there is
+   none. */
+.opt-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 4px; }
+.opt-actions button { flex: none; white-space: nowrap; padding: 7px 16px; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
 .opt-actions button:hover { background: var(--accent-ink); }
 .opt-actions .opt-clear { background: none; border: 1px solid var(--border); color: var(--ink-2); font-weight: 400; }
-.opt-saved { color: var(--accent-ink); font-size: 12.5px; }
-.opt-status { color: var(--ink-3); font-size: 12.5px; }
+.opt-saved, .opt-status { flex: 1 1 auto; min-width: 0; font-size: 12.5px; }
+.opt-saved { color: var(--accent-ink); }
+.opt-status { color: var(--ink-3); }
+/* Same row, same cause: a 220px name column left barely enough for the input to show
+   "my-bucke". Narrow enough and the name goes above its field rather than beside it. */
+@media (max-width: 560px) {
+  .opt { padding: 28px 16px 48px; }
+  .opt-form label { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+}
