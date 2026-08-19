@@ -166,7 +166,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-breadcrumb { display: flex; flex-wrap: wrap; gap: 4px; }
 .twk-similar { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-2); cursor: pointer; }
 .twk-similar input { accent-color: var(--accent); }
-.twk-breadcrumb button { padding: 2px 7px; border: 1px solid transparent; border-radius: 999px; background: none; cursor: pointer; font-size: 11px; font-family: var(--mono); color: var(--ink-2); }
+.twk-crumb-down { align-self: center; color: var(--ink-3); font-size: 11px; }
+/* 24px of box around an 11px glyph: the smallest controls in the product were the ones
+   used most — a per-field reset, a crumb, a delete. */
+.twk-breadcrumb button { min-height: 24px; padding: 2px 7px; border: 1px solid transparent; border-radius: 999px; background: none; cursor: pointer; font-size: 11px; font-family: var(--mono); color: var(--ink-2); }
 .twk-breadcrumb button:hover { background: var(--surface); border-color: var(--border); }
 .twk-breadcrumb .twk-crumb-active { background: var(--accent-soft); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
 
@@ -211,7 +214,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
    and match what lands in the exported change list. */
 .twk-prop { font-family: var(--mono); font-size: 11px; color: var(--ink-2); letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .twk-prop--modified { color: var(--accent-ink); }
-.twk-section button.twk-reset { padding: 0; border: none; background: none; color: var(--accent); font-size: 12px; width: 16px; height: 16px; flex: none; justify-content: center; border-radius: 4px; }
+.twk-section button.twk-reset { padding: 0; border: none; background: none; color: var(--accent); font-size: 12px; width: 24px; height: 24px; flex: none; justify-content: center; border-radius: 4px; }
 .twk-section button.twk-reset:hover { color: var(--accent-ink); }
 .twk-reset-slot { width: 16px; height: 16px; display: inline-block; }
 
@@ -350,6 +353,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-rule-add input { flex: 1; min-width: 0; }
 .twk-rule-add button { flex: none; white-space: nowrap; padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11.5px; cursor: pointer; }
 .twk-rule-add button:hover { border-color: var(--border-strong); color: var(--ink); }
+.twk-field--wide { grid-template-columns: minmax(0, 1fr); }
 .twk-settings-actions { display: flex; justify-content: flex-end; margin-bottom: 4px; }
 .twk-settings-actions button { padding: 5px 12px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11.5px; cursor: pointer; transition: border-color var(--ease), color var(--ease); }
 .twk-settings-actions button:hover { border-color: var(--border-strong); color: var(--ink); }
@@ -361,6 +365,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-policy { margin-bottom: 10px; padding: 10px; border-radius: var(--r-card); background: var(--sunken); color: var(--ink-2); font-family: var(--mono); font-size: 10.5px; line-height: 1.65; white-space: pre; overflow-x: auto; }
 
 /* ---------- changes view ---------- */
+.twk-view-title { display: block; padding: 0 12px 8px; font-size: 13px; font-weight: 600; color: var(--ink); }
 .twk-back-row { display: block; width: 100%; text-align: left; padding: 9px 12px; border: none; background: none; cursor: pointer; color: var(--ink-2); font-size: 12px; }
 .twk-back-row:hover { color: var(--ink); }
 .twk-changes { display: flex; flex-direction: column; gap: 8px; padding: 4px 12px 12px; }

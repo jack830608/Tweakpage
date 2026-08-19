@@ -43,7 +43,9 @@ export function LayoutSection({ element, controller }: SectionProps) {
       )}
       <Choice name="position" property="position" options={POSITIONS} current={cs.position}
         original={cs.position} element={element} controller={controller} />
-      <Field name="box-shadow" property="boxShadow" controller={controller} element={element}>
+      {/* Full width: this is the one value that is always long, and in the 158px control
+          column it read as `0 8px 24px rgba(0,` with no way to see the rest. */}
+      <Field name="box-shadow" property="boxShadow" controller={controller} element={element} stacked>
         <BoxShadowInput element={element} controller={controller} />
       </Field>
       <p className="twk-hint">{t('layout_hint')}</p>
