@@ -1928,3 +1928,64 @@ test('starting over takes what was ticked and nothing else', async ({ context })
   await page.reload();
   await expect(page.locator('h1')).toHaveText('Original Headline');
 });
+
+test('the outline never paints over the element it is pointing at', async ({ context }) => {
+  // This is a tool for judging a colour and a typeface. Every value used to be judged
+  // through an 8-12% green wash — enough to turn a warm grey cool.
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  for (const [state, act] of [
+    ['hover', async () => page.locator('#promo').hover()],
+    ['selected', async () => page.locator('#promo').click()],
+  ] as const) {
+    await act();
+    const painted = await page.evaluate((cls) => {
+      const root = document.getElementById('tweakpage-host')?.shadowRoot;
+      const box = root?.querySelector(`.twk-outline--${cls}`);
+      return box ? getComputedStyle(box).backgroundColor : 'missing';
+    }, state);
+    expect(painted, `${state} must not tint the element`).toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
+  }
+});
+
+test('the label goes where there is room for it', async ({ context }) => {
+  const page = await context.newPage();
+  await page.setViewportSize({ width: 900, height: 600 });
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+
+  const label = page.locator('.twk-outline--selected .twk-outline-label');
+  const boxes = async () => ({
+    element: (await page.locator('#headline').boundingBox())!,
+    label: (await label.boundingBox())!,
+  });
+
+  // An element at the very top of the document has nothing above it; the label used to
+  // render off-screen entirely.
+  await page.locator('#headline').click();
+  const top = await boxes();
+  expect(top.label.y, 'the label is on screen').toBeGreaterThanOrEqual(0);
+  expect(top.label.y, 'and below the element it names').toBeGreaterThan(top.element.y);
+
+  // An element starting off the left edge took its label with it.
+  await page.evaluate(() => {
+    const el = document.getElementById('headline')!;
+    el.style.position = 'relative';
+    el.style.left = '-300px';
+  });
+  await page.locator('#headline').click({ force: true, position: { x: 320, y: 10 } });
+  const shifted = (await label.boundingBox())!;
+  expect(shifted.x, 'held inside the viewport').toBeGreaterThanOrEqual(0);
+
+  // And with room above, it sits above.
+  await page.evaluate(() => {
+    const el = document.getElementById('headline')!;
+    el.style.left = '0';
+  });
+  await page.locator('#perk-b').click();
+  const perk = (await page.locator('#perk-b').boundingBox())!;
+  const above = (await label.boundingBox())!;
+  expect(above.y, 'above when there is room').toBeLessThan(perk.y);
+});

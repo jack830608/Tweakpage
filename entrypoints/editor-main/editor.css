@@ -15,9 +15,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
   --accent-ink: #047857;
   --accent-soft: #ecfdf5;
   /* The selection outline sits on someone else's page, whose background has nothing to
-     do with the viewer's OS theme, so it keeps one mid-tone in both and leans on its
-     white halo for contrast. */
+     do with the viewer's OS theme, so it keeps one mid-tone in both. */
   --outline: #059669;
+  /* The two constants the indicator is actually built on.
+     White dies on a white page; black dies on a black one; the accent dies on a page
+     using the same green — measured, on a real site, where the whole outline collapsed
+     to the halo. A dark band and a light band together survive all three, so they carry
+     the signal and the accent carries the brand. WCAG Technique C40 asks for two bands
+     of at least 2px with 9:1 between them; these are 19:1. */
+  --ring-dark: rgba(15, 18, 16, 0.92);
+  --ring-light: rgba(255, 255, 255, 0.96);
   --warn-ink: #92400e;
   --warn-bg: #fef3c7;
   --dark: #18181b;
@@ -38,23 +45,44 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Outlines have to read against whatever the page puts behind them, so each one is
    drawn twice: a white halo under a colored stroke stays visible on light and dark
    backgrounds alike. box-shadow does the halo because outline can't stack. */
-.twk-outline--hover { outline: 2px dashed var(--outline); outline-offset: 1px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: color-mix(in srgb, var(--outline) 8%, transparent); }
+/* Nothing is painted over the element in any of these. This is a tool for judging a
+   colour and a typeface, and every value was being judged through an 8-12% green wash —
+   enough to turn a warm grey cool. Which box it is gets answered outside the element
+   instead: the ring says where, and the selected state dims everything that is not it.
+   Only the excluded state keeps a fill, because there is nothing there to judge. */
+.twk-outline--hover { outline: 2px dashed var(--outline); outline-offset: 2px; box-shadow: 0 0 0 2px var(--ring-dark), 0 0 0 6px var(--ring-light); }
 /* While typing, the selection's tint would sit over the very text being edited. */
-.twk-outline--editing { outline: 2px solid var(--outline); outline-offset: 3px; }
+/* Two things only this state gets. The inner line, because while you are typing into it
+   the element really has become a field — honest here, a lie on selected. And the scrim,
+   because someone mid-keystroke is looking at one element and provably not judging how
+   the page composes. */
+.twk-outline--editing { outline: 3px solid var(--outline); outline-offset: 2px; box-shadow: inset 0 0 0 2px var(--outline), 0 0 0 2px var(--ring-dark), 0 0 0 7px var(--ring-light), 0 0 0 100vmax rgba(0, 0, 0, 0.2); }
 /* Refused, and saying so. Deliberately not the accent: an element that cannot be picked
    must not look like one that is about to be. */
-.twk-outline--excluded { outline: 2px dashed var(--ink-3); outline-offset: 1px; background: color-mix(in srgb, var(--ink-3) 10%, transparent); }
-.twk-outline--excluded .twk-outline-label { background: var(--ink-3); }
-.twk-outline--selected { outline: 3px solid var(--outline); outline-offset: 1px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95), 0 0 0 6px color-mix(in srgb, var(--outline) 30%, transparent), inset 0 0 0 1px rgba(255, 255, 255, 0.95); background: color-mix(in srgb, var(--outline) 12%, transparent); }
-.twk-edited-mark { position: fixed; pointer-events: none; z-index: 2147483645; outline: 1px dashed color-mix(in srgb, var(--outline) 55%, transparent); outline-offset: 1px; background: color-mix(in srgb, var(--outline) 5%, transparent); }
+/* Fixed grey, not --ink-3: that token follows the viewer's OS theme, which is the exact
+   thing the comment on --outline exists to prevent. */
+.twk-outline--excluded { outline: 2px dashed #8b8b93; outline-offset: 2px; box-shadow: 0 0 0 2px var(--ring-dark), 0 0 0 6px var(--ring-light); background: rgba(122, 122, 132, 0.16); }
+.twk-outline--excluded .twk-outline-label { background: #6b6b73; }
+/* No scrim here, though it was tried and it looked good. Dimming everything except the
+   selection is the same mistake as washing the selection in green, applied to the other
+   side of the line: selected is where you sit and judge whether the heading works
+   against the hero, and that judgement needs the page at its own brightness. The ring
+   already says which element. Typing is different — see --editing. */
+.twk-outline--selected { outline: 3px solid var(--outline); outline-offset: 2px; box-shadow: 0 0 0 2px var(--ring-dark), 0 0 0 7px var(--ring-light); }
+/* A corner tick, not a box. As a faint dashed box it was the same drawing as hover in a
+   lighter shade, so a page with several edits and the marks on became a field of dashed
+   boxes and hover stopped meaning "the one under your cursor". A different shape cannot
+   be confused with a different state. */
+.twk-edited-mark { position: fixed; pointer-events: none; z-index: 2147483645; }
+.twk-edited-mark::before { content: ''; position: absolute; left: -2px; top: -2px; width: 8px; height: 8px; background: var(--outline); border-radius: 3px 0 3px 0; box-shadow: 0 0 0 1.5px var(--ring-light), 0 0 0 2.5px var(--ring-dark); }
 .twk-marks-toggle { display: flex; align-items: center; gap: 6px; margin: 2px 12px 12px; font-size: 11.5px; color: var(--ink-3); cursor: pointer; }
 .twk-marks-toggle input { accent-color: var(--accent); }
-.twk-outline-top { position: absolute; top: -26px; left: 0; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.twk-outline-top { position: absolute; top: -26px; left: 0; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; max-width: calc(100vw - 12px); }
 .twk-move-buttons { display: inline-flex; gap: 2px; pointer-events: auto; }
 .twk-move-buttons button { width: 22px; height: 20px; display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: 5px; background: var(--dark); color: #fff; font-size: 9px; cursor: pointer; box-shadow: var(--shadow-lift); }
 .twk-move-buttons button:hover { background: var(--outline); }
 .twk-move-buttons button:disabled { opacity: 0.35; cursor: default; }
-.twk-outline-label { display: inline-flex; align-items: center; background: var(--dark); color: #fff; font: 500 11px/1.5 var(--sans); padding: 3px 8px; border-radius: 5px; white-space: nowrap; box-shadow: var(--shadow-lift); }
+.twk-outline-label { display: inline-flex; align-items: center; min-width: 0; background: var(--dark); color: #fff; font: 500 11px/1.5 var(--sans); padding: 3px 8px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: var(--shadow-lift); }
 
 /* ---------- panel shell ---------- */
 .twk-panel { position: fixed; top: 12px; right: 12px; width: 320px; min-width: min(280px, calc(100vw - 24px)); max-width: min(560px, calc(100vw - 24px)); height: auto; max-height: calc(100vh - 24px); z-index: 2147483647; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); color: var(--ink); opacity: 0.85; transition: opacity 0.18s ease; font: 400 12.5px/1.5 var(--sans); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
