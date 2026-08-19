@@ -387,3 +387,23 @@ describe('a wizard that keeps its nodes and swaps their words', () => {
     expect(document.querySelector('.pl-10 span')!.textContent).toBe(`${OPTIONS[1]} JACK`);
   });
 });
+
+describe('another writer on the same page', () => {
+  test('and clearing the page from the popup is not undone by the next edit', async () => {
+    document.body.innerHTML = '<h1 id="title">Original</h1>';
+    const c = controller();
+    c.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
+    const key = `page:${location.origin}${location.pathname}`;
+    expect((await fakeBrowser.storage.local.get(key))[key]).toBeTruthy();
+
+    // What the popup's Clear does.
+    await fakeBrowser.storage.local.remove(key);
+    await new Promise((r) => setTimeout(r, 20));
+    expect(c.getPage().records, 'the panel noticed').toEqual([]);
+    expect(document.getElementById('title')!.textContent, 'and put the page back').toBe('Original');
+
+    c.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Second');
+    const stored = (await fakeBrowser.storage.local.get(key))[key] as { records: unknown[] };
+    expect(stored.records, 'the cleared record did not come back').toHaveLength(1);
+  });
+});

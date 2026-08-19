@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { applyAll, ensureStyleTag, revertAll } from './apply';
+import { applyAll, ensureStyleTag, revertAll, revertRemoved } from './apply';
 import type { EditRecord } from './types';
 
 function record(overrides: Partial<EditRecord>): EditRecord {
@@ -433,4 +433,42 @@ test("one record's write does not vouch for another record's claim", () => {
   expect(second.get('a')).toBe('not-found');
   expect(second.get('b')).toBe('applied');
   expect(document.querySelector('span')!.textContent).toBe('Second question JACK');
+});
+
+describe('taking an edit away', () => {
+  const order = () => Array.from(document.querySelectorAll('#list > *')).map((el) => el.id || el.textContent);
+
+  test('puts the page back even when another record shares its selector', () => {
+    // Two text records on one element — exactly what a wizard produces, and what
+    // upsertRecord was already fixed for. Survivorship was still tested by selector and
+    // property, so deleting one left its words on the page with nothing accounting for
+    // them, and only a reload cleared it.
+    document.body.innerHTML = '<div id="list"><span id="b">Next</span></div>';
+    const first = record({ id: 'r1', selector: '#b', type: 'text', property: 'textContent', oldValue: 'Next', newValue: 'Continue', textFingerprint: 'Next' });
+    const second = record({ id: 'r2', selector: '#b', type: 'text', property: 'textContent', oldValue: 'Finish', newValue: 'Done', textFingerprint: 'Finish' });
+
+    applyAll([first], document);
+    expect(document.getElementById('b')!.textContent).toBe('Continue');
+    applyAll([first, second], document);
+
+    revertRemoved([first, second], [first], document);
+    applyAll([first], document);
+    expect(document.getElementById('b')!.textContent, 'the deleted words are gone').toBe('Continue');
+  });
+
+  test('and undoes a move before removing the copy the move was measured against', () => {
+    // Non-moves were undone first, so the copy went before the move's index was read —
+    // and that index had been measured in a page that still had the copy in it. Revert
+    // is the reverse of apply, so it has to run in the reverse order too.
+    document.body.innerHTML =
+      '<div id="list"><i id="a">A</i><i id="b">B</i><i id="c">C</i><i id="d">D</i></div>';
+    const clone = record({ id: 'cl', selector: '#a', type: 'clone', property: 'clone', oldValue: '', newValue: '' });
+    const move = record({ id: 'mv', selector: '#c', type: 'move', property: 'domIndex', oldValue: '3', newValue: '1' });
+
+    applyAll([clone, move], document);
+    expect(order().length, 'the copy is there').toBe(5);
+
+    revertAll([clone, move], document);
+    expect(order(), 'exactly the page we started with').toEqual(['a', 'b', 'c', 'd']);
+  });
 });

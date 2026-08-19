@@ -1,4 +1,5 @@
 import { browser } from 'wxt/browser';
+import { parseImport } from './import';
 import type { PageEdits } from './types';
 
 /**
@@ -29,10 +30,28 @@ export function pageKey(url: string): string {
   return `page:${normalizePageUrl(url)}`;
 }
 
+/**
+ * What is in storage is not necessarily what we put there.
+ *
+ * The cast used to be taken on faith, so a value that had been truncated, hand-edited in
+ * devtools, or written by a version that shaped things differently threw on first use —
+ * and the throw was swallowed by the applier's `.catch(() => {})`. The result was a page
+ * whose every saved edit stopped replaying, permanently, with no message anywhere; the
+ * popup showed the same page as "no saved edits yet", which is data loss displayed as an
+ * empty state.
+ *
+ * The import path already knows how to be handed something arbitrary. This is the same
+ * boundary, so it uses the same gate, and what it cannot make sense of it says so about.
+ */
 export async function loadPageEdits(url: string): Promise<PageEdits | null> {
   const key = pageKey(url);
   const result = await browser.storage.local.get(key);
-  return (result[key] as PageEdits | undefined) ?? null;
+  const stored = result[key];
+  if (stored === undefined) return null;
+  const parsed = parseImport(JSON.stringify(stored));
+  if (parsed.ok) return { ...parsed.page, url: normalizePageUrl(url) };
+  console.warn('[tweakpage] stored edits for this page could not be read:', parsed.error);
+  return null;
 }
 
 export async function savePageEdits(page: PageEdits): Promise<void> {

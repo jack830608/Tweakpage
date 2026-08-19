@@ -1,5 +1,5 @@
 import { fakeBrowser } from 'wxt/testing';
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { loadPageEdits, normalizePageUrl, pageKey, savePageEdits } from './storage';
 import { emptyPageEdits, type PageEdits } from './types';
 
@@ -64,4 +64,47 @@ test('saving with zero records removes the key', async () => {
   const page = emptyPageEdits('https://a.com/b', 'Title', '2026-08-15T10:00:00.000Z');
   await savePageEdits({ ...page, records: [] });
   expect(await loadPageEdits('https://a.com/b')).toBeNull();
+});
+
+describe('a stored value we did not write', () => {
+  const key = () => pageKey('https://a.com/p');
+
+  test('never reaches the applier, whatever shape it is', async () => {
+    // Taken on faith, each of these threw on first use — and the throw was swallowed, so
+    // every saved edit on that page stopped replaying forever with no message anywhere.
+    for (const junk of [
+      'a string',
+      42,
+      [],
+      null,
+      { version: 1, url: 'https://a.com/p', records: 'not an array' },
+      { version: 1, url: 'https://a.com/p', records: [null, undefined] },
+      { version: 1, url: 'https://a.com/p' },
+      { version: 9, url: 'https://a.com/p', records: [] },
+    ]) {
+      await fakeBrowser.storage.local.set({ [key()]: junk });
+      const loaded = await loadPageEdits('https://a.com/p');
+      expect(Array.isArray(loaded?.records ?? []), JSON.stringify(junk)).toBe(true);
+      // Whatever came back must be usable without throwing.
+      expect(() => (loaded?.records ?? []).map((r) => r.enabled)).not.toThrow();
+    }
+  });
+
+  test('and a good one still comes back whole', async () => {
+    const page = {
+      version: 1 as const,
+      url: 'https://a.com/p',
+      title: 'T',
+      updatedAt: 'n',
+      records: [
+        {
+          id: 'r1', selector: '.t', fallbackSelectors: [], elementLabel: 'p',
+          type: 'text' as const, property: 'textContent', oldValue: 'a', newValue: 'b',
+          enabled: true, createdAt: 'n', updatedAt: 'n',
+        },
+      ],
+    };
+    await savePageEdits(page);
+    expect((await loadPageEdits('https://a.com/p'))?.records).toHaveLength(1);
+  });
 });

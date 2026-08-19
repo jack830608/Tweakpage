@@ -1,4 +1,4 @@
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { hasInlineMarkup, textNodeAt, textNodeIndex, textNodeProperty, textRuns } from './text-nodes';
 
 beforeEach(() => {
@@ -42,4 +42,33 @@ test('property round-trips through its addressed form', () => {
   expect(textNodeIndex(textNodeProperty(3))).toBe(3);
   expect(textNodeIndex('textContent')).toBeNull();
   expect(textNodeIndex('textNode:nope')).toBeNull();
+});
+
+describe('a run emptied by an edit', () => {
+  test('keeps its number, so the run after it keeps its own', () => {
+    // Numbered only among visible runs, an emptied run stopped counting and the next
+    // one inherited its number. The edit then wrote onto that one too.
+    document.body.innerHTML = '<h1 id="h">Hello <span>big</span> world</h1>';
+    const el = document.getElementById('h')!;
+    const before = textRuns(el).map((r) => r.index);
+    const middle = textNodeAt(el, before[1]!)!;
+    middle.nodeValue = '';
+    const after = textRuns(el);
+    expect(after.map((r) => r.index), 'the survivors keep the numbers they had').toEqual([
+      before[0],
+      before[2],
+    ]);
+    expect(textNodeAt(el, before[2]!)?.nodeValue, 'and still resolve to themselves').toBe(' world');
+    expect(textNodeAt(el, before[1]!), 'the emptied one is simply not there').toBeNull();
+  });
+
+  test('and an ordinary element still numbers its runs from the start', () => {
+    document.body.innerHTML = '<p id="p">One <b>two</b> three</p>';
+    const runs = textRuns(document.getElementById('p')!);
+    expect(runs).toHaveLength(3);
+    expect(runs.map((r) => r.node.nodeValue)).toEqual(['One ', 'two', ' three']);
+    for (const run of runs) {
+      expect(textNodeAt(document.getElementById('p')!, run.index)).toBe(run.node);
+    }
+  });
 });

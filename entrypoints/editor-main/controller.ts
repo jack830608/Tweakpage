@@ -1,3 +1,4 @@
+import { browser } from 'wxt/browser';
 import { applyAll, revertAll, revertRemoved, type ApplyStatus } from '../../lib/edits/apply';
 
 export type SaveState = 'idle' | 'saving' | 'saved' | 'failed' | 'preview';
@@ -5,7 +6,7 @@ import { MARK_ATTRIBUTE } from '../../lib/edits/css';
 import { findRecord, upsertRecord } from '../../lib/edits/coalesce';
 import { mergeRecords } from '../../lib/edits/import';
 import { revertDomEdit } from '../../lib/edits/dom';
-import { loadPageEdits, normalizePageUrl, savePageEdits } from '../../lib/edits/storage';
+import { loadPageEdits, normalizePageUrl, pageKey, savePageEdits } from '../../lib/edits/storage';
 import {
   emptyPageEdits,
   makeId,
@@ -60,6 +61,7 @@ export class EditsController {
     if (this.page.records.length > 0) {
       this.statuses = applyAll(this.page.records, this.doc);
     }
+    this.watchForClears();
     // The applier retires stale baselines when the site rewrites an edited value; the
     // panel's copy of the records has to follow, or its reset buttons write history.
     doc.addEventListener('tweakpage:baseline', (e) => {
@@ -416,6 +418,40 @@ export class EditsController {
   }
 
   getVariants = (): Variant[] => this.page.variants ?? [];
+
+  /**
+   * Notices when this page's edits are deleted from somewhere else.
+   *
+   * Clearing a page from the popup removed the key; the panel, whose copy of the records
+   * was read once at construction and never again, kept them in memory and wrote them
+   * all back on the next keystroke. The clear silently never happened.
+   *
+   * Only removal is followed, deliberately. Adopting every foreign *change* would also
+   * fix two tabs on one URL overwriting each other — but the applier writes this same
+   * key on its own schedule from a separate bundle, so a watcher cannot tell that write
+   * from another tab's, and treating it as one throws away the undo history. That case
+   * is left alone rather than half-solved. See docs/known-issues.md.
+   */
+  private watchForClears(): void {
+    const key = pageKey(this.page.url);
+    const listener = (changes: Record<string, { newValue?: unknown }>) => {
+      // Chrome omits newValue on a removal; other runtimes send null. Both mean gone.
+      if (!(key in changes) || (changes[key]!.newValue ?? null) !== null) return;
+      if (this.sharedPreview || this.page.records.length === 0) return;
+      revertAll(this.page.records, this.doc);
+      this.page = emptyPageEdits(this.page.url, this.doc.title, this.now());
+      this.undoStack = [];
+      this.redoStack = [];
+      this.lastEditTarget = null;
+      this.statuses = new Map();
+      this.listeners.forEach((fn) => fn());
+    };
+    try {
+      browser.storage.local.onChanged.addListener(listener);
+    } catch {
+      // No storage means nothing else can be clearing it either.
+    }
+  }
 
   /**
    * Keeps the current edits as a named proposal.
