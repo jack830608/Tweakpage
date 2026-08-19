@@ -526,10 +526,10 @@
     "message": "Delete $1"
   },
   "opt_title": {
-    "message": "Share links"
+    "message": "Share settings"
   },
   "opt_intro": {
-    "message": "Upload a page of edits to your own S3 bucket and share the link. Whoever opens it needs Tweakpage, and nothing else — no AWS account, no setup."
+    "message": "A share link is a page of your edits, uploaded to a bucket you own. Whoever opens it needs Tweakpage and nothing else — no AWS account, no setup. Three steps, once."
   },
   "opt_risk_title": {
     "message": "These keys are readable on this machine"
@@ -544,7 +544,7 @@
     "message": "Clear"
   },
   "opt_incomplete": {
-    "message": "Sharing stays off until all four AWS fields are filled."
+    "message": "Sharing stays off until the four AWS fields are filled."
   },
   "share_link": {
     "message": "Share link"
@@ -1001,5 +1001,50 @@
   },
   "compare": {
     "message": "Compare"
+  },
+  "opt_step1_title": {
+    "message": "Make a bucket to keep them in"
+  },
+  "opt_step1_body": {
+    "message": "Any name, any region, in your own AWS account. Nothing else goes in it — Tweakpage writes only under a tweakpage/ prefix."
+  },
+  "opt_step1_link": {
+    "message": "Open the S3 console →"
+  },
+  "opt_step2_title": {
+    "message": "Make a key that can only write there"
+  },
+  "opt_step2_body": {
+    "message": "Create an IAM user with the policy below and nothing more, then take its access key. Scoped this narrowly, the worst a leaked key can do is write into that one prefix."
+  },
+  "opt_step2_link": {
+    "message": "Open the IAM console →"
+  },
+  "opt_policy_show": {
+    "message": "The policy to paste"
+  },
+  "opt_policy_copy": {
+    "message": "Copy policy"
+  },
+  "opt_step3_title": {
+    "message": "Paste them here"
+  },
+  "opt_step3_body": {
+    "message": "The bucket name and region from step 1, the key and secret from step 2. They stay on this computer and are never rendered into a page you edit."
+  },
+  "opt_check_values": {
+    "message": "Sharing stays off until every value is one AWS will accept."
+  },
+  "opt_show": {
+    "message": "Show"
+  },
+  "opt_hide": {
+    "message": "Hide"
+  },
+  "err_bucket": {
+    "message": "Bucket names are lowercase letters, numbers, dots and dashes."
+  },
+  "err_region": {
+    "message": "A region looks like ap-northeast-1, not its display name."
   }
 }
