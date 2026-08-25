@@ -155,11 +155,17 @@ itself lives in `scripts/icon.mjs`, with `docs/assets/icon.svg` as its vector ou
 
 ## Before pressing submit
 
+A template — the boxes stay empty here. What was actually checked, and what was
+skipped, goes in [release-log.md](release-log.md) under that version.
+
+- [ ] Version bumped in `package.json` (wxt takes the manifest version from it)
 - [ ] `pnpm test` and `pnpm e2e` green
 - [ ] `pnpm audit --prod` clean
 - [ ] `pnpm package` — builds the ZIP, unpacks it, and drives that copy in a real
       browser (edit, reload, replay, and a credential-leak check)
 - [ ] Load the unpacked ZIP by hand and run `docs/qa-checklist.md`
 - [ ] The package contains no tests, no source maps, no `.env`, no real credentials
+- [ ] Still no remote code — no external `<script>`, no `eval`, no `new Function`, no
+      dynamic `import()`, no WebAssembly. The listing answer has to stay true.
 - [ ] The privacy policy URL resolves and matches the declared practices
-- [x] Version bumped — 1.0.0
+- [ ] Tag the release commit, so the store version can be traced back to code
