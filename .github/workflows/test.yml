@@ -1,0 +1,32 @@
+# The type check and the unit suite, on every push to main and every pull request.
+#
+# `pnpm e2e` is deliberately not here. Extension tests drive a headed Chromium through
+# `--load-extension`, which needs a display server on a Linux runner — worth the setup
+# when this starts taking outside pull requests, not before. Until then it runs where it
+# already runs: before a release, from `docs/store-listing.md`.
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # postinstall runs `wxt prepare`, which generates the types the check needs.
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm test

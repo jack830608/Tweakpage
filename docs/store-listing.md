@@ -49,13 +49,27 @@ Reviewer notes worth adding:
 
 ## Privacy practices — what to declare
 
+The dashboard offers exactly these nine, and no others. There is no box for
+user-generated content: the edits, notes and proposals are declared under **Website
+content**, because that is what they are changes to.
+
 | Category | Declare | Because |
 | --- | --- | --- |
-| Website content | Yes | The user's selections, text, attributes and styles on pages they edit |
-| Web browsing activity | Yes | The page address is read to look up saved edits |
-| User-generated content | Yes | Edits, notes, proposals, imported and exported JSON |
-| Authentication information | Yes | AWS and TinyPNG keys, if the user enters them |
-| Personal communications, financial, health, location | No | Not touched |
+| Personally identifiable information | No | Never asked for, never derived |
+| Health information | No | Not touched |
+| Financial and payment information | No | Not touched |
+| Authentication information | **Yes** | AWS and TinyPNG keys, if the user enters them |
+| Personal communications | No | Not touched |
+| Location | No | Not touched |
+| Web history | **Yes** | The page address is read to look up saved edits, and the title is stored beside them |
+| User activity | No | See below |
+| Website content | **Yes** | Selections, text, attributes and computed styles on the pages being edited, the images the user picks, and the edits, notes and proposals they write |
+
+**User activity** is the one that invites second-guessing, so decide it once: the category
+covers *recording* clicks, mouse position, scrolling or keystrokes. The editor reacts to
+all of those and records none of them — what someone types is stored as a change to
+website content, not as an input log. Every extension with an interface handles clicks;
+declaring this one would be claiming a behaviour that isn't there.
 
 Also declare, and make sure each is true at submission time:
 
@@ -101,25 +115,25 @@ you control.
 
 **簡短說明**
 
-> 直接在網頁上做視覺修改、對照前後差異,並交給工程師一份清楚的改動清單。
+> 直接在網頁上做視覺修改、對照前後差異，並交給工程師一份清楚的改動清單。
 
 **完整說明**
 
-> Tweakpage 讓「這裡可以放大一點嗎?」變成一個看得到的東西。
+> Tweakpage 讓「這裡可以放大一點嗎？」變成一個看得到的東西。
 >
-> 選取頁面上任何元素直接改:文案、字型、顏色、圖片、間距、版面。調整區塊順序、複製
+> 選取頁面上任何元素直接改：文案、字型、顏色、圖片、間距、版面。調整區塊順序、複製
 > 一張卡片、隱藏不該出現的東西。雙擊文字就能直接在頁面上編輯。一個開關就能在你的版本
 > 和原始版之間來回對照。
 >
-> 改動會留著。它們存在你自己的電腦上、依頁面分開,下次回來會自動重現 —— 所以你可以先
-> 跟一個改動相處一天,再決定要不要。可以存成兩個提案來回對照;可以指定頁面上哪些區域
-> 不要選取 —— 客服按鈕、同意條 —— 讓它們不再吃掉你要點的東西;也隨時可以一鍵回復原廠。
+> 改動會留著。它們存在你自己的電腦上、依頁面分開，下次回來會自動重現 —— 所以你可以先
+> 跟一個改動相處一天，再決定要不要。可以存成兩個提案來回對照；可以指定頁面上哪些區域
+> 不要選取 —— 客服按鈕、同意條 —— 讓它們不再吃掉你要點的東西；也隨時可以一鍵回復原廠。
 >
-> 準備好就交出去:複製一份工程師能直接動手的改動清單(元素、屬性、舊值、新值,還有你
-> 寫的理由),或存成一張前後對照圖,或者你有自己的 S3 bucket 的話,送一條連結 ——
-> 對方只需要裝 Tweakpage,不需要其他設定。
+> 準備好就交出去：複製一份工程師能直接動手的改動清單（元素、屬性、舊值、新值，還有你
+> 寫的理由），或存成一張前後對照圖，或者你有自己的 S3 bucket 的話，送一條連結 ——
+> 對方只需要裝 Tweakpage，不需要其他設定。
 >
-> 除非你按下會送出的按鈕,否則沒有任何東西離開你的電腦;而且第一次真的要送出時,
+> 除非你按下會送出的按鈕，否則沒有任何東西離開你的電腦；而且第一次真的要送出時，
 > Tweakpage 會停下來告訴你什麼東西要去哪裡。不用帳號、沒有伺服器、沒有分析追蹤。
 
 ## Assets
