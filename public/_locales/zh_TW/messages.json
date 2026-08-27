@@ -946,7 +946,7 @@
     "message": "瀏覽器讀不懂這個 selector。"
   },
   "exclude_catches_everything": {
-    "message": "這會match整個頁面，等於什麼都不能改了。"
+    "message": "這會比對到整個頁面，等於什麼都不能改了。"
   },
   "exclude_already_there": {
     "message": "這條規則已經在清單裡了。"

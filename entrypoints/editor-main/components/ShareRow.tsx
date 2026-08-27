@@ -5,6 +5,7 @@ import { makeShareId, shareLink } from '../../../lib/share/link';
 import { getShareSettings, isConfigured, watchShareSettings } from '../../../lib/share/settings';
 import { exportFilename, toJson } from '../../../lib/export/json';
 import { toMarkdown } from '../../../lib/export/markdown';
+import { forHandOff } from '../../../lib/export/hand-off';
 import type { EditsController } from '../controller';
 import type { PageEdits } from '../../../lib/edits/types';
 import type { ImageReport } from '../../../lib/share/transfer';
@@ -168,6 +169,11 @@ export function ShareRow({ controller, onToast, onSnapshot, onNeedsSetup }: Shar
       });
       return false;
     }
+    // The key the edits are filed under, which is now the page's address minus the
+    // parameters that only say how you arrived. That is the right base for a link twice
+    // over: it carries whatever names the content — youtube.com/watch without its v= is
+    // not the video — and it does not forward the sender's campaign tags and session ids
+    // to whoever opens it.
     await copy(shareLink(page.url, result.ref), shareMessage(result.images));
     return true;
   };
@@ -225,7 +231,7 @@ export function ShareRow({ controller, onToast, onSnapshot, onNeedsSetup }: Shar
           run={() =>
             withConsent('summary', async (allowUpload) => {
               const { page, report } = await prepare('summary', allowUpload);
-              await copy(toMarkdown(page, today()), imageMessage(t('toast_copied'), report));
+              await copy(toMarkdown(forHandOff(page), today()), imageMessage(t('toast_copied'), report));
             })
           }
         />

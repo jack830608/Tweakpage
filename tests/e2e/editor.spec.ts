@@ -470,6 +470,42 @@ test('a shared link works for someone who has set nothing up', async ({ context 
   await reader.context.close();
 });
 
+test('a share link lands on the page it was made from, query and all', async ({ context }) => {
+  // The bug this exists for. Edits are filed under a key with the arrival parameters
+  // stripped, and the link used to be built from that key — so sharing
+  // youtube.com/watch?v=A sent the recipient to /watch with no v= at all, which is not
+  // the video and not any video.
+  await context.route('https://**.amazonaws.com/**', (route) =>
+    route.fulfill({ status: 200, body: '' }),
+  );
+  const sender = await context.newPage();
+  await sender.goto('http://localhost:4173/?v=dQw4w9WgXcQ&utm_source=newsletter');
+
+  let [worker] = context.serviceWorkers();
+  if (!worker) worker = await context.waitForEvent('serviceworker');
+  await worker.evaluate(async () => {
+    await (globalThis as any).chrome.storage.local.set({
+      'tweakpage:share-settings': {
+        bucket: 'demo-bucket', region: 'ap-northeast-1',
+        accessKeyId: 'AKIAIOSFODNN7EXAMPLE', secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      },
+      'tweakpage:transfer-consent': ['demo-bucket'],
+    });
+  });
+  await activateEditor(context);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await sender.locator('h1').click();
+  await sender.locator('[data-testid="text"]').fill('Edited on this exact page');
+  await sender.locator('[data-testid="share-link"]').click();
+
+  const link = await copied(sender, 'tweakpage=');
+  expect(link, 'the parameter that names the content travels').toContain('v=dQw4w9WgXcQ');
+  expect(
+    link,
+    'the one that only says how the sender arrived does not go with it',
+  ).not.toContain('utm_source');
+});
+
 test('an edited page says so, even with the editor closed', async ({ context }) => {
   const page = await context.newPage();
   await page.goto('http://localhost:4173/');
@@ -1621,24 +1657,37 @@ test('nothing leaves the machine before the question is answered', async ({ cont
   await expect(page.locator('[data-testid="transfer-consent"]'), 'asked once, not once per button').toHaveCount(0);
 });
 
-test('a query the site adds does not lose the work you just did', async ({ context }) => {
-  // A shop appends ?variant= when you pick a size. For a while that counted as a
-  // different page, and the edits made a moment earlier disappeared.
+test('a query is part of the page, and arrival parameters are not', async ({ context }) => {
+  // Both halves of a trade-off that has been made twice and is now made deliberately.
+  //
+  // The query used to be dropped whole so that a shop appending ?variant= did not take
+  // your edits off the screen. It also meant a page whose query is the only thing naming
+  // its content — a video, a search, a docs viewer, any SPA that routes on one — filed
+  // every one of them together, and showed the words from one on another. That failure
+  // is silent and it travels in the hand-off; this one is visible and one click back.
   const page = await context.newPage();
-  await page.goto('http://localhost:4173/');
+  await page.goto('http://localhost:4173/?item=7');
   await activateEditor(context);
   await page.locator('h1').click();
   await page.locator('[data-testid="text"]').fill('Edited headline');
   await expect(page.locator('h1')).toHaveText('Edited headline');
 
-  await page.goto('http://localhost:4173/?variant=42');
-  await expect(page.locator('h1'), 'same page to a person, same page to us').toHaveText(
-    'Edited headline',
+  // A different item is a different page, and does not inherit the first one's words.
+  await page.goto('http://localhost:4173/?item=8');
+  await expect(page.locator('h1'), 'one page\'s edits stay on that page').toHaveText(
+    'Original Headline',
   );
+
+  // Back to the one it was made on, and the work is where it was left.
+  await page.goto('http://localhost:4173/?item=7');
+  await expect(page.locator('h1')).toHaveText('Edited headline');
   await expect(page.locator('#tweakpage-marker button')).toBeVisible();
 
-  await page.goto('http://localhost:4173/?variant=99&sid=abc&utm_source=mail');
-  await expect(page.locator('h1')).toHaveText('Edited headline');
+  // Campaign tags and click ids say how somebody arrived, never what they are reading.
+  await page.goto('http://localhost:4173/?item=7&utm_source=mail&fbclid=abc');
+  await expect(page.locator('h1'), 'arrival parameters do not split a page').toHaveText(
+    'Edited headline',
+  );
 });
 
 test('an entry left behind by an older rule can still be found and cleared', async ({ context }) => {

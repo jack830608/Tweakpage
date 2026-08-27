@@ -54,10 +54,92 @@ sit in, and making it deterministic means ordering the merged set by when each e
 made. That is defensible, but it changes the apply order of every existing page and is
 not a change to make alongside an identity fix.
 
+## A page whose query changes looks like it lost your work
+
+Keying on the query is the right default — the alternative put one page's words on
+another page's content, silently — but it has a cost, and this is it. Edit a product
+page, pick a size, and if the shop appends `?variant=42` the edits go off the screen.
+They are not gone: going back to the variant they were made on brings them back, and the
+popup lists every page anything is saved for. Nothing says so at the moment it happens,
+which is the part worth fixing.
+
+**What would fix it.** The corner chip already knows when a page has no edits. It could
+also know when a *sibling* of that page does — same origin and path, different query —
+and say so, which turns a disappearance into a signpost. That is a small feature rather
+than a rule change, and it does not require picking a different default.
+
+## Raised in the 2026-08-28 review, and deliberately not in 1.1.0
+
+Each was verified as real. None is a defect being ignored; each is a different kind of
+change from the reliability fixes 1.1.0 is made of.
+
+**`<all_urls>` at install could be `optional_host_permissions`.** Asking per origin the
+first time somebody edits there, and registering the content script dynamically for the
+origins they granted, would keep edits replaying on reload without demanding every site
+up front. It is a real option and a better answer than the two the dashboard suggests —
+`activeTab` is granted only after a gesture and revoked on navigation, which is not a
+thing that can replay anything. Held back because it changes the permission model, so
+the store re-reviews permissions, and because the moment where a site is granted needs
+designing rather than bolting on.
+
+**The panel is dense, and names CSS properties rather than what they do.** `font-size`,
+`flex-direction` and `box-shadow` sit bare in a 320px column aimed partly at people who
+do not write CSS. A "common" view with the rest behind Advanced is the suggestion. Held
+back because it is taste, on the primary surface, and guessing at it is worse than
+leaving it.
+
+**Share links need the reader to run their own S3 bucket.** Bucket, IAM user, public-read
+policy and a long-lived key is a small AWS project, and it is asked of a headline
+feature. Marking it Advanced is a positioning decision that contradicts what the store
+listing sells, so it is not one to make quietly.
+
+**The Markdown hand-off is English whatever the interface language is.** Its headings,
+field names and structural verbs are fixed. Arguably right — a change list names CSS
+properties, and those are English — but it is not stated anywhere, which is the part
+that should change either way.
+
 ## Not supported, by design
 
 Shadow DOM, iframes, canvas and WebGL. The editor says so when you hover them. See
 [selection.md](selection.md).
+
+---
+
+# Fixed in 1.1.0
+
+From the 2026-08-28 review. Each was verified before being believed, and each is guarded.
+
+**A page's identity ignored the query, so one page's edits appeared on another's
+content.** `youtube.com/watch?v=A` and `?v=B` were one page. The rule was written against
+the parameters that say nothing — a shop's `?variant=`, a session id, a page number — and
+never considered that on a great many sites the query is the only thing naming the
+content. It now keeps the query minus the parameters that only describe how you arrived,
+and sorts the rest so one page reached two ways stays one page. The share link inherits
+the fix: built from that key, it carries what names the content and forwards none of the
+sender's campaign tags.
+*`lib/edits/page-identity.test.ts`, and `tests/e2e/editor.spec.ts` — "a share link lands
+on the page it was made from, query and all".*
+
+**A change switched off was still handed to an engineer.** Markdown summaries and share
+links carried every record, with nothing marking which had been turned off. A JSON export
+still keeps them — that is your own work moving between your machines, not a request to
+somebody else.
+*`lib/export/hand-off.test.ts`.*
+
+**TinyPNG had no timeout.** `compress.ts` imported `fetchWithin` and then called bare
+`fetch` twice, so a stall there hung the hand-off that was supposed to degrade to the
+original image.
+
+**White text on the accent was 1.92:1 in dark mode**, 3.77:1 in light — every primary
+button in the product, including Keep, Agree and the popup's own Edit this page. Filled
+controls now take an `--on-accent` token, dark ink on the bright accent and white on a
+darker one, and tertiary text moved off a 2.69:1 grey. Contrast is arithmetic now rather
+than something looked at.
+*`lib/contrast.test.ts`, which reads the tokens out of the stylesheets.*
+
+**Nine dev-dependency advisories, two critical**, down to three by upgrading `happy-dom`
+past its VM-escape line and pinning the Firefox tooling pnpm pulls in for a browser this
+project does not build for. None ever shipped: the store ZIP is 24 files of our own code.
 
 ---
 

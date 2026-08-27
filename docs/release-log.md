@@ -8,6 +8,53 @@ One section per submission. The point is to be able to answer, months later, wha
 actually on the store and what was already known to be wrong when it went there — without
 reconstructing it from memory or from a merge commit's date.
 
+## 1.1.0 — submitted 2026-08-28
+
+A reliability release, from an outside review that found four real defects the project's
+own review pass and a code review had both missed. Every claim in it was verified before
+being acted on; every one that was checkable held.
+
+Minor rather than patch because page identity changed. Edits are filed under a key that
+now includes the query, so anything saved under the old key is unreachable — acceptable
+only because there is nobody to lose work: the store shows no ratings and the listing is
+two days old. Had there been users this would have needed a hand-over, and the decision
+was made explicitly rather than by omission.
+
+### What changed
+
+- **Page identity keeps the query**, minus arrival-only parameters. `youtube.com/watch`
+  without its `v=` was one page for every video.
+- **Hand-offs carry only enabled changes.** A switched-off change was still going to
+  engineers.
+- **TinyPNG calls have the timeout** the rest of the codebase adopted.
+- **Every filled control clears WCAG AA.** White on the dark accent was 1.92:1.
+- **`happy-dom` past its critical advisory**, Firefox-only transitive deps pinned.
+- Version shown in Settings and stamped into every hand-off.
+- zh-TW: 59 strings of halfwidth punctuation, one mixed-language string, and the
+  before/after image labels now follow the interface language.
+
+### Checked before submitting
+
+- `pnpm test` — 63 files, 688 tests
+- `pnpm e2e` — 71 tests
+- `pnpm package` — ZIP built, unpacked, driven in a real browser
+- Both new guards were confirmed to fail without their fix. The first attempt at the
+  share-link test did not: the page-identity change had already fixed it, and the extra
+  change being tested turned out to be redundant *and* worse — it forwarded the sender's
+  campaign tags to the recipient. It was reverted.
+
+### Not done before submitting
+
+- `docs/qa-checklist.md` — the eight manual paths. Third release running. Still needs a
+  real bucket, a real TinyPNG key and two browser profiles.
+- `pnpm audit:selectors` — not re-run; nothing in this release touches resolution.
+
+### Deliberately not in this release
+
+Four more findings from the same review, each verified and each held back for a stated
+reason — permission model, panel density, share-link positioning, hand-off language. They
+are written up in `known-issues.md` rather than dropped.
+
 ## 1.0.1 — submitted 2026-08-27, published 2026-08-28
 
 Approved the next day. An update that changes no permissions does not draw the review

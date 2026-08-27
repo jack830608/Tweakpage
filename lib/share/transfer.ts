@@ -9,6 +9,7 @@ import { getShareSettings, isConfigured, type HandOff, type ShareSettings } from
 import { signRequest } from './sigv4';
 import { fetchWithin } from '../net';
 import { stamped } from '../version';
+import { forHandOff } from '../export/hand-off';
 
 export type TransferFailure =
   | 'not-configured'
@@ -171,7 +172,7 @@ export async function putShared(
   const { page: hosted, report } = await hostImages(page, 'share', { allowUpload });
   // Stamped like the exports: a share is the hand-off most likely to be opened by a
   // different build than the one that wrote it.
-  const body = JSON.stringify(stamped(hosted));
+  const body = JSON.stringify(stamped(forHandOff(hosted)));
   // What we refuse to send is what a recipient refuses to read; the two limits are one
   // constant so they cannot drift.
   if (body.length > MAX_SHARE_BYTES) return { ok: false, reason: 'too-large' };

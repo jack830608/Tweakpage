@@ -13,14 +13,21 @@ test('normalizePageUrl keeps origin and path, drops the query and the fragment',
   );
 });
 
-test('a query that does not change which page you are on does not lose your work', () => {
-  // The regression this rule exists for: a shop adds ?variant= when you pick a size, and
-  // the edits you just made vanish. Session ids, page numbers and campaign tags all do
-  // the same thing, and no strip-list can know them all.
+test('a content query is part of the page, and this is what that costs', () => {
+  // Reversed deliberately, and the cost is written down here rather than discovered.
+  //
+  // The rule used to drop the query whole so that a shop adding ?variant= when you pick
+  // a size did not appear to take your edits away. It also made youtube.com/watch?v=A
+  // and ?v=B one page, so the words from one showed up on the other — silently, and
+  // onward in the export. No strip-list knows every parameter, so the question is only
+  // which way to be wrong, and putting one page's edits on another's content is worse
+  // than filing a shop variant separately.
   const product = 'https://shop.example.com/products/spark-pedal';
-  expect(normalizePageUrl(`${product}?variant=42`)).toBe(normalizePageUrl(product));
-  expect(normalizePageUrl(`${product}?variant=99&sid=abc`)).toBe(normalizePageUrl(product));
-  expect(normalizePageUrl('https://a.com/blog?page=2')).toBe(normalizePageUrl('https://a.com/blog'));
+  expect(normalizePageUrl(`${product}?variant=42`)).not.toBe(normalizePageUrl(product));
+  expect(
+    normalizePageUrl(`${product}?variant=42`),
+    'and going back to that variant is how you find that work again',
+  ).toBe(normalizePageUrl(`${product}?variant=42&utm_source=newsletter`));
 });
 
 test('a share link opens the same page it points at', () => {
@@ -38,7 +45,8 @@ test('a hash route is still its own page', () => {
 });
 
 test('pageKey prefixes with page:', () => {
-  expect(pageKey('https://a.com/b?q=1')).toBe('page:https://a.com/b');
+  expect(pageKey('https://a.com/b?q=1')).toBe('page:https://a.com/b?q=1');
+  expect(pageKey('https://a.com/b?utm_source=x')).toBe('page:https://a.com/b');
 });
 
 test('save and load round-trip', async () => {

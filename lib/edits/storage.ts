@@ -1,21 +1,47 @@
 import { browser } from 'wxt/browser';
 import { parseImport } from './import';
+import { SHARE_PARAM } from '../share/link';
 import type { PageEdits } from './types';
+
+/**
+ * Parameters that say how you arrived, not what you are looking at.
+ *
+ * Deliberately short and unambiguous. Getting this list wrong in one direction costs a
+ * page two sets of edits instead of one, which is visible and recoverable; wrong in the
+ * other, an edit made on one piece of content appears on another. Only analytics
+ * parameters are here, and anything doubtful — `ref`, `source`, `id` — is not.
+ */
+const ARRIVAL_ONLY = new Set([
+  // Ours. A recipient arrives at the page carrying it, and presses Keep; what they keep
+  // has to be filed where the page loads without it, or the edits they just adopted are
+  // missing the next time they open it normally.
+  SHARE_PARAM,
+  'gclid', 'gbraid', 'wbraid', 'dclid', 'fbclid', 'msclkid', 'ttclid', 'twclid',
+  'igshid', 'yclid', 'mc_cid', 'mc_eid', '_ga', '_gl', '_openstat', 'epik',
+  's_kwcid', 'rb_clickid',
+]);
+const ARRIVAL_PREFIXES = ['utm_', 'pk_', 'mtm_', 'hsa_', 'oly_'];
+
+function isArrivalOnly(name: string): boolean {
+  const key = name.toLowerCase();
+  return ARRIVAL_ONLY.has(key) || ARRIVAL_PREFIXES.some((prefix) => key.startsWith(prefix));
+}
 
 /**
  * Which page an edit belongs to.
  *
- * The query string is left out, and that is a deliberate reversal. For a while it was
- * part of the identity, on the reasoning that ?view=A and ?view=B can serve different
- * documents — true, and rare. What is common is a query that says nothing about which
- * page you are on: a Shopify ?variant=, a session id, a page number, a campaign tag the
- * strip-list had not heard of. Including it meant clicking a variant lost the work you
- * had just done, silently, and edits made before the rule changed became unreachable.
+ * The query used to be dropped whole, and the reasoning for that was only half the
+ * problem. It is true that a Shopify `?variant=`, a session id or a page number says
+ * nothing about which document you are on, and that filing edits under them splits one
+ * page's work in two. It is also true — and this was the half that was missed — that on
+ * a great many sites the query is the only thing that names the content at all.
+ * `youtube.com/watch` without its `v=` is not a video. A search result, a docs viewer,
+ * a dashboard filter and every SPA that routes on a query are the same. Dropping it
+ * there does not scope the work loosely, it applies one page's edits to another's
+ * content, silently, and hands that on in an export.
  *
- * Both rules are wrong sometimes, so the choice is between their failures. Ignoring the
- * query can apply an edit on a variant of the page you did not edit — visible, and one
- * click to switch off. Including it loses your work without saying so. The second is
- * worse, so the query stays out.
+ * So the query stays, minus the parameters that only ever describe how you arrived.
+ * Remaining parameters are sorted, so one page reached two ways is one page.
  *
  * A hash router's "#/products/2" is a different page; "#features" is a link within one.
  * Ignoring both meant every route of a hash-routed app shared a single bucket of edits.
@@ -23,7 +49,11 @@ import type { PageEdits } from './types';
 export function normalizePageUrl(url: string): string {
   const u = new URL(url);
   const route = u.hash.startsWith('#/') ? u.hash : '';
-  return u.origin + u.pathname + route;
+  const kept = [...u.searchParams.entries()]
+    .filter(([name]) => !isArrivalOnly(name))
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  const query = kept.length > 0 ? '?' + new URLSearchParams(kept).toString() : '';
+  return u.origin + u.pathname + query + route;
 }
 
 export function pageKey(url: string): string {

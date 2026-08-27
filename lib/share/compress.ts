@@ -26,7 +26,7 @@ export async function compressImage(
 ): Promise<CompressResult> {
   if (apiKey === '' || !SUPPORTED.has(mediaType)) return { bytes, compressed: false };
   try {
-    const response = await fetch(ENDPOINT, {
+    const response = await fetchWithin(ENDPOINT, {
       method: 'POST',
       headers: {
         // tinify authenticates with HTTP Basic, the user name being the literal "api".
@@ -39,7 +39,7 @@ export async function compressImage(
     if (!response.ok) return { bytes, compressed: false, ...(used ? { used } : {}) };
     const location = (await response.json())?.output?.url;
     if (typeof location !== 'string') return { bytes, compressed: false };
-    const compressed = await fetch(location);
+    const compressed = await fetchWithin(location);
     if (!compressed.ok) return { bytes, compressed: false };
     const shrunk = new Uint8Array(await compressed.arrayBuffer());
     // Compression that makes a file bigger is not compression.

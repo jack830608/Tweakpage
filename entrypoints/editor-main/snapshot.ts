@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser';
 import { setMarkerHidden } from '../../lib/applier/marker';
 import type { EditsController } from './controller';
+import { t } from '../../lib/i18n';
 
 const CAPTURE_GAP_MS = 600;
 const LABEL_HEIGHT = 34;
@@ -71,8 +72,11 @@ async function sideBySide(originalUrl: string, editedUrl: string): Promise<strin
   ctx.fillStyle = '#f4f4f5';
   ctx.font = '600 15px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
   ctx.textBaseline = 'middle';
-  ctx.fillText('Original', 10, LABEL_HEIGHT / 2);
-  ctx.fillText('Edited', before.width + GUTTER + 10, LABEL_HEIGHT / 2);
+  // The same words the Compare switch uses. Hard-coded English here meant a panel in
+  // Traditional Chinese produced an image labelled in a language its author was not
+  // using — and the image is the artefact that leaves.
+  ctx.fillText(t('compare_original'), 10, LABEL_HEIGHT / 2);
+  ctx.fillText(t('compare_edited'), before.width + GUTTER + 10, LABEL_HEIGHT / 2);
   return canvas.toDataURL('image/png');
 }
 

@@ -101,6 +101,9 @@ await browser.close();
 report(rows);
 
 async function run(page, url, scenario, patch) {
+  // Every number is printed at the end, so without this the run looks hung: a review
+  // abandoned it after ten silent minutes, assuming a stuck browser.
+  process.stderr.write(`  ${new URL(url).hostname} · ${scenario}\n`);
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForTimeout(5000);
 

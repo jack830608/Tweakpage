@@ -1,12 +1,12 @@
-:root { color-scheme: light dark; --ink: #18181b; --ink-2: #52525b; --ink-3: #8b8b94;
-  --surface: #ffffff; --sunken: #f6f6f7; --border: #e4e4e7; --accent: #059669; --accent-ink: #047857;
+:root { color-scheme: light dark; --ink: #18181b; --ink-2: #52525b; --ink-3: #6b6b74;
+  --surface: #ffffff; --sunken: #f6f6f7; --border: #e4e4e7; --accent: #047857; --on-accent: #ffffff; --accent-ink: #047857;
   --warn-bg: #fef3c7; --warn-ink: #92400e; --mono: ui-monospace, "SF Mono", Menlo, monospace; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --ink: #f4f4f5; --ink-2: #b0b0b8; --ink-3: #7c7c85; --surface: #1c1c20; --sunken: #26262b;
-    --border: #34343b; --accent: #34d399; --accent-ink: #6ee7b7; --warn-bg: rgba(180,83,9,.22); --warn-ink: #fbbf24; }
+  :root:not([data-theme="light"]) { --ink: #f4f4f5; --ink-2: #b0b0b8; --ink-3: #9a9aa4; --surface: #1c1c20; --sunken: #26262b;
+    --border: #34343b; --accent: #34d399; --on-accent: #063b2c; --accent-ink: #6ee7b7; --warn-bg: rgba(180,83,9,.22); --warn-ink: #fbbf24; }
 }
-:root[data-theme="dark"] { --ink: #f4f4f5; --ink-2: #b0b0b8; --ink-3: #7c7c85; --surface: #1c1c20; --sunken: #26262b;
-  --border: #34343b; --accent: #34d399; --accent-ink: #6ee7b7; --warn-bg: rgba(180,83,9,.22); --warn-ink: #fbbf24;
+:root[data-theme="dark"] { --ink: #f4f4f5; --ink-2: #b0b0b8; --ink-3: #9a9aa4; --surface: #1c1c20; --sunken: #26262b;
+  --border: #34343b; --accent: #34d399; --on-accent: #063b2c; --accent-ink: #6ee7b7; --warn-bg: rgba(180,83,9,.22); --warn-ink: #fbbf24;
   color-scheme: dark; }
 :root[data-theme="light"] { color-scheme: light; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,7 +33,7 @@ h1 { font-size: 20px; letter-spacing: -0.01em; }
    The sentence takes the leftover instead, and drops to its own line when there is
    none. */
 .opt-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 4px; }
-.opt-actions button { flex: none; white-space: nowrap; padding: 7px 16px; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+.opt-actions button { flex: none; white-space: nowrap; padding: 7px 16px; border-radius: 8px; border: none; background: var(--accent); color: var(--on-accent); font-weight: 600; cursor: pointer; }
 .opt-actions button:hover { background: var(--accent-ink); }
 .opt-actions .opt-clear { background: none; border: 1px solid var(--border); color: var(--ink-2); font-weight: 400; }
 .opt-saved, .opt-status { flex: 1 1 auto; min-width: 0; font-size: 12.5px; }
@@ -49,7 +49,7 @@ h1 { font-size: 20px; letter-spacing: -0.01em; }
 /* Numbered because it is a sequence, and every step happens somewhere else. */
 .opt-steps { counter-reset: step; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 22px; }
 .opt-steps li { counter-increment: step; position: relative; padding-left: 42px; }
-.opt-steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--accent); color: #fff; font-size: 14px; font-weight: 600; }
+.opt-steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: 14px; font-weight: 600; }
 .opt-steps h2 { margin: 3px 0 4px; font-size: 15px; font-weight: 600; }
 .opt-steps p { color: var(--ink-2); font-size: 13.5px; }
 .opt-link { display: inline-block; margin-top: 4px; color: var(--accent-ink); font-size: 13px; font-weight: 500; }
