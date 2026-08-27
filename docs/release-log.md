@@ -8,7 +8,10 @@ One section per submission. The point is to be able to answer, months later, wha
 actually on the store and what was already known to be wrong when it went there — without
 reconstructing it from memory or from a merge commit's date.
 
-## 1.0.1 — submitted 2026-08-27
+## 1.0.1 — submitted 2026-08-27, published 2026-08-28
+
+Approved the next day. An update that changes no permissions does not draw the review
+`<all_urls>` drew for 1.0.0.
 
 The first release built by CI from a tag rather than from a laptop, and the first
 uploaded as a draft by the workflow instead of by hand.
