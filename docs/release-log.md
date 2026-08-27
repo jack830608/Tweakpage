@@ -1,5 +1,9 @@
 # Release log
 
+Releasing: bump `package.json`, tag `vX.Y.Z`, push the tag. `.github/workflows/release.yml`
+runs the gate and attaches the ZIP to that tag's GitHub release — that asset is what goes
+to the dashboard. It does not publish; uploading to real users stays a person's decision.
+
 One section per submission. The point is to be able to answer, months later, what is
 actually on the store and what was already known to be wrong when it went there — without
 reconstructing it from memory or from a merge commit's date.

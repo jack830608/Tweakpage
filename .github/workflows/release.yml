@@ -1,0 +1,73 @@
+# Builds the package a tag stands for, and attaches it to that tag's release.
+#
+# This does not publish to the Chrome Web Store, on purpose. Uploading to real users is
+# the last place a person still reads what is about to happen, and the review that caught
+# the worst defect in 1.0.1 arrived after the suite was already green. What CI removes
+# here is the mechanical part: the ZIP that reaches the dashboard is built from the
+# tagged commit by something that cannot have a dirty working tree.
+#
+# Deploying is then: run this by pushing a tag, download the asset, upload it in the
+# dashboard, submit.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The tag is what the release log will cite, and the manifest version is what the
+      # dashboard enforces. A mismatch here means an asset that cannot be uploaded, found
+      # out after the build rather than before it.
+      - name: The tag and package.json must agree
+        run: |
+          tagged="${GITHUB_REF_NAME#v}"
+          declared=$(node -p "require('./package.json').version")
+          if [ "$tagged" != "$declared" ]; then
+            echo "tag $GITHUB_REF_NAME says $tagged, package.json says $declared" >&2
+            exit 1
+          fi
+          echo "both say $declared"
+
+      - run: pnpm test
+
+      - run: npx playwright install --with-deps chromium
+
+      # Extension tests drive a headed Chromium through --load-extension, which wants a
+      # display server. Retries are here for one known load-sensitive test — the shared
+      # link's "Keep" assertion, which flakes on a busy machine and does so on the
+      # released 1.0.0 too. It is a flake to fix, not a reason to hold a release.
+      - run: xvfb-run -a npx playwright test --retries=2
+
+      # Builds the ZIP, unpacks it, and drives that copy: a packaging mistake is
+      # invisible in the build directory and obvious the moment someone installs it.
+      - run: xvfb-run -a pnpm package
+
+      - name: Attach the package to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            .output/package/tweakpage.zip
+          echo "Asset built from $GITHUB_SHA — upload it at" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://chrome.google.com/webstore/devconsole" >> "$GITHUB_STEP_SUMMARY"
