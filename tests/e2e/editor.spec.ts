@@ -331,12 +331,18 @@ test('the popup can reach the settings the share button needs', async ({ context
 test('a shared link works for someone who has set nothing up', async ({ context }) => {
   // Stand in for S3: the PUT keeps the body, the GET hands it back.
   const stored = new Map<string, string>();
+  // The busy state exists only while the upload is in flight, so the test holds the
+  // upload open rather than guessing how long that is. A fixed delay was a race with
+  // whatever else the machine happened to be doing, and lost about one run in ten.
+  let finishUpload!: () => void;
+  const uploadHeld = new Promise<void>((resolve) => {
+    finishUpload = resolve;
+  });
   await context.route('https://**.amazonaws.com/**', async (route) => {
     const request = route.request();
     if (request.method() === 'PUT') {
       stored.set(new URL(request.url()).pathname, request.postData() ?? '');
-      // Real uploads take real time; the busy state below needs a window to exist in.
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      await uploadHeld;
       return route.fulfill({ status: 200, body: '' });
     }
     const body = stored.get(new URL(request.url()).pathname);
@@ -373,6 +379,7 @@ test('a shared link works for someone who has set nothing up', async ({ context 
   // The upload takes real time; a silent button reads as broken and gets re-clicked.
   await expect(shareButton).toHaveAttribute('aria-busy', 'true');
   await expect(shareButton).toBeDisabled();
+  finishUpload();
   const toast = sender.locator('[data-testid="toast"]');
   await expect(toast).toBeVisible();
   await expect(toast, 'the outcome is legible as a success, not just words').toHaveAttribute(
@@ -427,8 +434,17 @@ test('a shared link works for someone who has set nothing up', async ({ context 
   await expect(readerPage.locator('#tweakpage-marker'), 'the panel is back — the marker yields').toHaveCount(0);
 
   // Keeping is the decision that makes them yours, and only then do they persist.
-  await readerPage.locator('[data-testid="keep-shared"]').click();
-  await expect(readerPage.locator('[data-testid="shared-preview"]')).toHaveCount(0);
+  //
+  // Clicked until it lands. Reopening the panel from the marker remounts it, and a click
+  // dispatched into that window reaches a node React has already replaced — the button
+  // was there, the press went nowhere, and the banner stayed for the full timeout.
+  // keepShared() returns early once the preview is over, so pressing twice is a no-op.
+  await expect(async () => {
+    await readerPage.locator('[data-testid="keep-shared"]').click();
+    await expect(readerPage.locator('[data-testid="shared-preview"]')).toHaveCount(0, {
+      timeout: 1000,
+    });
+  }).toPass({ timeout: 10_000 });
   const kept = await reader.context.newPage();
   await kept.goto('http://localhost:4173/');
   await expect(kept.locator('h1')).toHaveText('Headline from a colleague');

@@ -1,0 +1,75 @@
+# Temporary. Answers one question: why does an extension never become active on a
+# runner? Delete once it has.
+name: debug-extension
+
+on: workflow_dispatch
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps chromium
+      - run: pnpm build
+
+      - name: What the runner actually has
+        run: |
+          echo "playwright: $(npx playwright --version)"
+          ls ~/.cache/ms-playwright/ || true
+          echo "DISPLAY=${DISPLAY:-unset}"
+
+      - name: Launch it four ways and report which loads the extension
+        run: |
+          cat > /tmp/probe.mjs <<'JS'
+          import { chromium } from '@playwright/test';
+          import { existsSync } from 'node:fs';
+
+          const ext = process.cwd() + '/.output/chrome-mv3';
+          console.log('extension path exists:', existsSync(ext + '/manifest.json'));
+
+          const ways = [
+            { name: 'channel:chromium, default headless', opts: { channel: 'chromium' } },
+            { name: 'channel:chromium, headless:false', opts: { channel: 'chromium', headless: false } },
+            { name: 'bundled chromium, default headless', opts: {} },
+            { name: 'bundled chromium, headless:false', opts: { headless: false } },
+          ];
+
+          for (const way of ways) {
+            let context;
+            try {
+              context = await chromium.launchPersistentContext('', {
+                ...way.opts,
+                args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`],
+              });
+              const page = await context.newPage();
+              await page.goto('about:blank');
+              // The service worker is the extension being alive. Nothing else proves it.
+              let [worker] = context.serviceWorkers();
+              if (!worker) {
+                worker = await context.waitForEvent('serviceworker', { timeout: 15000 }).catch(() => null);
+              }
+              const version = await page.evaluate(() => navigator.userAgent);
+              console.log(`\n[${way.name}]`);
+              console.log('  ua:', version.match(/Chrome\/[\d.]+/)?.[0]);
+              console.log('  service worker:', worker ? 'YES — ' + worker.url() : 'NO');
+            } catch (error) {
+              console.log(`\n[${way.name}]`);
+              console.log('  launch failed:', String(error).split('\n')[0]);
+            } finally {
+              await context?.close().catch(() => {});
+            }
+          }
+          JS
+          echo "=================== without xvfb ==================="
+          node /tmp/probe.mjs || true
+          echo "=================== under xvfb ====================="
+          xvfb-run -a node /tmp/probe.mjs || true
