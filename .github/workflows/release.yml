@@ -20,6 +20,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # A hung headed browser is otherwise a six-hour job. The suite is about a minute.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
 
