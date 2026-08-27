@@ -73,23 +73,61 @@ const COMPARE_OPTIONS = [
   { value: 'original', label: t('compare_original'), ariaLabel: t('compare_original') },
 ] as const;
 
-const SECTION_DEFS: Array<{
+interface SectionDef {
   id: string;
   applies?: (element: Element) => boolean;
   render: (element: Element, controller: EditsController) => ReactNode;
-}> = [
+}
+
+/**
+ * What the element *is* — its words, its picture, where it points.
+ *
+ * Shown without a disclosure and without a heading, directly under the selection card.
+ * Changing the copy is the most common thing anybody does here and it was behind a click,
+ * in a drawer that only appeared when the element happened to have words of its own.
+ */
+const CONTENT_DEFS: SectionDef[] = [
   { id: 'text', applies: hasDirectText, render: (el, c) => <TextSection element={el} controller={c} /> },
-  { id: 'typography', render: (el, c) => <TypographySection element={el} controller={c} /> },
-  { id: 'background', render: (el, c) => <BackgroundSection element={el} controller={c} /> },
   { id: 'image', applies: (el) => el.tagName === 'IMG', render: (el, c) => <ImageSection element={el} controller={c} /> },
   { id: 'link', applies: isLink, render: (el, c) => <LinkSection element={el} controller={c} /> },
-  { id: 'appearance', render: (el, c) => <AppearanceSection element={el} controller={c} /> },
-  { id: 'size', render: (el, c) => <SizeSection element={el} controller={c} /> },
-  { id: 'layout', render: (el, c) => <LayoutSection element={el} controller={c} /> },
-  { id: 'spacing', render: (el, c) => <SpacingSection element={el} controller={c} /> },
-  { id: 'advanced', render: (el, c) => <AdvancedSection element={el} controller={c} /> },
 ];
 
+/**
+ * Three groups, not eight.
+ *
+ * Eight drawers hid twenty-five controls — a 44px row to conceal two or three fields, and
+ * the container costing nearly what it hid. Worse, colour was spread across three of them:
+ * text colour under Type, background under Background, border under Appearance, all three
+ * called some variant of "colour". Somebody who wants this green had to know which CSS
+ * family their green belonged to, which is the knowledge this product exists to not need.
+ *
+ * The children keep their own ids and stay collapsible, so a long group is still
+ * skimmable and every section a test or a preference refers to is still there.
+ */
+const GROUP_DEFS: Array<{ id: string; children: SectionDef[] }> = [
+  {
+    id: 'typography',
+    children: [
+      { id: 'typography_fields', render: (el, c) => <TypographySection element={el} controller={c} /> },
+    ],
+  },
+  {
+    id: 'box',
+    children: [
+      { id: 'background', render: (el, c) => <BackgroundSection element={el} controller={c} /> },
+      { id: 'appearance', render: (el, c) => <AppearanceSection element={el} controller={c} /> },
+      { id: 'size', render: (el, c) => <SizeSection element={el} controller={c} /> },
+      { id: 'spacing', render: (el, c) => <SpacingSection element={el} controller={c} /> },
+      { id: 'layout', render: (el, c) => <LayoutSection element={el} controller={c} /> },
+    ],
+  },
+  {
+    id: 'advanced',
+    children: [
+      { id: 'advanced_fields', render: (el, c) => <AdvancedSection element={el} controller={c} /> },
+    ],
+  },
+];
 export function Panel(props: PanelProps) {
   const { controller, mode, onModeChange, onClose } = props;
   const [view, setView] = useState<View>('edit');
@@ -108,12 +146,11 @@ export function Panel(props: PanelProps) {
     const el = props.selected;
     if (!el) return;
     setOpenSections((open) => {
-      const applicable = SECTION_DEFS.filter((s) => !s.applies || s.applies(el));
-      if (applicable.some((s) => open[s.id])) return open;
-      const first = el.tagName === 'IMG'
-        ? applicable.find((s) => s.id === 'image') ?? applicable[0]
-        : applicable[0];
-      return first ? { ...open, [first.id]: true } : open;
+      // The content control is always on screen now, so an element with words already
+      // shows something. This is for the ones without: a div, a wrapper, a section.
+      if (CONTENT_DEFS.some((s) => !s.applies || s.applies(el))) return open;
+      if (GROUP_DEFS.some((g) => open[g.id])) return open;
+      return { ...open, [GROUP_DEFS[0].id]: true };
     });
   }, [props.selected]);
   const records = useSyncExternalStore(controller.subscribe, controller.getPage).records;
@@ -501,17 +538,38 @@ function EditView({
       {hidden ? (
         <p className="twk-preview-note">{t('hidden_note')}</p>
       ) : (
-        SECTION_DEFS.filter(({ applies }) => !applies || applies(selected)).map(({ id, render }) => (
-          <CollapsibleSection
-            key={id}
-            sectionId={id}
-            title={t(`sec_${id}`)}
-            open={!!openSections[id]}
-            onToggle={() => onToggleSection(id)}
-          >
-            {render(selected, controller)}
-          </CollapsibleSection>
-        ))
+        <>
+          {CONTENT_DEFS.filter(({ applies }) => !applies || applies(selected)).map(({ id, render }) => (
+            <div className="twk-content-section" key={id}>
+              {render(selected, controller)}
+            </div>
+          ))}
+          {GROUP_DEFS.map(({ id, children }) => (
+            <CollapsibleSection
+              key={id}
+              sectionId={id}
+              title={t(`sec_${id}`)}
+              open={!!openSections[id]}
+              onToggle={() => onToggleSection(id)}
+            >
+              {children.length === 1 ? (
+                children[0].render(selected, controller)
+              ) : (
+                children.map((child) => (
+                  <CollapsibleSection
+                    key={child.id}
+                    sectionId={child.id}
+                    title={t(`sec_${child.id}`)}
+                    open={!!openSections[child.id]}
+                    onToggle={() => onToggleSection(child.id)}
+                  >
+                    {child.render(selected, controller)}
+                  </CollapsibleSection>
+                ))
+              )}
+            </CollapsibleSection>
+          ))}
+        </>
       )}
     </div>
   );

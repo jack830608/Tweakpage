@@ -62,10 +62,29 @@ function setup(selected: Element | null = document.getElementById('target')) {
   return controller;
 }
 
+/**
+ * Sections nest now, so a child's header does not exist until its group is open. Opening
+ * every closed header and going round again reaches any depth without the test having to
+ * know which group holds what.
+ */
+/** Content — the words, the picture, the link — has no header: it is always on screen. */
+const ALWAYS_OPEN = new Set(['text', 'image', 'link']);
+
 function openSection(id: string) {
-  const header = document.querySelector<HTMLButtonElement>(`[data-section="${id}"]`);
-  if (!header) throw new Error(`no section header for "${id}"`);
-  if (header.getAttribute('aria-expanded') !== 'true') fireEvent.click(header);
+  if (ALWAYS_OPEN.has(id)) return;
+  for (let round = 0; round < 4; round++) {
+    const wanted = document.querySelector<HTMLButtonElement>(`[data-section="${id}"]`);
+    if (wanted) {
+      if (wanted.getAttribute('aria-expanded') !== 'true') fireEvent.click(wanted);
+      return;
+    }
+    const closed = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('[data-section][aria-expanded="false"]'),
+    );
+    if (closed.length === 0) break;
+    closed.forEach((header) => fireEvent.click(header));
+  }
+  throw new Error(`no section header for "${id}"`);
 }
 
 function control(label: string): HTMLInputElement {

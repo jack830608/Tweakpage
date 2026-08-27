@@ -68,7 +68,7 @@
     "message": "文字"
   },
   "sec_typography": {
-    "message": "字型"
+    "message": "文字樣式"
   },
   "sec_background": {
     "message": "背景"
@@ -1150,5 +1150,14 @@
   },
   "prop_height": {
     "message": "高度"
+  },
+  "sec_box": {
+    "message": "外框與版位"
+  },
+  "sec_typography_fields": {
+    "message": "文字樣式"
+  },
+  "sec_advanced_fields": {
+    "message": "進階"
   }
 }

@@ -21,10 +21,25 @@ async function copied(
   return page.evaluate(() => navigator.clipboard.readText());
 }
 
-/** Opens a section if it is closed. Only Text is open by default. */
+/**
+ * Opens a section, opening whatever group holds it first. Sections nest now, so a child's
+ * header is not in the document until its parent is open.
+ */
 async function openSection(page: import('@playwright/test').Page, id: string): Promise<void> {
-  const header = page.locator(`[data-section="${id}"]`);
-  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+  // Content — the words, the picture, the link — has no header: it is always on screen.
+  if (['text', 'image', 'link'].includes(id)) return;
+  for (let round = 0; round < 4; round++) {
+    const wanted = page.locator(`[data-section="${id}"]`);
+    if ((await wanted.count()) > 0) {
+      if ((await wanted.getAttribute('aria-expanded')) !== 'true') await wanted.click();
+      return;
+    }
+    const closed = page.locator('[data-section][aria-expanded="false"]');
+    const n = await closed.count();
+    if (n === 0) break;
+    for (let i = n - 1; i >= 0; i--) await closed.nth(i).click();
+  }
+  throw new Error(`no section header for "${id}"`);
 }
 
 test('edit → persist → replay → export', async ({ context }) => {

@@ -85,9 +85,14 @@ function setup() {
       onClose={vi.fn()}
     />,
   );
-  for (const id of new Set(FIELDS.map((f) => f.section))) {
-    const header = document.querySelector<HTMLButtonElement>(`[data-section="${id}"]`);
-    if (header && header.getAttribute('aria-expanded') !== 'true') fireEvent.click(header);
+  // Sections nest, so a child's header appears only once its group is open. Round and
+  // round until nothing is closed reaches every depth without naming the groups here.
+  for (let round = 0; round < 4; round++) {
+    const closed = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('[data-section][aria-expanded="false"]'),
+    );
+    if (closed.length === 0) break;
+    closed.forEach((header) => fireEvent.click(header));
   }
 }
 

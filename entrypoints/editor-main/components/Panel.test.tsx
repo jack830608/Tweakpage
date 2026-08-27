@@ -40,9 +40,14 @@ function setup(selected: Element | null = document.getElementById('title')) {
       onClose={vi.fn()}
     />,
   );
-  // Only Text opens by default now, so a test that reaches into another section opens it.
-  for (const header of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-section]'))) {
-    if (header.getAttribute('aria-expanded') !== 'true') fireEvent.click(header);
+  // Sections nest, so one pass opens the groups and leaves their children closed. Round
+  // and round until nothing is closed reaches every depth.
+  for (let round = 0; round < 4; round++) {
+    const closed = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('[data-section][aria-expanded="false"]'),
+    );
+    if (closed.length === 0) break;
+    closed.forEach((header) => fireEvent.click(header));
   }
   return { controller, onSelect, onModeChange, onDismissOnboarding };
 }
@@ -79,9 +84,9 @@ test('color hex input records a color edit', () => {
 test('a section can be collapsed and reopened', () => {
   const { controller } = setup();
   // setup() opens everything; collapsing and reopening is the behaviour under test.
-  fireEvent.click(screen.getByRole('button', { name: /Spacing/ }));
+  fireEvent.click(screen.getByRole('button', { name: /^Spacing/ }));
   expect(screen.queryByLabelText('padding top')).toBeNull();
-  fireEvent.click(screen.getByRole('button', { name: /Spacing/ }));
+  fireEvent.click(screen.getByRole('button', { name: /^Spacing/ }));
   fireEvent.change(screen.getByLabelText('padding top'), { target: { value: '24' } });
   expect(controller.getPage().records.find((r) => r.property === 'paddingTop')!.newValue).toBe(
     '24px',
@@ -231,23 +236,25 @@ test('interaction mode switch reports mode changes', () => {
   expect(onModeChange).toHaveBeenCalledWith('browse');
 });
 
-test('sections that do not apply to the element are not listed', () => {
+/**
+  * The content control is what the element *is* — its words, its picture, where it points
+  * — and it is on screen without a disclosure. It used to be a drawer, which put the most
+  * common edit in the product behind a click.
+  */
+test("an element's own content is on screen, and another element's is not", () => {
   setup();
-  expect(screen.getByRole('button', { name: /Text/ })).toBeTruthy();
-  expect(screen.queryByRole('button', { name: /Image/ })).toBeNull();
+  expect(
+    document.querySelector('[data-testid="text"]'),
+    'the words are editable straight away',
+  ).toBeTruthy();
+  expect(screen.queryByLabelText('Image URL'), 'a heading has no picture').toBeNull();
 });
 
-test('image section is listed for images, text section is not', () => {
-  document.body.innerHTML = '<img id="pic" src="/a.png">';
-  setup(document.getElementById('pic'));
-  expect(screen.getByRole('button', { name: /Image/ })).toBeTruthy();
-  expect(screen.queryByRole('button', { name: /Text/ })).toBeNull();
-});
-
-test('selecting an image auto-expands the Image section', () => {
+test('an image offers its picture, not a text box', () => {
   document.body.innerHTML = '<img id="pic" src="/a.png">';
   setup(document.getElementById('pic'));
   expect(screen.getByLabelText('Image URL')).toBeTruthy();
+  expect(document.querySelector('[data-testid="text"]')).toBeNull();
 });
 
 test('invalid line height values are not recorded', () => {

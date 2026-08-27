@@ -189,7 +189,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- content ---------- */
 .twk-empty { padding: 14px 12px; color: var(--ink-2); }
 .twk-empty + .twk-empty { padding-top: 0; color: var(--ink-3); font-size: 12px; }
-.twk-sections { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.twk-sections { padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-5); }
+/* Content sits above the groups without a header of its own: what the element is, before
+   how it looks. Its own bottom rule separates it from the first group. */
+.twk-content-section { padding-bottom: var(--space-5); border-bottom: 1px solid var(--border); }
+/* A nested section is a step quieter than the group holding it, and indented so the
+   group's own title stays the thing you read first. */
+.twk-disclosure .twk-disclosure { border-bottom: none; }
+.twk-disclosure .twk-disclosure .twk-disclosure-header { font-size: var(--t-quiet); font-weight: 500; color: var(--ink-2); padding: var(--space-3) 0; }
+.twk-disclosure .twk-disclosure .twk-disclosure-body { padding-bottom: var(--space-4); }
 
 .twk-selection-card { background: var(--sunken); border-radius: var(--r-card); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .twk-selection-actions { display: inline-flex; gap: 6px; }
