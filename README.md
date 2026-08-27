@@ -62,7 +62,11 @@ DevTools for a copy tweak. Every edit is recorded as a structured diff
 
 ## Install
 
-Not on the Chrome Web Store yet — load it from source:
+**[Add to Chrome from the Chrome Web Store][store]** — nothing else to set up.
+
+[store]: https://chromewebstore.google.com/detail/tweakpage/kicbechkfggmokgdceddemojfchjaadg
+
+Or load it from source, to work on it or to run a change before it ships:
 
 ```bash
 pnpm install && pnpm build   # output in .output/chrome-mv3/

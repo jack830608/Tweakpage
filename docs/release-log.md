@@ -8,8 +8,12 @@ reconstructing it from memory or from a merge commit's date.
 
 - Chrome Web Store item ID: `kicbechkfggmokgdceddemojfchjaadg`
 - Tagged `v1.0.0` at `fb79839` (`Merge branch 'release/1.0.0'`)
-- Status: in review. `<all_urls>` draws the deeper review; days to weeks is normal.
-  Result goes to jack830608@gmail.com.
+- **Approved and published 2026-08-27**, two days after submitting — the deeper review
+  `<all_urls>` triggers did not cost the weeks it can.
+  <https://chromewebstore.google.com/detail/tweakpage/kicbechkfggmokgdceddemojfchjaadg>
+- Search indexing lags publication. The listing answered on its URL the day it went live;
+  turning up in a store search for its own name takes longer, and there is no console to
+  submit it to. Expect days.
 
 ### Checked before submitting
 
@@ -60,9 +64,12 @@ Everything in `docs/known-issues.md` shipped as-is. The one most likely to cost 
 without ever being reported is the out-of-range move index that makes the applier reapply
 about twenty times a second forever: silent, invisible, and it just drains battery.
 
-### Waiting on approval
+### Still open after publishing
 
-- `README.md` still says "Not on the Chrome Web Store yet — load it from source". Once the
-  listing is live at
-  <https://chromewebstore.google.com/detail/kicbechkfggmokgdceddemojfchjaadg>, install
-  from the store becomes the main path and loading unpacked becomes the developer note.
+- The eight manual paths in `docs/qa-checklist.md` and `pnpm audit:selectors` were never
+  run for this release. Two of them are worth doing now rather than before 1.0.1: a real
+  image share against a real bucket, and a share link across two browser profiles. Both
+  are core paths, both are invisible to every automated suite, and both are now running
+  against people who installed from the store.
+- `README.md` was updated on publication: the store is the main install path, loading
+  unpacked is the developer note.
