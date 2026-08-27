@@ -2,6 +2,25 @@ import fs from 'node:fs';
 import { expect } from '@playwright/test';
 import { activateEditor, chromiumWithExtension, test } from './fixtures';
 
+/**
+ * The clipboard, once the hand-off has actually written it.
+ *
+ * A hand-off writes the clipboard last, after any upload it had to do first. Waiting on
+ * the upload — or on a fixed 200ms — and then reading is waiting for one effect and
+ * reading another, and on a busy machine the read came back with whatever the previous
+ * hand-off had left there. Waiting for the clipboard itself is the only thing that says
+ * this hand-off finished.
+ */
+async function copied(
+  page: import('@playwright/test').Page,
+  contains: string,
+): Promise<string> {
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toContain(contains);
+  return page.evaluate(() => navigator.clipboard.readText());
+}
+
 /** Opens a section if it is closed. Only Text is open by default. */
 async function openSection(page: import('@playwright/test').Page, id: string): Promise<void> {
   const header = page.locator(`[data-section="${id}"]`);
@@ -1156,8 +1175,7 @@ test('a note survives reload and travels in the Markdown hand-off', async ({ con
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.locator('[data-testid="back-to-editing"]').click();
   await page.locator('[data-testid="copy-summary"]').click();
-  await page.waitForTimeout(200);
-  const markdown: string = await page.evaluate(() => navigator.clipboard.readText());
+  const markdown = await copied(page, 'Legal requires this wording');
   expect(markdown).toContain('Legal requires this wording');
 });
 
@@ -1406,7 +1424,7 @@ test('each hand-off obeys its own image switch', async ({ context }) => {
   await page.locator('[data-testid="copy-summary"]').click();
   await expect.poll(() => uploads.length, { timeout: 5000 }).toBe(1);
   expect(uploads[0]).toMatch(/^\/tweakpage\/images\/[0-9a-f]{64}\.png$/);
-  const markdown: string = await page.evaluate(() => navigator.clipboard.readText());
+  const markdown = await copied(page, '/tweakpage/images/');
   expect(markdown, 'a ticket gets a URL, not 300KB of base64').not.toContain('base64');
   expect(markdown).toContain('/tweakpage/images/');
 });
@@ -1589,7 +1607,7 @@ test('nothing leaves the machine before the question is answered', async ({ cont
   await page.locator('[data-testid="consent-cancel"]').click();
   await expect(consent).toHaveCount(0);
   await expect.poll(() => requests.length, { timeout: 3000 }).toBe(0);
-  const declined: string = await page.evaluate(() => navigator.clipboard.readText());
+  const declined = await copied(page, '# Page edits');
   expect(declined, 'the summary was still copied').toContain('# Page edits');
 
   // Agreeing uploads, and is remembered.
