@@ -84,6 +84,20 @@ test('mergeRecords keeps every clone of one element', () => {
   expect(merged.map((r) => r.id)).toEqual(['c1', 'c2', 'c3']);
 });
 
+/**
+ * Clones are the exception to selector-and-property identity; moves are not. An element
+ * has one position, so two move records on it disagree about where it goes and each
+ * apply pass puts it in one place and then the other — a DOM write every pass, and the
+ * applier reapplies on mutation. Exempting all structural edits from supersession
+ * reintroduced the perpetual loop by way of an import.
+ */
+test('mergeRecords lets an imported move replace the local one', () => {
+  const move = (id: string, newValue: string) =>
+    record({ id, type: 'move' as const, selector: '#b', property: 'domIndex', oldValue: '1', newValue });
+  const merged = mergeRecords([move('m1', '0')], [move('m2', '3')]);
+  expect(merged.map((r) => r.id)).toEqual(['m2']);
+});
+
 test('mergeRecords lets a record that arrives again by id replace itself', () => {
   const merged = mergeRecords(
     [record({ id: 'r1', newValue: '#111111' })],

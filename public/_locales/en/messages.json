@@ -121,7 +121,7 @@
     }
   },
   "import_not_stored": {
-    "message": "it could not be saved — storage may be full"
+    "message": "it could not be read or saved"
   },
   "toast_imported": {
     "message": "Imported $param1$ edits$param2$",

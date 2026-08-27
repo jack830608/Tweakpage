@@ -4,7 +4,7 @@ import { isCustomProperty, isSafeCustomValue } from './custom-css';
 import { MAX_CONTEXT_DEPTH, type ContextNode } from '../selector/context';
 import { textNodeIndex } from './text-nodes';
 import { loadPageEdits, normalizePageUrl, savePageEdits } from './storage';
-import { STRUCTURAL, type EditRecord, type PageEdits, type Variant } from './types';
+import type { EditRecord, PageEdits, Variant } from './types';
 
 /** The style properties the panel owns a field for. The Advanced box owns the rest. */
 export const PANEL_STYLE_PROPERTIES = new Set([
@@ -313,13 +313,24 @@ function isSafeStyleValue(value: string): boolean {
  * importing a share collapsed them and a page came back holding one card where it had
  * three.
  */
+/**
+ * A clone is the one edit an element can have several of: every copy writes
+ * `clone`/`clone` against the same node, so selector-and-property cannot tell them
+ * apart and must not try. Of everything else an element has exactly one — a move most
+ * of all, because two moves on one node both resolve to it and disagree about where it
+ * goes, so each pass puts it in one place and then the other. That is a DOM write on
+ * every pass, and the applier reapplies on mutation: the perpetual loop again, arriving
+ * by import rather than by a bad index.
+ */
+const replaceable = (r: EditRecord) => r.type !== 'clone';
+
 export function mergeRecords(existing: EditRecord[], incoming: EditRecord[]): EditRecord[] {
   const key = (r: EditRecord) => `${r.selector} ${r.property}`;
   const incomingIds = new Set(incoming.map((r) => r.id));
-  const superseded = new Set(incoming.filter((r) => !STRUCTURAL.has(r.type)).map(key));
+  const superseded = new Set(incoming.filter(replaceable).map(key));
   return [
     ...existing.filter(
-      (r) => !incomingIds.has(r.id) && (STRUCTURAL.has(r.type) || !superseded.has(key(r))),
+      (r) => !incomingIds.has(r.id) && (!replaceable(r) || !superseded.has(key(r))),
     ),
     ...incoming,
   ];

@@ -24,7 +24,7 @@
     "message": "取消隱藏"
   },
   "empty_select": {
-    "message": "將滑鼠移到頁面上,點選要編輯的元素。"
+    "message": "將滑鼠移到頁面上，點選要編輯的元素。"
   },
   "empty_hint": {
     "message": "切換到「瀏覽」可正常操作頁面。按住標題列可拖動面板。"
@@ -53,13 +53,13 @@
     "message": "歡迎使用 Tweakpage"
   },
   "onboarding_step1": {
-    "message": "將滑鼠移到頁面上,點選要編輯的元素。"
+    "message": "將滑鼠移到頁面上，點選要編輯的元素。"
   },
   "onboarding_step2": {
-    "message": "切換到「瀏覽」可正常操作頁面(選單、分頁)。"
+    "message": "切換到「瀏覽」可正常操作頁面（選單、分頁）。"
   },
   "onboarding_step3": {
-    "message": "在文字上點兩下,就能直接在頁面上改字。"
+    "message": "在文字上點兩下，就能直接在頁面上改字。"
   },
   "got_it": {
     "message": "知道了"
@@ -113,7 +113,7 @@
     "message": "截圖失敗"
   },
   "toast_import_failed": {
-    "message": "匯入失敗:$param1$",
+    "message": "匯入失敗：$param1$",
     "placeholders": {
       "param1": {
         "content": "$1"
@@ -121,7 +121,7 @@
     }
   },
   "import_not_stored": {
-    "message": "無法儲存 —— 儲存空間可能已滿"
+    "message": "無法讀取或儲存"
   },
   "toast_imported": {
     "message": "已匯入 $param1$ 筆改動$param2$",
@@ -149,7 +149,7 @@
     }
   },
   "toast_skipped": {
-    "message": "(略過 $param1$ 筆)",
+    "message": "（略過 $param1$ 筆）",
     "placeholders": {
       "param1": {
         "content": "$1"
@@ -178,7 +178,7 @@
     "message": "清除"
   },
   "stale_note": {
-    "message": "Tweakpage 已更新,請重新整理頁面後繼續編輯 — 已儲存的修改不會遺失。"
+    "message": "Tweakpage 已更新，請重新整理頁面後繼續編輯 — 已儲存的修改不會遺失。"
   },
   "stale_reload": {
     "message": "重新整理頁面"
@@ -193,10 +193,10 @@
     "message": "已套用在目前頁面"
   },
   "confirm_again": {
-    "message": "確定?"
+    "message": "確定？"
   },
   "toast_save_failed": {
-    "message": "存檔失敗 — 目前的修改只存在畫面上,請檢查儲存空間。"
+    "message": "存檔失敗 — 目前的修改只存在畫面上，請檢查儲存空間。"
   },
   "stale_edits": {
     "message": "有 $1 / $2 筆改動對不上目前的頁面"
@@ -226,10 +226,10 @@
     "message": "儲存修改前後的截圖"
   },
   "tip_copy_json": {
-    "message": "複製這些改動,同事可以直接匯入"
+    "message": "複製這些改動，同事可以直接匯入"
   },
   "tip_export": {
-    "message": "把改動存成檔案,同事可以匯入"
+    "message": "把改動存成檔案，同事可以匯入"
   },
   "choose_file": {
     "message": "選擇檔案…"
@@ -466,13 +466,13 @@
     "message": "下載 JSON"
   },
   "pop_unsupported": {
-    "message": "這是瀏覽器自己的頁面,任何擴充功能都無法編輯。請在 http:// 或 https:// 的網頁上使用。"
+    "message": "這是瀏覽器自己的頁面，任何擴充功能都無法編輯。請在 http:// 或 https:// 的網頁上使用。"
   },
   "pop_needs_reload": {
-    "message": "這個分頁在 Tweakpage 安裝或更新前就開著了,請重新整理後再試一次。"
+    "message": "這個分頁在 Tweakpage 安裝或更新前就開著了，請重新整理後再試一次。"
   },
   "onboarding_step4": {
-    "message": "這裡的操作不會動到真正的網站 — 改動只存在你的瀏覽器、只有你看得到,按「全部還原」就會回復原狀。"
+    "message": "這裡的操作不會動到真正的網站 — 改動只存在你的瀏覽器、只有你看得到，按「全部還原」就會回復原狀。"
   },
   "saved_just_now": {
     "message": "已儲存"
@@ -496,7 +496,7 @@
     "message": "可填 https://…、/路徑、#區塊 或 mailto:"
   },
   "tip_viewport": {
-    "message": "目前的視窗寬度。每筆改動都會記下當時的寬度 — 調整視窗大小,或用瀏覽器的裝置模式,就能在別的寬度下編輯。"
+    "message": "目前的視窗寬度。每筆改動都會記下當時的寬度 — 調整視窗大小，或用瀏覽器的裝置模式，就能在別的寬度下編輯。"
   },
   "made_at_width": {
     "message": "在 $1px 寬度下記錄"
@@ -532,13 +532,13 @@
     "message": "分享設定"
   },
   "opt_intro": {
-    "message": "分享連結是一份你的改動,上傳到一個屬於你的 bucket。對方只要裝 Tweakpage 就能打開 —— 不用 AWS 帳號、不用設定。三個步驟,做一次。"
+    "message": "分享連結是一份你的改動，上傳到一個屬於你的 bucket。對方只要裝 Tweakpage 就能打開 —— 不用 AWS 帳號、不用設定。三個步驟，做一次。"
   },
   "opt_risk_title": {
     "message": "這些金鑰在這台電腦上是讀得到的"
   },
   "opt_risk_body": {
-    "message": "擴充功能的儲存不是保險箱:能存取這個瀏覽器設定檔的人都讀得到你貼在這裡的內容,而且這個擴充功能是開源的。請用一把只限這個 prefix 的金鑰,並像對待其他憑證一樣定期輪替。密鑰本身不會被送出 — 請求帶的是由它推導出的簽章。分享的檔案任何拿到連結的人都讀得到,所以不要分享含機密內容的頁面。"
+    "message": "擴充功能的儲存不是保險箱：能存取這個瀏覽器設定檔的人都讀得到你貼在這裡的內容，而且這個擴充功能是開源的。請用一把只限這個 prefix 的金鑰，並像對待其他憑證一樣定期輪替。密鑰本身不會被送出 — 請求帶的是由它推導出的簽章。分享的檔案任何拿到連結的人都讀得到，所以不要分享含機密內容的頁面。"
   },
   "opt_save": {
     "message": "儲存"
@@ -547,7 +547,7 @@
     "message": "清除"
   },
   "opt_incomplete": {
-    "message": "四個 AWS 欄位都填好之前,分享功能不會啟用。"
+    "message": "四個 AWS 欄位都填好之前，分享功能不會啟用。"
   },
   "share_link": {
     "message": "分享連結"
@@ -556,7 +556,7 @@
     "message": "上傳並複製分享連結"
   },
   "tip_share_link": {
-    "message": "上傳這些改動並複製連結。開啟連結的人只需要裝 Tweakpage,不需要其他設定。"
+    "message": "上傳這些改動並複製連結。開啟連結的人只需要裝 Tweakpage，不需要其他設定。"
   },
   "toast_share_copied": {
     "message": "連結已複製 — 打開它就會看到你的改動"
@@ -565,13 +565,13 @@
     "message": "上傳被拒絕。請檢查 bucket、region 與金鑰權限。"
   },
   "shared_missing": {
-    "message": "這個連結的改動已不存在,或你的 bucket 設定和分享者不同。"
+    "message": "這個連結的改動已不存在，或你的 bucket 設定和分享者不同。"
   },
   "marker_label": {
     "message": "Tweakpage · $1 處改動"
   },
   "marker_title": {
-    "message": "這個頁面顯示的是用 Tweakpage 做的本機改動,不是網站真正的內容。點一下開啟編輯器。"
+    "message": "這個頁面顯示的是用 Tweakpage 做的本機改動，不是網站真正的內容。點一下開啟編輯器。"
   },
   "marker_label_one": {
     "message": "Tweakpage · 1 處改動"
@@ -589,19 +589,19 @@
     "message": "開啟分享設定"
   },
   "toast_share_private": {
-    "message": "已上傳,但檔案不是公開可讀的,連結打不開。請為 tweakpage/* 加上公開讀取的 bucket policy,或允許金鑰設定物件 ACL。"
+    "message": "已上傳，但檔案不是公開可讀的，連結打不開。請為 tweakpage/* 加上公開讀取的 bucket policy，或允許金鑰設定物件 ACL。"
   },
   "toast_shared_preview": {
-    "message": "顯示分享的 $1 筆改動,尚未存到這台電腦。"
+    "message": "顯示分享的 $1 筆改動，尚未存到這台電腦。"
   },
   "toast_shared_preview_one": {
-    "message": "顯示分享的 1 筆改動,尚未存到這台電腦。"
+    "message": "顯示分享的 1 筆改動，尚未存到這台電腦。"
   },
   "shared_preview_title": {
     "message": "有人分享了這些改動給你"
   },
   "shared_preview_body": {
-    "message": "目前只是顯示,關掉分頁後這個頁面就會恢復原狀。"
+    "message": "目前只是顯示，關掉分頁後這個頁面就會恢復原狀。"
   },
   "shared_preview_keep": {
     "message": "保留在這個頁面"
@@ -616,7 +616,7 @@
     "message": "Tweakpage · 分享預覽"
   },
   "marker_title_shared": {
-    "message": "這個頁面正顯示別人分享給你的改動,並未存在你這裡。點一下開啟編輯器。"
+    "message": "這個頁面正顯示別人分享給你的改動，並未存在你這裡。點一下開啟編輯器。"
   },
   "settings_title": {
     "message": "設定"
@@ -634,10 +634,10 @@
     "message": "分享連結"
   },
   "settings_sharing_hint": {
-    "message": "用你自己的 S3 bucket。開啟連結的人只需要裝 Tweakpage,不需要其他設定。輸入即儲存。"
+    "message": "用你自己的 S3 bucket。開啟連結的人只需要裝 Tweakpage，不需要其他設定。輸入即儲存。"
   },
   "toast_share_cleared": {
-    "message": "已清除 AWS 資訊,分享功能關閉。"
+    "message": "已清除 AWS 資訊，分享功能關閉。"
   },
   "not_saved_preview": {
     "message": "預覽原始版"
@@ -652,7 +652,7 @@
     "message": "Bucket 需要開放什麼"
   },
   "settings_permissions_body": {
-    "message": "在 bucket 或其 IAM user 上加兩條規則。少了第二條,上傳會成功但連結打不開。"
+    "message": "在 bucket 或其 IAM user 上加兩條規則。少了第二條，上傳會成功但連結打不開。"
   },
   "copy_policy": {
     "message": "複製"
@@ -676,7 +676,7 @@
     "message": "刪除 $1 改動"
   },
   "aria_file_input": {
-    "message": "$1(檔案)"
+    "message": "$1（檔案）"
   },
   "aria_hex": {
     "message": "$1 — hex 色碼"
@@ -718,7 +718,7 @@
     "message": "下移"
   },
   "marker_title_min": {
-    "message": "Tweakpage 已縮小,點一下重新開啟編輯器。"
+    "message": "Tweakpage 已縮小，點一下重新開啟編輯器。"
   },
   "toast_inline_unrecorded": {
     "message": "這次修改沒有記錄下來 —— 編輯途中元素結構被改變了。"
@@ -757,13 +757,13 @@
     "message": "自訂 CSS 宣告"
   },
   "custom_css_hint": {
-    "message": "一行一條宣告,寫法跟樣式表一樣。每條會成為「檢視」裡獨立的一筆改動。"
+    "message": "一行一條宣告，寫法跟樣式表一樣。每條會成為「檢視」裡獨立的一筆改動。"
   },
   "custom_css_error": {
     "message": "看不懂「$1」—— 格式是 屬性: 值;"
   },
   "note_placeholder": {
-    "message": "加個備註 —— 為什麼改這裡?"
+    "message": "加個備註 —— 為什麼改這裡？"
   },
   "aria_note": {
     "message": "這筆改動的備註"
@@ -772,10 +772,10 @@
     "message": "已複製連結 —— 一併上傳 $1 張圖片"
   },
   "toast_share_copied_images_compressed": {
-    "message": "已複製連結 —— 上傳 $1 張圖片,其中 $2 張已壓縮"
+    "message": "已複製連結 —— 上傳 $1 張圖片，其中 $2 張已壓縮"
   },
   "toast_share_copied_without_images": {
-    "message": "已複製連結 —— $1 張圖片是夾在裡面送出的,這條分享會比較大。"
+    "message": "已複製連結 —— $1 張圖片是夾在裡面送出的，這條分享會比較大。"
   },
   "settings_images": {
     "message": "圖片"
@@ -841,7 +841,7 @@
     "message": "本機檔案"
   },
   "settings_credentials_elsewhere": {
-    "message": "你的 AWS 與 TinyPNG 金鑰存在擴充功能自己的頁面,你正在編輯的網站碰不到。"
+    "message": "你的 AWS 與 TinyPNG 金鑰存在擴充功能自己的頁面，你正在編輯的網站碰不到。"
   },
   "settings_open_secure": {
     "message": "開啟安全設定頁 →"
@@ -856,7 +856,7 @@
     "message": "還沒有東西可以分享 —— 先做一筆改動。"
   },
   "toast_share_too_large": {
-    "message": "這個頁面太大,無法分享。請到設定開啟圖片上傳,或移除幾張圖片。"
+    "message": "這個頁面太大，無法分享。請到設定開啟圖片上傳，或移除幾張圖片。"
   },
   "tip_share_nothing": {
     "message": "先做一筆改動 —— 沒有改動的連結沒有東西可看"
@@ -868,13 +868,13 @@
     "message": "將有 $1 張圖片上傳到你的 S3 bucket「$2」。"
   },
   "consent_public": {
-    "message": "上傳的圖片,任何拿到連結的人都讀得到。"
+    "message": "上傳的圖片，任何拿到連結的人都讀得到。"
   },
   "consent_local": {
-    "message": "這裡的改動會改成指向上傳後的圖片,不再是你挑的那個檔案。"
+    "message": "這裡的改動會改成指向上傳後的圖片，不再是你挑的那個檔案。"
   },
   "consent_tinify": {
-    "message": "壓縮已開啟,所以每張圖片會先送到 tinify.com。"
+    "message": "壓縮已開啟，所以每張圖片會先送到 tinify.com。"
   },
   "consent_agree": {
     "message": "上傳"
@@ -883,7 +883,7 @@
     "message": "先不要"
   },
   "consent_revoke": {
-    "message": "每個 bucket 只問一次,可以在設定裡收回。"
+    "message": "每個 bucket 只問一次，可以在設定裡收回。"
   },
   "settings_transfer": {
     "message": "上傳"
@@ -892,13 +892,13 @@
     "message": "下次上傳前再問我一次"
   },
   "aria_forget_consent": {
-    "message": "收回上傳許可,下次上傳會重新詢問"
+    "message": "收回上傳許可，下次上傳會重新詢問"
   },
   "toast_consent_withdrawn": {
-    "message": "已收回,下次上傳會再問你一次。"
+    "message": "已收回，下次上傳會再問你一次。"
   },
   "toast_transfer_declined": {
-    "message": "沒有上傳任何東西,圖片改成夾在裡面送出。"
+    "message": "沒有上傳任何東西，圖片改成夾在裡面送出。"
   },
   "settings_upload_count": {
     "message": "$2 項中有 $1 項會上傳"
@@ -913,7 +913,7 @@
     "message": "不要選取的區域"
   },
   "settings_exclusions_hint": {
-    "message": "符合這些規則的元素、以及它裡面的所有東西,選取時都會跳過。這不是保護 —— 這一切都跑在你自己那份頁面上 —— 但改在客服按鈕或同意條上的東西,對任何人都重現不了,收到交付的人只會拿到一條做不了的項目。"
+    "message": "符合這些規則的元素、以及它裡面的所有東西，選取時都會跳過。這不是保護 —— 這一切都跑在你自己那份頁面上 —— 但改在客服按鈕或同意條上的東西，對任何人都重現不了，收到交付的人只會拿到一條做不了的項目。"
   },
   "settings_exclusions_count_one": {
     "message": "1 條規則"
@@ -922,7 +922,7 @@
     "message": "$1 條規則"
   },
   "settings_exclusions_empty": {
-    "message": "目前沒有跳過任何東西,頁面上每個元素都選得到。"
+    "message": "目前沒有跳過任何東西，頁面上每個元素都選得到。"
   },
   "settings_exclusion_add": {
     "message": "新增規則"
@@ -946,7 +946,7 @@
     "message": "瀏覽器讀不懂這個 selector。"
   },
   "exclude_catches_everything": {
-    "message": "這會match整個頁面,等於什麼都不能改了。"
+    "message": "這會match整個頁面，等於什麼都不能改了。"
   },
   "exclude_already_there": {
     "message": "這條規則已經在清單裡了。"
@@ -964,7 +964,7 @@
     "message": "把東西放回它們原本的樣子。勾選要清掉的項目 —— 只有第一項可以靠重做救回來。"
   },
   "reset_preferences": {
-    "message": "編輯器偏好、你的排除規則,以及上傳授權"
+    "message": "編輯器偏好、你的排除規則，以及上傳授權"
   },
   "reset_edits": {
     "message": "所有頁面的改動"
@@ -991,16 +991,16 @@
     "message": "清除勾選的項目"
   },
   "toast_reset_done": {
-    "message": "完成,勾選的項目已經清掉。"
+    "message": "完成，勾選的項目已經清掉。"
   },
   "reset_confirm": {
-    "message": "清除 $1 項 —— 確定?"
+    "message": "清除 $1 項 —— 確定？"
   },
   "opt_clear_confirm": {
-    "message": "刪除兩把金鑰?"
+    "message": "刪除兩把金鑰？"
   },
   "toast_share_needs_setup": {
-    "message": "分享連結需要一個你自己的 S3 bucket。設定已經打開了,從那裡開始。"
+    "message": "分享連結需要一個你自己的 S3 bucket。設定已經打開了，從那裡開始。"
   },
   "compare": {
     "message": "對照"
@@ -1009,7 +1009,7 @@
     "message": "開一個 bucket 來放它們"
   },
   "opt_step1_body": {
-    "message": "在你自己的 AWS 帳號裡,名字和區域都隨你。不會有別的東西進去 —— Tweakpage 只寫在 tweakpage/ 這個 prefix 底下。"
+    "message": "在你自己的 AWS 帳號裡，名字和區域都隨你。不會有別的東西進去 —— Tweakpage 只寫在 tweakpage/ 這個 prefix 底下。"
   },
   "opt_step1_link": {
     "message": "開啟 S3 console →"
@@ -1018,7 +1018,7 @@
     "message": "開一把只能寫進那裡的金鑰"
   },
   "opt_step2_body": {
-    "message": "建一個 IAM user,只給下面這份 policy,然後拿它的 access key。權限收到這麼窄之後,金鑰就算外流,最多也只能寫進那一個 prefix。"
+    "message": "建一個 IAM user，只給下面這份 policy，然後拿它的 access key。權限收到這麼窄之後，金鑰就算外流，最多也只能寫進那一個 prefix。"
   },
   "opt_step2_link": {
     "message": "開啟 IAM console →"
@@ -1033,10 +1033,10 @@
     "message": "貼到這裡"
   },
   "opt_step3_body": {
-    "message": "步驟 1 的 bucket 名稱和區域,步驟 2 的金鑰和密鑰。它們留在這台電腦上,永遠不會被渲染進你正在編輯的頁面。"
+    "message": "步驟 1 的 bucket 名稱和區域，步驟 2 的金鑰和密鑰。它們留在這台電腦上，永遠不會被渲染進你正在編輯的頁面。"
   },
   "opt_check_values": {
-    "message": "每個值都要是 AWS 認得的格式,分享功能才會啟用。"
+    "message": "每個值都要是 AWS 認得的格式，分享功能才會啟用。"
   },
   "opt_show": {
     "message": "顯示"
@@ -1048,13 +1048,13 @@
     "message": "bucket 名稱只能有小寫字母、數字、點和連字號。"
   },
   "err_region": {
-    "message": "region 長得像 ap-northeast-1,不是它的顯示名稱。"
+    "message": "region 長得像 ap-northeast-1，不是它的顯示名稱。"
   },
   "consent_page": {
     "message": "這一頁的改動 —— 網址、文字內容、以及你寫的備註 —— 會上傳到你的 S3 bucket「$1」。"
   },
   "toast_share_declined": {
-    "message": "沒有上傳任何東西,所以也沒有連結。"
+    "message": "沒有上傳任何東西，所以也沒有連結。"
   },
   "tip_similar_needs_edit": {
     "message": "先改一個東西 —— 這是把你已經做的改動擴大到整組。"

@@ -1,11 +1,18 @@
 import { fakeBrowser } from 'wxt/testing';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ChangesTab } from './ChangesTab';
 import { EditsController } from '../controller';
 import { emptyPageEdits, type PageEdits } from '../../../lib/edits/types';
 
 const NOW = () => '2026-08-15T10:00:00.000Z';
+
+afterEach(() => {
+  // fakeBrowser.reset() does not undo a vitest spy, and one test replaces
+  // storage.local.set with a rejection. Left standing, every test after it runs against
+  // a storage layer that always fails and can no longer catch a save regression.
+  vi.restoreAllMocks();
+});
 
 beforeEach(() => {
   fakeBrowser.reset();

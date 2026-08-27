@@ -238,7 +238,7 @@ export const MESSAGES: Record<string, string> = {
   toast_snapshots: 'Saved before & after snapshots',
   toast_snapshot_failed: 'Snapshot failed',
   toast_import_failed: 'Import failed: $1',
-  import_not_stored: 'it could not be saved — storage may be full',
+  import_not_stored: 'it could not be read or saved',
   toast_imported: 'Imported $1 edits$2',
   toast_imported_for: 'Imported $1 edits for $2$3 — open that page to see them',
   toast_skipped: ' ($1 skipped)',

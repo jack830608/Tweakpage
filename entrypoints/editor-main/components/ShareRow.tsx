@@ -40,7 +40,12 @@ export function ShareRow({ controller, onToast, onSnapshot, onNeedsSetup }: Shar
   const today = () => new Date().toISOString().slice(0, 10);
   /** False once this row has been unmounted — see copy(). */
   const onScreen = useRef(true);
-  useEffect(() => () => { onScreen.current = false; }, []);
+  useEffect(() => {
+    // Set on mount as well as cleared on unmount: an effect that only installs a cleanup
+    // is one a double-invoked mount turns off for good.
+    onScreen.current = true;
+    return () => { onScreen.current = false; };
+  }, []);
   // Offering a button that can only fail is worse than not offering it.
   const [canShare, setCanShare] = useState(false);
   useEffect(() => {

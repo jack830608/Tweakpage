@@ -18,7 +18,7 @@
  *
  * Run: pnpm audit:selectors [url ...]
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium } from '@playwright/test';
 
 const BUNDLE = process.env.TWEAKPAGE_AUDIT_BUNDLE ?? '/tmp/twk-audit.js';
@@ -369,6 +369,9 @@ function report(rows) {
     );
   }
 
+  // test-results/ is gitignored, so a fresh clone has no directory to write into —
+  // and this line runs after several minutes against live sites.
+  mkdirSync('test-results', { recursive: true });
   writeFileSync('test-results/selector-audit.json', JSON.stringify(rows, null, 2));
   console.log('\ntest-results/selector-audit.json');
 }

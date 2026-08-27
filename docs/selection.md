@@ -66,18 +66,26 @@ Eight sites, six scenarios, two kinds of record, 40 elements each — 3840 resol
 The sample is every element with a box, not only the ones with words: images, icons and
 empty containers are in it, and they turn out to be where the remaining trouble is.
 
+Measured 2026-08-27. Both kinds of record are averaged per row; the wrong-answer column
+is a count, not a share.
+
 | the page moved by | exact | drift | refused | **landed elsewhere** |
 | --- | --- | --- | --- | --- |
-| a reload | 99% | 1% | 1% | **0** |
+| a reload | 100% | 0% | 0% | **0** |
 | every class renamed by a rebuild | 100% | 0% | 0% | **0** |
-| a block inserted above it | 82% | 1% | 12% | **40** |
-| an extra wrapper div | 74% | 2% | 20% | **22** |
-| a keyed list re-labelled in place | 14% | 17% | 70% | **0** |
-| that copy replaced everywhere | 48% | 0% | 52% | **1** |
+| a block inserted above it | 84% | 0% | 11% | **38** |
+| an extra wrapper div | 77% | 2% | 18% | **20** |
+| a keyed list re-labelled in place | 16% | 16% | 70% | **0** |
+| that copy replaced everywhere | 48% | 0% | 53% | **1** |
 
-**63 wrong answers in 3840, and 60 of them are elements that had no words when they
+**59 wrong answers in 3840, and 56 of them are elements that had no words when they
 were picked.** On elements with text — which is what a change list is usually about —
 it is 3.
+
+The run before this one, on the same sites, gave 63 and 60. The sites move underneath the
+audit, so these last digits drift on their own. What has to hold is the shape: zero on a
+reload, zero on a rebuild, and the wrong answers concentrated on elements with nothing to
+say.
 
 Both kinds of record are measured because the first version of this audit modelled every
 sample as a whole-element text edit, which is the one kind held to its words. It reported
@@ -86,20 +94,26 @@ stranger; a review found that by hand, and the gate now covers every kind.
 
 *exact* is the element the record was made from. *drift* is a different element now
 holding the remembered words, which is the intended answer when an element moves.
-*refused* found nothing. **Landed elsewhere is the bug, and it did not happen once.**
+*refused* found nothing. **Landed elsewhere is the bug**, and where it still happens is
+the whole of the next section.
+
+This line used to end "and it did not happen once". That was true of an earlier audit,
+which modelled every sample as a whole-element text edit — the one kind held to its
+words. Extending it to style records is what produced the column above, and the sentence
+outlived the change that made it false.
 
 Sites: positivegrid.com (Next + CSS Modules + Tailwind), nuxt.com (Vue), svelte.dev,
 angular.dev, tailwindcss.com, developer.mozilla.org, news.ycombinator.com (table
 layout, no framework), wordpress.org.
 
-Of 661 refusals, 557 were because those words had left the page entirely — there was
+Of 963 refusals, 608 were because those words had left the page entirely — there was
 nothing to find, and refusing is the only correct answer.
 
 ### The limit that is left: an element with nothing to say
 
 A record identifies its element by the words it held. An image, an icon, a spacer or an
 empty container has none, so there is nothing to hold a candidate against, and when the
-structure moves the positional selector's answer is taken on trust. That is all 60 of
+structure moves the positional selector's answer is taken on trust. That is all 56 of
 the wrong answers above.
 
 The obvious fix — hold those elements to their recorded class names instead — trades one
@@ -115,7 +129,7 @@ move it.** Edits on text are not.
 
 The remaining refusals are mostly ambiguity: several elements share the remembered text,
 so relocation cannot choose. The recorded `context` chain could break some of those ties.
-The audit counts how many: **38 of 661**. Recovering 6% of refusals — the visible,
+The audit counts how many: **46 of 963**. Recovering 5% of refusals — the visible,
 harmless failure — is not worth giving context a vote in resolution and risking the
 silent one. `context` stays recorded and never resolved against.
 
