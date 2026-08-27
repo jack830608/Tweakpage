@@ -43,6 +43,19 @@ edit had just written.
 - `docs/qa-checklist.md` — the eight manual paths, again. Still needs a real bucket, a
   real TinyPNG key and two browser profiles.
 
+### What CI does and does not check
+
+The release workflow checks that the tag and the manifest agree, that the unit suite
+passes, and that the package builds. It does not open a browser. Every
+`--load-extension` test times out on a GitHub runner — the page serves, the browser
+starts, the extension never becomes active — so each test burns its full 30 seconds and
+the suite cannot finish. Two attempts at 25 and 40 minutes proved it is not slowness.
+
+Until that is understood, `pnpm e2e` and `pnpm package` are a laptop's job, run before
+the tag is pushed, and this section is where each release says whether that happened.
+For 1.0.1 it did: 71 e2e and the unpacked-ZIP smoke test, both green, immediately before
+tagging.
+
 ### Also in this release
 
 - 59 zh-TW interface strings had halfwidth punctuation sitting against Chinese text.

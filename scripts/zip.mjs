@@ -16,8 +16,20 @@ execFileSync('zip', ['-qr', `${process.cwd()}/${OUT}/tweakpage.zip`, '.'], {
   stdio: 'inherit',
 });
 execFileSync('unzip', ['-q', `${OUT}/tweakpage.zip`, '-d', `${OUT}/unpacked`], { stdio: 'inherit' });
-execFileSync('npx', ['playwright', 'test', '--config', 'playwright.shots.config.ts', '-g', 'unzipped package'], {
-  stdio: 'inherit',
-  env: { ...process.env, TWEAKPAGE_PACKAGE: `${process.cwd()}/${OUT}/unpacked` },
-});
+
+/**
+ * The smoke test needs a browser that will actually load an extension, and CI is not
+ * one yet: under xvfb every --load-extension test times out waiting for an editor that
+ * never appears. Skipping it there is honest about what CI checks — that the tagged
+ * commit builds and packages — and leaves the claim that the package *runs* where it is
+ * currently true, which is a laptop, before the tag is pushed.
+ */
+if (process.env.TWEAKPAGE_SKIP_INSTALL_CHECK) {
+  console.log('\nSkipping the install check (TWEAKPAGE_SKIP_INSTALL_CHECK).');
+} else {
+  execFileSync('npx', ['playwright', 'test', '--config', 'playwright.shots.config.ts', '-g', 'unzipped package'], {
+    stdio: 'inherit',
+    env: { ...process.env, TWEAKPAGE_PACKAGE: `${process.cwd()}/${OUT}/unpacked` },
+  });
+}
 console.log(`\nPackage ready: ${OUT}/tweakpage.zip`);
