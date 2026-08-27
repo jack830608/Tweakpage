@@ -8,6 +8,46 @@ One section per submission. The point is to be able to answer, months later, wha
 actually on the store and what was already known to be wrong when it went there — without
 reconstructing it from memory or from a merge commit's date.
 
+## 1.0.1 — submitted 2026-08-27
+
+The first release built by CI from a tag rather than from a laptop, and the first
+uploaded as a draft by the workflow instead of by hand.
+
+Six defects from `known-issues.md`, all of which needed no change to the record format.
+The one that reaches users without ever being reported is the out-of-range move index:
+the applier rewrote the DOM twenty times a second for as long as a tab stayed open, and
+the only symptom was the battery. The others: several copies of one card collapsed into
+one on import, an import that failed to store said nothing at all, a carousel's current
+frame became the record's idea of the original, Escape during a hand-off still filled the
+clipboard, and an edit made straight after a text edit was stamped with the words that
+edit had just written.
+
+### Checked before submitting
+
+- `pnpm test` — 59 files, 661 tests
+- `pnpm e2e` — 71 tests
+- `pnpm package` — ZIP built, unpacked, driven in a real browser
+- **A code review, which is how this release nearly shipped the bug it was fixing.** The
+  merge-identity fix exempted every structural edit from supersession, which was right for
+  clones and wrong for moves: two moves on one element disagree about where it goes, so
+  each pass wrote the DOM — the same perpetual loop, arriving by import instead of by a
+  bad index. Green suites did not catch it. Six more findings came with it, three of them
+  introduced by this release's own fixes.
+- `pnpm audit:selectors` — ran for the first time ever; it had never been executable,
+  because the script calls esbuild and esbuild was never a declared dependency. 59 wrong
+  answers in 3840 against 63 on the previous recorded run, and 56 of the 59 on elements
+  with no text, which is the documented positional limit rather than a regression.
+
+### Not done before submitting
+
+- `docs/qa-checklist.md` — the eight manual paths, again. Still needs a real bucket, a
+  real TinyPNG key and two browser profiles.
+
+### Also in this release
+
+- 59 zh-TW interface strings had halfwidth punctuation sitting against Chinese text.
+- `release.yml`: a tag now builds the package and uploads it as a draft. It stops there.
+
 ## 1.0.0 — submitted 2026-08-25
 
 - Chrome Web Store item ID: `kicbechkfggmokgdceddemojfchjaadg`

@@ -61,6 +61,8 @@ jobs:
       # invisible in the build directory and obvious the moment someone installs it.
       - run: xvfb-run -a pnpm package
 
+      # Before the upload, so a Chrome Web Store hiccup cannot lose the built artefact.
+      # Idempotent: re-running failed jobs from the Actions UI must not need a new tag.
       - name: Attach the package to the release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -68,6 +70,56 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
             --generate-notes \
-            .output/package/tweakpage.zip
-          echo "Asset built from $GITHUB_SHA — upload it at" >> "$GITHUB_STEP_SUMMARY"
-          echo "https://chrome.google.com/webstore/devconsole" >> "$GITHUB_STEP_SUMMARY"
+            .output/package/tweakpage.zip \
+          || gh release upload "$GITHUB_REF_NAME" \
+            .output/package/tweakpage.zip --clobber
+
+      # Uploads a draft and stops. The dashboard still has to be opened, the draft still
+      # has to be looked at, and somebody still has to press submit — which is the point:
+      # the review that caught the worst defect in 1.0.1 arrived after the suite was green.
+      - name: Upload a draft to the Chrome Web Store
+        env:
+          EXTENSION_ID: kicbechkfggmokgdceddemojfchjaadg
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          token=$(curl -sS --fail-with-body https://oauth2.googleapis.com/token \
+            --data-urlencode "client_id=$CWS_CLIENT_ID" \
+            --data-urlencode "client_secret=$CWS_CLIENT_SECRET" \
+            --data-urlencode "refresh_token=$CWS_REFRESH_TOKEN" \
+            --data-urlencode "grant_type=refresh_token" \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["access_token"])')
+          # Derived from a secret, so not masked by default. An access token in a public
+          # log is a publish credential for the next hour.
+          echo "::add-mask::$token"
+
+          curl -sS --fail-with-body -X PUT \
+            -H "Authorization: Bearer $token" \
+            -H "x-goog-api-version: 2" \
+            -T .output/package/tweakpage.zip \
+            "https://www.googleapis.com/upload/chromewebstore/v1.1/items/$EXTENSION_ID" \
+            > upload.json
+          cat upload.json
+
+          # A refused package answers 200 with uploadState FAILURE, so the HTTP status
+          # is not the thing to trust.
+          python3 -c "
+          import json, sys
+          r = json.load(open('upload.json'))
+          state = r.get('uploadState')
+          if state == 'FAILURE':
+              for e in r.get('itemError', []):
+                  print(e.get('error_code'), e.get('error_detail'), file=sys.stderr)
+              sys.exit(1)
+          print('uploadState:', state)
+          "
+
+          {
+            echo "### Draft uploaded"
+            echo ""
+            echo "Built from \`$GITHUB_SHA\`. Nothing is published yet — open the"
+            echo "[dashboard](https://chrome.google.com/webstore/devconsole), check the draft,"
+            echo "and submit it for review."
+          } >> "$GITHUB_STEP_SUMMARY"
