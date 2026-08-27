@@ -96,10 +96,25 @@ export function Panel(props: PanelProps) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
     DEFAULT_PREFS.openSections,
   );
+  /**
+   * Never show a panel with nothing in it.
+   *
+   * Only `text` opens by default, and `text` only appears on an element that has words of
+   * its own. Select a div, a section, any wrapper — and the panel was a selection card
+   * above seven closed rows and not one control. The image case was already special-cased
+   * here; every other element was simply left with the empty version.
+   */
   useEffect(() => {
-    if (props.selected?.tagName === 'IMG') {
-      setOpenSections((open) => (open.image ? open : { ...open, image: true }));
-    }
+    const el = props.selected;
+    if (!el) return;
+    setOpenSections((open) => {
+      const applicable = SECTION_DEFS.filter((s) => !s.applies || s.applies(el));
+      if (applicable.some((s) => open[s.id])) return open;
+      const first = el.tagName === 'IMG'
+        ? applicable.find((s) => s.id === 'image') ?? applicable[0]
+        : applicable[0];
+      return first ? { ...open, [first.id]: true } : open;
+    });
   }, [props.selected]);
   const records = useSyncExternalStore(controller.subscribe, controller.getPage).records;
   const count = records.length;

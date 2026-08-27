@@ -1,7 +1,7 @@
 import { fakeBrowser } from 'wxt/testing';
 import { t } from '../../../lib/i18n';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Panel } from './Panel';
 import { getBreadcrumb } from './Breadcrumb';
 import { EditsController } from '../controller';
@@ -267,4 +267,29 @@ test('hiding an element locks editing behind an unhide hint', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Unhide element' }));
   expect(screen.queryByText(/Element is hidden/)).toBeNull();
   expect(screen.getByLabelText('Text')).toBeTruthy();
+});
+
+/**
+ * Only `text` opened by default and `text` only exists on an element with words of its
+ * own, so a div — a wrapper, a section, most of any real page — opened to a selection
+ * card above seven closed rows and no controls at all.
+ */
+test('an element with no text still opens to something', async () => {
+  document.body.innerHTML = '<div id="wrap" style="padding:10px"><span>inner</span></div>';
+  const controller = new EditsController(null, document, () => '2026-08-15T10:00:00.000Z');
+  render(
+    <Panel
+      controller={controller}
+      selected={document.getElementById('wrap')!}
+      mode="edit"
+      onModeChange={vi.fn()}
+      onClose={vi.fn()}
+    />,
+  );
+  await waitFor(() =>
+    expect(
+      screen.getAllByRole('button', { expanded: true }).length,
+      'at least one section is open',
+    ).toBeGreaterThan(0),
+  );
 });

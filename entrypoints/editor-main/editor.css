@@ -12,6 +12,30 @@ button, input, select, textarea { font: inherit; color: inherit; }
   --ink-2: #52525b;
   --ink-3: #6b6b74;
   --accent: #047857;
+  /* Spacing, six steps. Before these there were seventeen hardcoded values — 1 through
+     12 plus 14, 16, 18, 23 and 26 — and no two people nudging a number would land on the
+     same one. Most of the odd ones were padding reaching for a control height, which is
+     what --h-* below are for. */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 12px;
+  --space-6: 16px;
+  /* Control heights, set explicitly rather than derived from vertical padding. Derived,
+     an input came out 28px and a select 27px from the same declarations, and the control
+     column climbed a ladder that never repeated. */
+  --h-sm: 20px;
+  --h-md: 24px;
+  --h-lg: 28px;
+  /* Type, four steps from nine. 11.5 and 12 are the same size to a reader; 10.5 is not a
+     step, it is a hesitation. One rule overrides the scale: nothing localized goes below
+     12px, because 隱 and 景 fill in at 11. */
+  --t-over: 10px;
+  --t-quiet: 11px;
+  --t-body: 12px;
+  --t-title: 13px;
+
   --on-accent: #ffffff;
   --accent-ink: #047857;
   --accent-soft: #ecfdf5;
@@ -109,7 +133,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-header:active { cursor: grabbing; }
 .twk-header strong { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 650; letter-spacing: -0.01em; color: var(--ink); }
 .twk-header strong svg { color: var(--ink-3); }
-.twk-header button { border: none; background: none; cursor: pointer; color: var(--ink-3); font-size: 13px; padding: 2px 6px; border-radius: var(--r-control); }
+/* Square boxes so the glyph centres sit on one pitch. Equal padding around glyphs of
+   11 to 14px gave optical gaps of 21, 17, 12, 14 and 20. */
+.twk-header button { display: inline-flex; align-items: center; justify-content: center; width: var(--h-md); height: var(--h-md); border: none; background: none; cursor: pointer; color: var(--ink-3); font-size: var(--t-title); padding: 0; border-radius: var(--r-control); }
 .twk-header button:hover { color: var(--ink); background: var(--sunken); }
 .twk-header-buttons { display: inline-flex; align-items: center; gap: 2px; }
 /* Being unclickable is not a state anyone can see. */
@@ -162,7 +188,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .twk-selection-card { background: var(--sunken); border-radius: var(--r-card); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .twk-selection-actions { display: inline-flex; gap: 6px; }
-.twk-selection-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+/* Centre, not flex-start: a 12px mono line box box-aligned against a 24px button put
+   their text centres 3px apart, and the thing the card exists to name read as a caption
+   over its own buttons. */
+.twk-selection-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); }
 .twk-selection-label { font-weight: 600; font-size: 12px; color: var(--ink); word-break: break-all; font-family: var(--mono); }
 .twk-selection-head button { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; font-size: 11px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
 .twk-selection-head button:hover { border-color: var(--border-strong); color: var(--ink); }
@@ -178,9 +207,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-breadcrumb .twk-crumb-active { background: var(--accent-soft); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
 
 /* ---------- disclosures & fields ---------- */
-.twk-disclosure { border-bottom: 1px solid var(--sunken); }
+/* --border, not --sunken: the panel's own card fill is 8/255 from the surface, so the
+   most repeated rule in the panel was the one nobody could see. */
+.twk-disclosure { border-bottom: 1px solid var(--border); }
 .twk-disclosure:last-child { border-bottom: none; }
-.twk-disclosure-header { width: 100%; display: flex; gap: 6px; align-items: center; padding: 8px 0; border: none; background: none; cursor: pointer; font-size: 11px; font-weight: 600; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.07em; border-radius: var(--r-control); }
+/* 12px and no tracking. At 11px the horizontals of 隱 and 景 merge into blocks, and
+   letter-spacing plus uppercase were written for Latin — on CJK the first only pushes
+   two glyphs apart and the second does nothing at all. */
+.twk-disclosure-header { width: 100%; display: flex; gap: var(--space-3); align-items: center; padding: var(--space-4) 0; border: none; background: none; cursor: pointer; font-size: var(--t-body); font-weight: 600; color: var(--ink-2); border-radius: var(--r-control); }
 .twk-disclosure-header:hover { color: var(--ink); }
 .twk-disclosure-header svg { color: var(--ink-3); }
 .twk-disclosure-body { padding: 2px 0 12px; }
@@ -190,7 +224,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Reset sits in a gutter beside the property name, like a diff marker — a column of
    its own on the right stole width from every control to hold a usually-absent button. */
 .twk-unit-wrap { position: relative; display: flex; align-items: center; }
-.twk-unit-wrap input { padding-right: 26px; }
+/* Not the range: a slider's fill and thumb live in the content box, so the room made
+   for the unit chip stopped the green 26px short of a track that read 100%. */
+.twk-unit-wrap input:not([type='range']) { padding-right: 26px; }
 /* The native spinner only shows on hover, lands on top of the unit, and cannot be
    styled — the property name is the scrub handle instead. */
 .twk-section input[type='number'] { appearance: textfield; -moz-appearance: textfield; }
@@ -209,6 +245,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-field-name { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; gap: 3px; min-width: 0; }
 .twk-section input[type='number'], .twk-section input[type='text'], .twk-section select { width: 100%; padding: 4px 7px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink); font-family: var(--mono); font-size: 12px; transition: border-color var(--ease); }
 .twk-section select { font-family: var(--sans); }
+/* One height for every field control. Derived from padding these came out 28px for an
+   input and 27px for a select, and the colour row put a 26px swatch beside a 28px hex
+   field — three top edges in one row, twice over. */
+.twk-section :is(input:not([type='range']), select) { height: var(--h-lg); box-sizing: border-box; }
 .twk-section input:hover, .twk-section select:hover { border-color: var(--border-strong); }
 .twk-section textarea { width: 100%; grid-column: 1; padding: 7px 8px; border: 1px solid var(--border); border-radius: var(--r-control); resize: vertical; background: var(--surface); color: var(--ink); transition: border-color var(--ease); }
 .twk-section textarea:hover { border-color: var(--border-strong); }
@@ -222,10 +262,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-section button.twk-reset:hover { color: var(--accent-ink); }
 .twk-reset-slot { width: 16px; height: 16px; display: inline-block; }
 
-.twk-color-field { display: flex; gap: 5px; align-items: center; width: 100%; }
-.twk-color-field input[type='color'] { flex: none; width: 30px; height: 26px; padding: 1px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; }
+.twk-color-field { display: flex; gap: var(--space-3); align-items: center; width: 100%; }
+.twk-color-field input[type='color'] { flex: none; width: 30px; height: var(--h-lg); padding: 1px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; }
 .twk-color-field input[type='text'] { flex: 1; min-width: 0; width: auto; }
-.twk-color-field button { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; padding: 0; color: var(--ink-2); }
+.twk-color-field button { flex: none; display: inline-flex; align-items: center; justify-content: center; width: var(--h-lg); height: var(--h-lg); border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; padding: 0; color: var(--ink-2); }
 .twk-color-field button:hover { border-color: var(--border-strong); color: var(--ink); }
 .twk-alpha-row { margin-top: -3px; }
 .twk-alpha-value { flex: none; width: 40px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); text-align: right; }
@@ -235,7 +275,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-swatches button:hover { transform: scale(1.15); }
 
 .twk-slider-pair { display: flex; gap: 6px; align-items: center; width: 100%; }
-.twk-slider-pair input[type='range'] { flex: 1; min-width: 0; accent-color: var(--accent); cursor: pointer; }
+/* Neutral until the value leaves its default. The accent means "you changed this"
+   everywhere else in the panel; on a slider parked at 100% it made the three loudest
+   objects on screen the three that had nothing to say. */
+.twk-slider-pair input[type='range'] { flex: 1; min-width: 0; accent-color: var(--border-strong); cursor: pointer; }
+.twk-slider-pair input[type='range'][data-changed='true'] { accent-color: var(--accent); }
 .twk-section .twk-slider-pair input[type='number'] { flex: none; width: 64px; }
 
 /* ---------- box model ---------- */
@@ -265,10 +309,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* A shared page is on loan: the accent band marks the whole session as not-yours-yet,
    and it sits directly under the header so it is read before anything is touched. */
-.twk-shared { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--accent-soft); border-bottom: 1px solid var(--border); }
+/* A column, not a row. Latin wraps at spaces so most lines end short and the gap looks
+   bigger than it is; Traditional Chinese wraps at any character, so every line but the
+   last fills the measure and the declared 10px is the whole of it. At 320px the text
+   had about 210px left over, which is not a measure for two lines beside a button. */
+.twk-shared { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); padding: var(--space-5); background: var(--accent-soft); border-bottom: 1px solid var(--border); }
 .twk-shared strong { display: block; font-size: 12px; font-weight: 650; color: var(--ink); }
 .twk-shared p { margin-top: 2px; font-size: 11.5px; line-height: 1.5; color: var(--ink-2); }
-.twk-shared button { flex: none; align-self: center; padding: 6px 12px; border: none; border-radius: var(--r-control); background: var(--accent); color: var(--on-accent); font-size: 12px; font-weight: 600; cursor: pointer; }
+.twk-shared button { flex: none; align-self: flex-start; padding: var(--space-3) var(--space-5); border: none; border-radius: var(--r-control); background: var(--accent); color: var(--on-accent); font-size: 12px; font-weight: 600; cursor: pointer; }
 .twk-shared button:hover { background: var(--accent-ink); }
 
 .twk-onboarding { padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
@@ -500,5 +548,5 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-settings-version {
   margin: 12px 4px 0;
   font-size: 11px;
-  color: var(--twk-muted);
+  color: var(--ink-3);
 }
