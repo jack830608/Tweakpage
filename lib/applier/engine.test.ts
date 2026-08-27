@@ -231,6 +231,39 @@ test("a site rewrite becomes the new baseline, so clearing restores the site's v
   );
 });
 
+/**
+ * A baseline is a claim that the site has settled on a new value. A carousel never
+ * settles: every few seconds it writes another frame, and adopting each one in turn left
+ * oldValue holding whichever picture happened to be on screen. Reset then restored that
+ * frame instead of the image the page actually shipped with.
+ *
+ * One rewrite is a price update and is followed. A value that moves again is not a
+ * baseline at all, so the original is put back and the record stops chasing it.
+ */
+test("a value the site keeps changing is not mistaken for a new baseline", async () => {
+  const url = 'https://example.com/carousel';
+  document.body.innerHTML = '<img class="car" src="/frame-1.jpg">';
+  await seed(url, [record({
+    id: 'car1', selector: '.car', elementLabel: 'img.car',
+    type: 'attr', property: 'src', oldValue: '/frame-1.jpg', newValue: '/mine.jpg',
+  })]);
+  const engine = new ApplierEngine(document);
+  await engine.start(url);
+  expect(document.querySelector('.car')!.getAttribute('src')).toBe('/mine.jpg');
+
+  document.querySelector('.car')!.setAttribute('src', '/frame-2.jpg');
+  await wait(80);
+  document.querySelector('.car')!.setAttribute('src', '/frame-3.jpg');
+  await wait(80);
+
+  await fakeBrowser.storage.local.remove(pageKey(url));
+  await wait(20);
+  expect(
+    document.querySelector('.car')!.getAttribute('src'),
+    'reset restores the page as it shipped, not a frame it was passing through',
+  ).toBe('/frame-1.jpg');
+});
+
 test('the marker yields while the editor UI is on screen and returns when it closes', async () => {
   const url = 'https://example.com/marker';
   document.body.innerHTML = '<h1 class="mk">Original</h1>';

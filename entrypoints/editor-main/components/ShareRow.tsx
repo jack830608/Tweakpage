@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { safeSendMessage } from '../../../lib/extension-context';
 import { makeShareId, shareLink } from '../../../lib/share/link';
@@ -38,6 +38,9 @@ interface ShareRowProps {
 
 export function ShareRow({ controller, onToast, onSnapshot, onNeedsSetup }: ShareRowProps) {
   const today = () => new Date().toISOString().slice(0, 10);
+  /** False once this row has been unmounted — see copy(). */
+  const onScreen = useRef(true);
+  useEffect(() => () => { onScreen.current = false; }, []);
   // Offering a button that can only fail is worse than not offering it.
   const [canShare, setCanShare] = useState(false);
   useEffect(() => {
@@ -102,6 +105,10 @@ export function ShareRow({ controller, onToast, onSnapshot, onNeedsSetup }: Shar
   };
 
   const copy = async (text: string, message: string) => {
+    // Escape closes the editor mid-hand-off and the worker finishes regardless, so a
+    // reply can arrive after this row is gone. Filling the clipboard then hands over a
+    // link to an object the user believed they had cancelled.
+    if (!onScreen.current) return;
     try {
       await navigator.clipboard.writeText(text);
       onToast({ message, kind: 'success' });

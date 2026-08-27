@@ -8,6 +8,15 @@ export type { ContextNode };
 
 export type EditType = 'style' | 'text' | 'attr' | 'move' | 'clone';
 
+/**
+ * Edits that rearrange the page rather than describe one property of it.
+ *
+ * They are the ones for which selector-and-property is not identity: every copy of a card
+ * writes `clone`/`clone` against the same node, so a set of them shares both. Anything
+ * deciding whether one record supersedes another has to ask this first.
+ */
+export const STRUCTURAL = new Set<EditType>(['move', 'clone']);
+
 /** 'similar' points a style edit at every element the selector matches, not just one. */
 export type EditScope = 'element' | 'similar';
 

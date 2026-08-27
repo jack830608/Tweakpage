@@ -137,3 +137,39 @@ describe('duplicating an element', () => {
     expect(document.querySelectorAll('[data-tweakpage-clone="cl2"]')).toHaveLength(1);
   });
 });
+
+describe('a move index the page cannot satisfy', () => {
+  const move = (newValue: string) => ({
+    id: 'm1', selector: '#b', fallbackSelectors: [], elementLabel: 'b',
+    type: 'move' as const, property: 'domIndex', oldValue: '1', newValue,
+    enabled: true, createdAt: 'n', updatedAt: 'n',
+  });
+
+  /**
+   * A record can outlive the arrangement it was measured in: siblings get removed, or a
+   * share arrives from a page with more of them. The index then points past the end.
+   *
+   * Landing at the end is the right answer. Landing there and still believing the element
+   * belongs somewhere further along is not: the applier reapplies on every mutation, so a
+   * write that never reaches its own target is a write that happens forever.
+   */
+  test('lands at the end, and stays there without writing again', () => {
+    document.body.innerHTML = '<div id="a"></div><div id="b"></div><div id="c"></div>';
+    const el = document.querySelector('#b')!;
+
+    applyDomEdit(el, move('9'));
+    expect(Array.from(document.body.children).map((n) => n.id)).toEqual(['a', 'c', 'b']);
+
+    const writes = vi.fn();
+    new MutationObserver(writes).observe(document.body, { childList: true, subtree: true });
+    applyDomEdit(el, move('9'));
+    applyDomEdit(el, move('9'));
+
+    return new Promise<void>((done) => {
+      setTimeout(() => {
+        expect(writes).not.toHaveBeenCalled();
+        done();
+      }, 20);
+    });
+  });
+});

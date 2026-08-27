@@ -4,7 +4,7 @@ import { isCustomProperty, isSafeCustomValue } from './custom-css';
 import { MAX_CONTEXT_DEPTH, type ContextNode } from '../selector/context';
 import { textNodeIndex } from './text-nodes';
 import { loadPageEdits, normalizePageUrl, savePageEdits } from './storage';
-import type { EditRecord, PageEdits, Variant } from './types';
+import { STRUCTURAL, type EditRecord, type PageEdits, type Variant } from './types';
 
 /** The style properties the panel owns a field for. The Advanced box owns the rest. */
 export const PANEL_STYLE_PROPERTIES = new Set([
@@ -303,10 +303,24 @@ function isSafeStyleValue(value: string): boolean {
   return value.length <= MAX_STYLE_VALUE_LENGTH && !/[;{}]/.test(value);
 }
 
+/**
+ * Folds an incoming set into the one already stored.
+ *
+ * Identity is the id. Selector-and-property decides only which of two *replaceable*
+ * edits wins — a colour imported over a colour on the same element — and structural
+ * edits are not replaceable: every copy of one card writes `clone`/`clone` against the
+ * same node. Keying those that way made a set of copies look like a single edit, so
+ * importing a share collapsed them and a page came back holding one card where it had
+ * three.
+ */
 export function mergeRecords(existing: EditRecord[], incoming: EditRecord[]): EditRecord[] {
-  const incomingKeys = new Set(incoming.map((r) => `${r.selector} ${r.property}`));
+  const key = (r: EditRecord) => `${r.selector} ${r.property}`;
+  const incomingIds = new Set(incoming.map((r) => r.id));
+  const superseded = new Set(incoming.filter((r) => !STRUCTURAL.has(r.type)).map(key));
   return [
-    ...existing.filter((r) => !incomingKeys.has(`${r.selector} ${r.property}`)),
+    ...existing.filter(
+      (r) => !incomingIds.has(r.id) && (STRUCTURAL.has(r.type) || !superseded.has(key(r))),
+    ),
     ...incoming,
   ];
 }

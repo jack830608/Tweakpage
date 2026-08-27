@@ -71,6 +71,28 @@ test('mergeRecords lets incoming records win on selector+property', () => {
   expect(merged.find((r) => r.property === 'color')!.newValue).toBe('#00ff00');
 });
 
+/**
+ * Every copy of one element writes `clone`/`clone` against the same node, so several
+ * copies share a selector and a property. Treating that pair as identity made them look
+ * like one edit: importing a share collapsed them, and a card the page had two of came
+ * back with one.
+ */
+test('mergeRecords keeps every clone of one element', () => {
+  const clone = (id: string) =>
+    record({ id, type: 'clone', property: 'clone', oldValue: '', newValue: '' });
+  const merged = mergeRecords([clone('c1'), clone('c2')], [clone('c3')]);
+  expect(merged.map((r) => r.id)).toEqual(['c1', 'c2', 'c3']);
+});
+
+test('mergeRecords lets a record that arrives again by id replace itself', () => {
+  const merged = mergeRecords(
+    [record({ id: 'r1', newValue: '#111111' })],
+    [record({ id: 'r1', newValue: '#222222' })],
+  );
+  expect(merged).toHaveLength(1);
+  expect(merged[0].newValue).toBe('#222222');
+});
+
 test('importPageEdits merges into the stored page', async () => {
   await savePageEdits({ ...emptyPageEdits('https://example.com/page', 'T', 'now'), records: [record({})] });
   await importPageEdits({

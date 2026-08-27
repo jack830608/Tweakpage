@@ -21,11 +21,25 @@ import { generateSelector, type GeneratedSelector } from '../../lib/selector/gen
 import { resolveRecord, textStillMatches } from '../../lib/selector/resolve';
 import { similarSelector } from '../../lib/selector/similar';
 
+/** The words an element is recognised by — the same reading generateSelector takes. */
+function textFingerprintOf(el: Element): string | undefined {
+  return el.textContent?.trim().slice(0, 60) || undefined;
+}
+
 export class EditsController {
   private page: PageEdits;
   private statuses = new Map<string, ApplyStatus>();
   private listeners = new Set<() => void>();
   private selectorCache = new WeakMap<Element, GeneratedSelector>();
+  /**
+   * The words this element held after our own last text edit landed on it.
+   *
+   * genFor re-mints when an element's text stops matching its cached fingerprint, which
+   * is right when the site moved the words and wrong when we did: the next edit on that
+   * element was then stamped with the text the previous edit had just written. Renaming
+   * a nav link to match a sidebar link and colouring it put the colour on the sidebar.
+   */
+  private ourText = new WeakMap<Element, string | undefined>();
   private previewing = false;
   /**
    * True while the page is showing edits that arrived from a share link.
@@ -228,6 +242,10 @@ export class EditsController {
       { mergeSnapshot: target === this.lastEditTarget },
     );
     this.lastEditTarget = target;
+    // Read after the edit has been applied: this is what genFor will see next time, and
+    // recognising it is how a later edit on this element keeps the fingerprint it began
+    // with instead of adopting the words we just wrote.
+    if (type === 'text') this.ourText.set(el, textFingerprintOf(el));
   }
 
   /** True when the element has a same-parent sibling in that direction to swap with. */
@@ -553,11 +571,14 @@ export class EditsController {
    */
   private genFor(el: Element): GeneratedSelector {
     const cached = this.selectorCache.get(el);
-    const text = el.textContent?.trim().slice(0, 60) || undefined;
+    const text = textFingerprintOf(el);
     // Not while the user is typing into the element: mid-session its words are neither
     // where it started nor where it will end, and re-reading them stamped a record with
     // "d" as the text that identifies it.
-    if (cached && (cached.textFingerprint === text || el === this.inlineTarget)) return cached;
+    const oursNow = this.ourText.has(el) && this.ourText.get(el) === text;
+    if (cached && (cached.textFingerprint === text || el === this.inlineTarget || oursNow)) {
+      return cached;
+    }
     const gen = generateSelector(el);
     this.selectorCache.set(el, gen);
     return gen;

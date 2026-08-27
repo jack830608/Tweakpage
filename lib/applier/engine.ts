@@ -20,6 +20,10 @@ export class ApplierEngine {
   private paused = false;
   /** True while inline text editing owns the element — a keystroke is a mutation. */
   private editing = false;
+  /** What each record's baseline was when this page loaded. See refreshBaselines. */
+  private arrivedWith = new Map<string, { oldValue: string; absent?: boolean }>();
+  /** Records whose value the site keeps moving, so no reading of it is a baseline. */
+  private volatile = new Set<string>();
   /**
    * What the editor told us about itself. The chip has one owner — this engine — and
    * one home; the editor only reports its state. 'open' silences the chip (the panel
@@ -76,6 +80,10 @@ export class ApplierEngine {
 
   private async loadFor(url: string): Promise<void> {
     if (!isExtensionAlive()) return;
+    // A different page is a different set of elements; what the last one was doing with
+    // its values says nothing about this one.
+    this.arrivedWith.clear();
+    this.volatile.clear();
     const seq = ++this.loadSeq;
     const edits = await loadPageEdits(url);
     if (this.url !== url || seq !== this.loadSeq) return;
@@ -129,18 +137,34 @@ export class ApplierEngine {
    *
    * Our own writes are excluded by value: after applyAll the page holds newValue, and a
    * value equal to either side of the record is not news.
+   *
+   * A baseline is a claim that the site has settled somewhere new, and a carousel never
+   * settles: it writes another frame every few seconds, and following each one in turn
+   * left oldValue holding whichever picture the page happened to be passing through, so
+   * Reset restored that instead of the image the page shipped with. One rewrite is
+   * followed. A value that moves a second time is not a baseline at all — what arrived
+   * from storage goes back, and this record stops being chased for as long as the page
+   * stays open.
    */
   private refreshBaselines(): void {
     if (!this.edits) return;
     const updates: Array<{ id: string; oldValue: string }> = [];
     const records = this.edits.records.map((record) => {
       if (!record.enabled || (record.type !== 'text' && record.type !== 'attr')) return record;
+      if (this.volatile.has(record.id)) return record;
       const el = resolveRecord(record, this.doc);
       const live = el ? readDomValue(el, record) : null;
       if (live === null || live === record.newValue || live === record.oldValue) return record;
-      updates.push({ id: record.id, oldValue: live });
-      // The attribute exists on the page now, whoever put it there.
-      return { ...record, oldValue: live, absent: undefined };
+      const arrived = this.arrivedWith.get(record.id);
+      if (arrived === undefined) {
+        this.arrivedWith.set(record.id, { oldValue: record.oldValue, absent: record.absent });
+        updates.push({ id: record.id, oldValue: live });
+        // The attribute exists on the page now, whoever put it there.
+        return { ...record, oldValue: live, absent: undefined };
+      }
+      this.volatile.add(record.id);
+      updates.push({ id: record.id, oldValue: arrived.oldValue });
+      return { ...record, oldValue: arrived.oldValue, absent: arrived.absent };
     });
     if (updates.length === 0) return;
     this.edits = { ...this.edits, records };

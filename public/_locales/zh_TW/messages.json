@@ -120,6 +120,9 @@
       }
     }
   },
+  "import_not_stored": {
+    "message": "無法儲存 —— 儲存空間可能已滿"
+  },
   "toast_imported": {
     "message": "已匯入 $param1$ 筆改動$param2$",
     "placeholders": {

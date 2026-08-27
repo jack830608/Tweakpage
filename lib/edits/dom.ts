@@ -65,13 +65,23 @@ export function elementIndex(el: Element): number {
   return pageSiblings(el.parentElement).indexOf(el);
 }
 
-/** Places el at the given index among its siblings. Already there means untouched. */
+/**
+ * Places el at the given index among its siblings. Already there means untouched.
+ *
+ * The index is clamped to what the page can actually offer. A record outlives the
+ * arrangement it was measured in — siblings get removed, a share arrives from a page that
+ * had more of them — and an index past the end can only ever land at the end. Comparing
+ * the raw index against elementIndex then never matched, so the guard below never fired
+ * and every call wrote again; since the applier reapplies on mutation, that was a loop
+ * with no exit, twenty times a second for as long as the tab stayed open.
+ */
 export function moveToIndex(el: Element, index: number): void {
   const parent = el.parentElement;
   if (!parent || !Number.isInteger(index) || index < 0) return;
-  if (elementIndex(el) === index) return;
   const others = pageSiblings(parent).filter((sibling) => sibling !== el);
-  parent.insertBefore(el, others[index] ?? null);
+  const target = Math.min(index, others.length);
+  if (elementIndex(el) === target) return;
+  parent.insertBefore(el, others[target] ?? null);
 }
 
 /**

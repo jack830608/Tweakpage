@@ -65,7 +65,16 @@ export function ChangesTab({ controller, onToast, onHighlight, onSelectRecord }:
           onChange={(e) => {
             const file = e.target.files?.[0];
             e.target.value = '';
-            if (file) void onImportFile(file);
+            // Reading the file and storing the result can both reject, and a share for
+            // another page is written straight to storage — past the controller, so its
+            // failed-save badge never speaks for it. Unhandled, that rejection made a
+            // failed import look like nothing at all: the edits were simply not there.
+            if (file) {
+              void onImportFile(file).catch((error: unknown) => {
+                console.warn('[tweakpage] import failed', error);
+                onToast({ message: t('toast_import_failed', [t('import_not_stored')]), kind: 'error' });
+              });
+            }
           }}
         />
       </div>

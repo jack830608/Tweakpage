@@ -91,6 +91,33 @@ test('importing a matching export applies edits to the current page', async () =
   expect(onToast).toHaveBeenCalledWith({ message: 'Imported 1 edits', kind: 'success' });
 });
 
+/**
+ * A share for a different page is written straight to storage instead of going through
+ * the controller, so the controller's failed-save badge never speaks for it. When that
+ * write rejected — a full quota being the ordinary way — the rejection landed in a
+ * floating promise: no toast, no badge, and an import that simply had not happened.
+ */
+test('an import that cannot be stored says so', async () => {
+  const controller = new EditsController(null, document, NOW);
+  const onToast = vi.fn();
+  vi.spyOn(fakeBrowser.storage.local, 'set').mockRejectedValue(new Error('QUOTA_BYTES quota exceeded'));
+  render(<ChangesTab controller={controller} onToast={onToast} onHighlight={vi.fn()} onSelectRecord={vi.fn()} />);
+  await importFile(JSON.stringify({
+    version: 1,
+    url: 'https://elsewhere.example/other',
+    title: 'T',
+    updatedAt: NOW(),
+    records: [{
+      id: 'r1', selector: '#title', fallbackSelectors: [], elementLabel: 'h1#title',
+      type: 'text', property: 'textContent', oldValue: 'Original', newValue: 'Imported',
+      enabled: true, createdAt: NOW(), updatedAt: NOW(),
+    }],
+  }));
+  // The rejection travels through the file read, the load and the failed write before it
+  // reaches the handler, which is deeper than importFile's fixed ticks go.
+  await waitFor(() => expect(onToast).toHaveBeenCalledWith(expect.objectContaining({ kind: 'error' })));
+});
+
 test('importing invalid json reports an error toast', async () => {
   const controller = new EditsController(null, document, NOW);
   const onToast = vi.fn();

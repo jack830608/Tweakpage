@@ -244,3 +244,33 @@ describe('what the consent prompt is actually about', () => {
     expect(puts, 'declining means nothing left the machine').toEqual([]);
   });
 });
+
+/**
+ * Escape closes the editor. The hand-off it was in the middle of does not stop — the
+ * upload is the worker's, and it finishes whether or not anybody is still watching — so
+ * the reply came back to a component that no longer existed and the clipboard filled with
+ * a link to an object the user believed they had cancelled.
+ */
+test('a hand-off abandoned by closing the editor does not reach the clipboard', async () => {
+  const writeText = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => { release = resolve; });
+  fakeBrowser.runtime.onMessage.addListener(async (message: unknown) => {
+    if ((message as { type?: string }).type !== 'tweakpage:host-images') return undefined;
+    await held;
+    return {};
+  });
+  const controller = new EditsController(null, document, NOW);
+  controller.recordEdit(document.getElementById('title')!, 'text', 'textContent', 'Original', 'Changed');
+  const view = render(
+    <ShareRow controller={controller} onToast={vi.fn()} onSnapshot={vi.fn()} onNeedsSetup={vi.fn()} />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: /Copy summary/ }));
+
+  view.unmount();
+  release();
+  await new Promise((resolve) => setTimeout(resolve, 30));
+
+  expect(writeText).not.toHaveBeenCalled();
+});

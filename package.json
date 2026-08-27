@@ -27,6 +27,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@wxt-dev/module-react": "^1.1.0",
+    "esbuild": "^0.27.7",
     "happy-dom": "^17.0.0",
     "typescript": "^5.7.0",
     "vitest": "^4.1.10",

@@ -1,7 +1,7 @@
 import { buildCssText, isSafeRecordId, MARK_ATTRIBUTE } from './css';
 import { applyDomEdit, revertDomEdit } from './dom';
 import type { EditRecord as Record } from './types';
-import type { EditRecord } from './types';
+import { STRUCTURAL, type EditRecord } from './types';
 import { rememberWritten, resolveRecord, textStillMatches } from '../selector/resolve';
 
 const STYLE_TAG_SELECTOR = 'style[data-tweakpage-style]';
@@ -18,8 +18,6 @@ export function ensureStyleTag(doc: Document): HTMLStyleElement {
   }
   return tag;
 }
-
-const STRUCTURAL = new Set<EditRecord['type']>(['move', 'clone']);
 
 /**
  * True for a record whose selector describes the page AFTER our own structural edits.

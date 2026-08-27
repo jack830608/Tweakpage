@@ -407,3 +407,35 @@ describe('another writer on the same page', () => {
     expect(stored.records, 'the cleared record did not come back').toHaveLength(1);
   });
 });
+
+/**
+ * A record's fingerprint has to describe where its element started, and after a text
+ * edit the element no longer holds those words — it holds ours. genFor could not tell
+ * our own write from the site moving the words, so it re-minted, and the second edit was
+ * stamped with the text the first one had just written. Rename a nav link to match a
+ * sidebar link and then colour it, and on reload the colour landed on the sidebar.
+ */
+test('an edit made after a text edit still describes the element it was made on', () => {
+  document.body.innerHTML =
+    '<nav><a class="n" href="/a">Home</a></nav><aside><a class="s" href="/b">Docs</a></aside>';
+  const c = controller();
+  const nav = document.querySelector('nav a')!;
+
+  c.recordEdit(nav, 'text', 'textContent', 'Home', 'Docs');
+  c.recordEdit(nav, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
+
+  const colour = c.getPage().records.find((r) => r.property === 'color')!;
+  expect(colour.textFingerprint, 'the words it started with, not the ones we wrote').toBe('Home');
+
+  // The page as a fresh load produces it: both links, neither edited yet.
+  const fresh = document.implementation.createHTMLDocument('t');
+  fresh.body.innerHTML =
+    '<nav><a class="n" href="/a">Home</a></nav><aside><a class="s" href="/b">Docs</a></aside>';
+  applyAll(c.getPage().records, fresh);
+  expect(fresh.querySelector('nav a')!.textContent).toBe('Docs');
+  expect(
+    fresh.querySelector('style[data-tweakpage-style]')!.textContent,
+    'the colour belongs to the nav link',
+  ).toContain('#ff0000');
+  expect(fresh.querySelector('aside a')!.getAttribute('data-tweakpage')).toBeNull();
+});

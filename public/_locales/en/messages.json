@@ -120,6 +120,9 @@
       }
     }
   },
+  "import_not_stored": {
+    "message": "it could not be saved — storage may be full"
+  },
   "toast_imported": {
     "message": "Imported $param1$ edits$param2$",
     "placeholders": {
