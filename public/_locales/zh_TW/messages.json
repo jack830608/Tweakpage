@@ -1058,5 +1058,16 @@
   },
   "tip_similar_needs_edit": {
     "message": "先改一個東西 —— 這是把你已經做的改動擴大到整組。"
+  },
+  "settings_version": {
+    "message": "Tweakpage $1",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_version_hint": {
+    "message": "回報問題時附上這個 —— 不同版本的行為不一樣。"
   }
 }

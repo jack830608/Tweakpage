@@ -11,6 +11,7 @@ import {
 } from '../../../lib/share/settings';
 import { DEFAULT_PREFS, type PanelPrefs, type ThemeChoice } from '../panel-position';
 import { CollapsibleSection } from './CollapsibleSection';
+import { extensionVersion } from '../../../lib/version';
 import { ConfirmButton } from './ConfirmButton';
 import { ModeSwitch } from './ModeSwitch';
 import type { ToastContent } from './Toast';
@@ -87,6 +88,12 @@ export function SettingsView({ prefs, onPrefs, onToast, onDiscardEdits }: Settin
         onDiscardEdits={onDiscardEdits}
         onReloadStatus={() => void getShareStatus().then(setStatus)}
       />
+      {/* Last, and not a section: the first question asked of any bug report is which
+          version, and the answer was only ever on chrome://extensions. */}
+      <p className="twk-settings-version" data-testid="version">
+        {t('settings_version', [extensionVersion()])}
+        <span className="twk-settings-note"> {t('settings_version_hint')}</span>
+      </p>
     </div>
   );
 }

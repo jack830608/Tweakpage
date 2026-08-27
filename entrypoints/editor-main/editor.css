@@ -486,3 +486,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .twk-swatches button { border-color: rgba(255, 255, 255, 0.18); }
   .twk-color-field input[type='color'] { background: var(--sunken); }
 }
+
+/* The version line: present for whoever is filing a bug, quiet for everyone else. */
+.twk-settings-version {
+  margin: 12px 4px 0;
+  font-size: 11px;
+  color: var(--twk-muted);
+}

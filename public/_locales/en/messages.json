@@ -1058,5 +1058,16 @@
   },
   "tip_similar_needs_edit": {
     "message": "Change something first — this widens the changes you have made."
+  },
+  "settings_version": {
+    "message": "Tweakpage $1",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_version_hint": {
+    "message": "Worth quoting in a bug report — behaviour differs between versions."
   }
 }

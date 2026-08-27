@@ -9,6 +9,9 @@
 </p>
 
 <p align="center">
+  <a href="https://chromewebstore.google.com/detail/tweakpage/kicbechkfggmokgdceddemojfchjaadg"><img src="https://img.shields.io/chrome-web-store/v/kicbechkfggmokgdceddemojfchjaadg?color=10b981&label=chrome%20web%20store" alt="Chrome Web Store version"></a>
+  <a href="https://chromewebstore.google.com/detail/tweakpage/kicbechkfggmokgdceddemojfchjaadg"><img src="https://img.shields.io/chrome-web-store/users/kicbechkfggmokgdceddemojfchjaadg?color=10b981" alt="Users"></a>
+  <a href="https://chromewebstore.google.com/detail/tweakpage/kicbechkfggmokgdceddemojfchjaadg"><img src="https://img.shields.io/chrome-web-store/rating/kicbechkfggmokgdceddemojfchjaadg?color=10b981" alt="Rating"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-10b981" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Chrome-Manifest%20V3-10b981" alt="Chrome Manifest V3">
   <img src="https://img.shields.io/badge/UI-English%20%C2%B7%20%E7%B9%81%E9%AB%94%E4%B8%AD%E6%96%87-10b981" alt="English and Traditional Chinese">

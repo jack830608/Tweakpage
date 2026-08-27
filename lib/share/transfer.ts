@@ -8,6 +8,7 @@ import type { PageEdits } from '../edits/types';
 import { getShareSettings, isConfigured, type HandOff, type ShareSettings } from './settings';
 import { signRequest } from './sigv4';
 import { fetchWithin } from '../net';
+import { stamped } from '../version';
 
 export type TransferFailure =
   | 'not-configured'
@@ -168,7 +169,9 @@ export async function putShared(
   // Images first: a page whose pictures are hosted is small enough to survive the import
   // limits on arrival, which embedded ones are not.
   const { page: hosted, report } = await hostImages(page, 'share', { allowUpload });
-  const body = JSON.stringify(hosted);
+  // Stamped like the exports: a share is the hand-off most likely to be opened by a
+  // different build than the one that wrote it.
+  const body = JSON.stringify(stamped(hosted));
   // What we refuse to send is what a recipient refuses to read; the two limits are one
   // constant so they cannot drift.
   if (body.length > MAX_SHARE_BYTES) return { ok: false, reason: 'too-large' };

@@ -99,6 +99,8 @@ export const MESSAGES: Record<string, string> = {
   settings_permissions_body: "Two rules on your bucket or its IAM user. Without the second one a link uploads fine and then refuses to open.",
   copy_policy: "Copy",
   toast_policy_copied: "Policy copied",
+  settings_version: 'Tweakpage $1',
+  settings_version_hint: 'Worth quoting in a bug report — behaviour differs between versions.',
   settings_title: "Settings",
   aria_settings: "Settings",
   settings_appearance: "Appearance",

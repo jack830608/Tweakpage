@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
 import { exportFilename, toJson } from './json';
 import { toMarkdown } from './markdown';
+import { producedBy } from '../version';
 import type { EditRecord, PageEdits } from '../edits/types';
 
 function record(overrides: Partial<EditRecord>): EditRecord {
@@ -32,10 +33,14 @@ const page: PageEdits = {
   ],
 };
 
-test('toJson round-trips and keeps the schema version', () => {
-  const parsed = JSON.parse(toJson(page)) as PageEdits;
-  expect(parsed).toEqual(page);
-  expect(parsed.version).toBe(1);
+test('toJson round-trips, keeps the schema version, and names the build', () => {
+  const parsed = JSON.parse(toJson(page)) as PageEdits & { producedBy: string };
+  const { producedBy, ...roundTripped } = parsed;
+  expect(roundTripped).toEqual(page);
+  expect(parsed.version, 'the format the file is in').toBe(1);
+  // Which build wrote it, which is a different question and the one that cannot be
+  // answered later: the record format changes and this file outlives the version.
+  expect(producedBy, 'the build that wrote it').toMatch(/^Tweakpage /);
 });
 
 test('exportFilename uses hostname and date', () => {
@@ -49,7 +54,7 @@ test('toMarkdown groups records by element and formats each kind', () => {
   expect(md).toBe(
     [
       '# Page edits — https://example.com/products/spark',
-      'Exported 2026-08-15 by Tweakpage',
+      `Exported 2026-08-15 by ${producedBy()}`,
       '',
       '## h2.hero-title "Unleash Your Sound"',
       '',
