@@ -113,3 +113,19 @@ test('accessible names are never hard-coded English', () => {
   }
   expect(offenders, 'route these through t() so both locales carry them').toEqual([]);
 });
+
+/**
+ * Chrome accepts [A-Za-z0-9_@] in a message name and nothing else. One hyphen makes the
+ * whole messages.json invalid, and an extension whose locale will not parse never starts
+ * its service worker — so the symptom is not a missing string, it is every end-to-end
+ * test timing out on an extension that appears to have loaded.
+ */
+test('every message name is one Chrome will accept', () => {
+  for (const locale of ['en', 'zh_TW']) {
+    const messages = JSON.parse(
+      fs.readFileSync(`public/_locales/${locale}/messages.json`, 'utf8'),
+    ) as Record<string, unknown>;
+    const rejected = Object.keys(messages).filter((key) => !/^[A-Za-z0-9_@]+$/.test(key));
+    expect(rejected, `${locale} would not parse`).toEqual([]);
+  }
+});

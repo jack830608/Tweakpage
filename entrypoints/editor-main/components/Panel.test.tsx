@@ -276,19 +276,10 @@ test('hiding an element locks editing behind an unhide hint', () => {
  */
 test('an element with no text still opens to something', async () => {
   document.body.innerHTML = '<div id="wrap" style="padding:10px"><span>inner</span></div>';
-  const controller = new EditsController(null, document, () => '2026-08-15T10:00:00.000Z');
-  render(
-    <Panel
-      controller={controller}
-      selected={document.getElementById('wrap')!}
-      mode="edit"
-      onModeChange={vi.fn()}
-      onClose={vi.fn()}
-    />,
-  );
+  setup(document.getElementById('wrap')!);
   await waitFor(() =>
     expect(
-      screen.getAllByRole('button', { expanded: true }).length,
+      document.querySelectorAll('[data-section][aria-expanded="true"]').length,
       'at least one section is open',
     ).toBeGreaterThan(0),
   );

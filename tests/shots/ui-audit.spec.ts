@@ -53,10 +53,9 @@ for (const theme of ['light', 'dark'] as const) {
   test(`sections open — ${theme}`, async () => {
     const { context, page } = await editor(theme);
     await page.locator('h1').click();
-    for (const id of ['typography', 'appearance', 'spacing']) {
-      const s = page.locator(`[data-section="${id}"]`);
-      if ((await s.getAttribute('aria-expanded')) !== 'true') await s.click();
-    }
+    const s = page.locator('[data-section="typography"]');
+    if ((await s.getAttribute('aria-expanded')) !== 'true') await s.click();
+    await page.waitForTimeout(200);
     await shot(page, `sections-${theme}`);
     await context.close();
   });

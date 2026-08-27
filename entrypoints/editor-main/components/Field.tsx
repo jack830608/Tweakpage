@@ -2,6 +2,7 @@ import { useSyncExternalStore, type ReactNode } from 'react';
 import type { EditsController } from '../controller';
 import { isBareNumber } from '../../../lib/css-values';
 import { ResetButton } from './ResetButton';
+import { t } from '../../../lib/i18n';
 
 interface FieldProps {
   /** The CSS property as the user sees it, e.g. "font-size". */
@@ -48,6 +49,13 @@ export function Field({
   useSyncExternalStore(controller.subscribe, controller.getPage);
   const modified = controller.recordFor(element, property) !== undefined;
   const shownUnit = value !== undefined && isBareNumber(value) ? unit : undefined;
+  // t() answers with the key when it has no translation, so a name nobody has written a
+  // label for falls back to the CSS property rather than printing "prop_font-size".
+  // Chrome message names allow [A-Za-z0-9_@] only. A hyphen in the key made the whole
+  // messages.json invalid, and an extension whose locale will not parse does not start
+  // its service worker at all — every end-to-end test timed out waiting for one.
+  const key = `prop_${name.replace(/-/g, '_')}`;
+  const translated = t(key) === key ? null : t(key);
   return (
     <div className={stacked ? 'twk-field twk-field--stacked' : 'twk-field'}>
       <span className="twk-field-name">
@@ -57,8 +65,22 @@ export function Field({
           property={property}
           companions={companions}
         />
-        <span className={modified ? 'twk-prop twk-prop--modified' : 'twk-prop'} title={name}>
-          {name}
+        {/*
+          * What it does, then what it is called.
+          *
+          * The panel used to show only the CSS name, which asks somebody who does not
+          * write CSS to already know that "letter-spacing" is the gap between letters —
+          * exactly the knowledge this product exists to not require. The CSS name stays,
+          * quieter, because the hand-off is written in it and a reader should be able to
+          * connect the two. The change list an engineer receives is unchanged.
+          */}
+        <span className="twk-prop-names" title={name}>
+          <span className={modified ? 'twk-prop-label twk-prop--modified' : 'twk-prop-label'}>
+            {translated ?? name}
+          </span>
+          {/* Only when there is something else to say. A text run is labelled by its own
+              tag, and printing `h1` above `h1` says it twice. */}
+          {translated && <span className="twk-prop" aria-hidden="true">{name}</span>}
         </span>
       </span>
       {shownUnit ? (

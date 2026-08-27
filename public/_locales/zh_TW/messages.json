@@ -1069,5 +1069,86 @@
   },
   "settings_version_hint": {
     "message": "回報問題時附上這個 —— 不同版本的行為不一樣。"
+  },
+  "prop_font_family": {
+    "message": "字體"
+  },
+  "prop_font_size": {
+    "message": "字級"
+  },
+  "prop_font_weight": {
+    "message": "粗細"
+  },
+  "prop_line_height": {
+    "message": "行高"
+  },
+  "prop_text_align": {
+    "message": "對齊"
+  },
+  "prop_letter_spacing": {
+    "message": "字距"
+  },
+  "prop_text_transform": {
+    "message": "大小寫"
+  },
+  "prop_color": {
+    "message": "文字顏色"
+  },
+  "prop_background_color": {
+    "message": "背景顏色"
+  },
+  "prop_background_image": {
+    "message": "背景圖片"
+  },
+  "prop_border_radius": {
+    "message": "圓角"
+  },
+  "prop_border_width": {
+    "message": "框線粗細"
+  },
+  "prop_border_color": {
+    "message": "框線顏色"
+  },
+  "prop_opacity": {
+    "message": "不透明度"
+  },
+  "prop_box_shadow": {
+    "message": "陰影"
+  },
+  "prop_display": {
+    "message": "顯示方式"
+  },
+  "prop_flex_direction": {
+    "message": "排列方向"
+  },
+  "prop_justify_content": {
+    "message": "主軸對齊"
+  },
+  "prop_align_items": {
+    "message": "交叉軸對齊"
+  },
+  "prop_gap": {
+    "message": "間隔"
+  },
+  "prop_position": {
+    "message": "定位"
+  },
+  "prop_src": {
+    "message": "圖片"
+  },
+  "prop_alt": {
+    "message": "圖片說明"
+  },
+  "prop_href": {
+    "message": "連結"
+  },
+  "prop_text": {
+    "message": "文字"
+  },
+  "prop_width": {
+    "message": "寬度"
+  },
+  "prop_height": {
+    "message": "高度"
   }
 }

@@ -1069,5 +1069,86 @@
   },
   "settings_version_hint": {
     "message": "Worth quoting in a bug report — behaviour differs between versions."
+  },
+  "prop_font_family": {
+    "message": "Typeface"
+  },
+  "prop_font_size": {
+    "message": "Size"
+  },
+  "prop_font_weight": {
+    "message": "Weight"
+  },
+  "prop_line_height": {
+    "message": "Line height"
+  },
+  "prop_text_align": {
+    "message": "Align"
+  },
+  "prop_letter_spacing": {
+    "message": "Letter spacing"
+  },
+  "prop_text_transform": {
+    "message": "Caps"
+  },
+  "prop_color": {
+    "message": "Text colour"
+  },
+  "prop_background_color": {
+    "message": "Background"
+  },
+  "prop_background_image": {
+    "message": "Background image"
+  },
+  "prop_border_radius": {
+    "message": "Corner radius"
+  },
+  "prop_border_width": {
+    "message": "Border width"
+  },
+  "prop_border_color": {
+    "message": "Border colour"
+  },
+  "prop_opacity": {
+    "message": "Opacity"
+  },
+  "prop_box_shadow": {
+    "message": "Shadow"
+  },
+  "prop_display": {
+    "message": "Display"
+  },
+  "prop_flex_direction": {
+    "message": "Direction"
+  },
+  "prop_justify_content": {
+    "message": "Along the axis"
+  },
+  "prop_align_items": {
+    "message": "Across the axis"
+  },
+  "prop_gap": {
+    "message": "Gap"
+  },
+  "prop_position": {
+    "message": "Position"
+  },
+  "prop_src": {
+    "message": "Image"
+  },
+  "prop_alt": {
+    "message": "Description"
+  },
+  "prop_href": {
+    "message": "Link"
+  },
+  "prop_text": {
+    "message": "Text"
+  },
+  "prop_width": {
+    "message": "Width"
+  },
+  "prop_height": {
+    "message": "Height"
   }
 }
