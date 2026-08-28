@@ -539,26 +539,6 @@ export function Panel(props: PanelProps) {
               * the body, so the empty panel explains itself.
               */}
             {count > 0 && (
-              <button
-                type="button"
-                className="twk-footer-compare"
-                aria-label={t('aria_compare')}
-                aria-pressed={previewing}
-                data-testid="compare-original"
-                onClick={() => {
-                  // Preview reverts the page, so computed values change under any field
-                  // with a half-typed draft and useFieldDraft drops it. Blur first and
-                  // the draft commits.
-                  (panelRef.current?.getRootNode() as ShadowRoot | null)
-                    ?.activeElement instanceof HTMLElement &&
-                    ((panelRef.current!.getRootNode() as ShadowRoot).activeElement as HTMLElement).blur();
-                  controller.setPreviewOriginal(!previewing);
-                }}
-              >
-                {t('compare_original')}
-              </button>
-            )}
-            {count > 0 && (
               <span
                 className="twk-saved"
                 data-testid="save-state"
@@ -579,6 +559,26 @@ export function Panel(props: PanelProps) {
                         ? t('saving')
                         : t('saved_just_now')}
               </span>
+            )}
+            {count > 0 && (
+              <button
+                type="button"
+                className="twk-footer-compare"
+                aria-label={t('aria_compare')}
+                aria-pressed={previewing}
+                data-testid="compare-original"
+                onClick={() => {
+                  // Preview reverts the page, so computed values change under any field
+                  // with a half-typed draft and useFieldDraft drops it. Blur first and
+                  // the draft commits.
+                  (panelRef.current?.getRootNode() as ShadowRoot | null)
+                    ?.activeElement instanceof HTMLElement &&
+                    ((panelRef.current!.getRootNode() as ShadowRoot).activeElement as HTMLElement).blur();
+                  controller.setPreviewOriginal(!previewing);
+                }}
+              >
+                {t('compare_original')}
+              </button>
             )}
           </div>
         </>

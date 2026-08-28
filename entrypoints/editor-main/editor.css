@@ -520,10 +520,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
    the quietest ink. The fill is --sunken here because the footer is --surface; in the
    card it is the other way round, and the meaning is the same — a control is not its
    background. */
-.twk-footer-compare { flex: none; height: var(--h-md); padding: 0 var(--space-3); border: 1px solid var(--border); border-radius: var(--r-control); background: var(--sunken); cursor: pointer; font-size: var(--t-quiet); font-weight: 500; color: var(--ink-2); }
+.twk-footer-compare { flex: none; margin-left: auto; height: var(--h-md); padding: 0 var(--space-3); border: 1px solid var(--border); border-radius: var(--r-control); background: var(--sunken); cursor: pointer; font-size: var(--t-quiet); font-weight: 500; color: var(--ink-2); }
 .twk-footer-compare:hover { border-color: var(--border-strong); color: var(--ink); }
 .twk-footer-compare[aria-pressed='true'] { background: var(--warn-bg); color: var(--warn-ink); font-weight: 600; }
-/* A flex item now, not a float. */
+/* Sits before the toggle, not after it. Its text changes width between states — 儲存中…,
+   已儲存, 改動暫停中 — and anything to its right moved sideways when it did. The toggle
+   is pinned to the end of the line now, so the count absorbs the change instead of the
+   control you just pressed. */
 .twk-saved { flex: none; font-size: var(--t-quiet); color: var(--ink-3); font-weight: 400; }
 .twk-footer:hover { color: var(--ink); background: var(--sunken); }
 /* The count is what lights up on the first change, which is also what makes the footer

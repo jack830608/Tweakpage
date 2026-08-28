@@ -2594,3 +2594,33 @@ test('nothing the panel does to itself moves the panel', async ({ context }) => 
   expect(await height(), 'hiding an element collapsed the panel').toBe(settled);
   await expect(page.locator('[data-testid="font-size"]')).toBeVisible();
 });
+
+/**
+ * Sideways counts too. The footer is a flex row and the status text beside the toggle
+ * changes width between Saving…, Saved and Changes paused, so anything to its right moved
+ * when it did — including the toggle that had just been pressed. The toggle is pinned to
+ * the end of the line and the count absorbs the change.
+ */
+test('the compare toggle does not move sideways when the status beside it changes', async ({
+  context,
+}) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await openSection(page, 'typography');
+  await page.locator('[data-testid="font-size"]').fill('54');
+
+  const toggle = page.locator('[data-testid="compare-original"]');
+  await expect(toggle).toBeVisible();
+  const x = async () => Math.round((await toggle.boundingBox())!.x);
+  const status = () => page.locator('[data-testid="save-state"]').textContent();
+
+  const settled = await x();
+  const first = await status();
+  await toggle.click();
+  await expect(page.locator('[data-testid="save-state"]')).not.toHaveText(first ?? '');
+  expect(await x(), 'the status got wider and took the toggle with it').toBe(settled);
+  await toggle.click();
+  expect(await x(), 'and again on the way back').toBe(settled);
+});
