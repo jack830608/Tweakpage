@@ -114,6 +114,17 @@ export function TypographySection({ element, controller }: SectionProps) {
           ))}
         </select>
       </Field>
+      {/* Third, not eighth. Colour was 260px below the group header, past six fields
+          nobody opens Text style to reach — and it is the one people come here for. */}
+      <ColorField
+        name="color"
+        property="color"
+        controller={controller}
+        element={element}
+        ariaLabel={t('aria_color')}
+        value={color.value}
+        onChange={(hex) => controller.recordEdit(element, 'style', 'color', color.original, hex)}
+      />
       <Field
         name="line-height"
         property="lineHeight"
@@ -207,15 +218,6 @@ export function TypographySection({ element, controller }: SectionProps) {
           <option value="capitalize">Capitalize</option>
         </select>
       </Field>
-      <ColorField
-        name="color"
-        property="color"
-        controller={controller}
-        element={element}
-        ariaLabel={t('aria_color')}
-        value={color.value}
-        onChange={(hex) => controller.recordEdit(element, 'style', 'color', color.original, hex)}
-      />
     </section>
   );
 }

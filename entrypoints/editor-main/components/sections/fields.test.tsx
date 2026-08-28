@@ -69,9 +69,12 @@ function setup(selected: Element | null = document.getElementById('target')) {
  */
 /** Content — the words, the picture, the link — has no header: it is always on screen. */
 const ALWAYS_OPEN = new Set(['text', 'image', 'link']);
+/** Sections rendered inline inside a group: open the group that carries them. */
+const INSIDE: Record<string, string> = { background: 'box' };
 
 function openSection(id: string) {
   if (ALWAYS_OPEN.has(id)) return;
+  if (INSIDE[id]) return openSection(INSIDE[id]);
   for (let round = 0; round < 4; round++) {
     const wanted = document.querySelector<HTMLButtonElement>(`[data-section="${id}"]`);
     if (wanted) {

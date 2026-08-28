@@ -104,7 +104,12 @@ const CONTENT_DEFS: SectionDef[] = [
  * The children keep their own ids and stay collapsible, so a long group is still
  * skimmable and every section a test or a preference refers to is still there.
  */
-const GROUP_DEFS: Array<{ id: string; children: SectionDef[] }> = [
+const GROUP_DEFS: Array<{
+  id: string;
+  /** Rendered directly inside the group, above its disclosures. */
+  inline?: (element: Element, controller: EditsController) => ReactNode;
+  children: SectionDef[];
+}> = [
   {
     id: 'typography',
     children: [
@@ -113,8 +118,11 @@ const GROUP_DEFS: Array<{ id: string; children: SectionDef[] }> = [
   },
   {
     id: 'box',
+    // Background is two fields. The argument that retired eight top-level drawers holds
+    // one level down: a disclosure that hides two fields costs about what it hides, and
+    // background colour is a thing people reach for. It renders inline, first.
+    inline: (el: Element, c: EditsController) => <BackgroundSection element={el} controller={c} />,
     children: [
-      { id: 'background', render: (el, c) => <BackgroundSection element={el} controller={c} /> },
       { id: 'appearance', render: (el, c) => <AppearanceSection element={el} controller={c} /> },
       { id: 'size', render: (el, c) => <SizeSection element={el} controller={c} /> },
       { id: 'spacing', render: (el, c) => <SpacingSection element={el} controller={c} /> },
@@ -146,9 +154,10 @@ export function Panel(props: PanelProps) {
     const el = props.selected;
     if (!el) return;
     setOpenSections((open) => {
-      // The content control is always on screen now, so an element with words already
-      // shows something. This is for the ones without: a div, a wrapper, a section.
-      if (CONTENT_DEFS.some((s) => !s.applies || s.applies(el))) return open;
+      // One group is always open, whatever the element. The first version of this skipped
+      // elements that had content of their own, on the reasoning that they already showed
+      // something — true about emptiness and wrong about reach: the commonest element in
+      // the product then opened with every style control one click away.
       if (GROUP_DEFS.some((g) => open[g.id])) return open;
       return { ...open, [GROUP_DEFS[0].id]: true };
     });
@@ -544,7 +553,7 @@ function EditView({
               {render(selected, controller)}
             </div>
           ))}
-          {GROUP_DEFS.map(({ id, children }) => (
+          {GROUP_DEFS.map(({ id, inline, children }) => (
             <CollapsibleSection
               key={id}
               sectionId={id}
@@ -552,6 +561,7 @@ function EditView({
               open={!!openSections[id]}
               onToggle={() => onToggleSection(id)}
             >
+              {inline?.(selected, controller)}
               {children.length === 1 ? (
                 children[0].render(selected, controller)
               ) : (

@@ -33,7 +33,9 @@ export const DEFAULT_PREFS: PanelPrefs = {
   width: 320,
   theme: 'system',
   // Everything open at once is a wall of fields; the rest is one click away.
-  openSections: { text: true },
+  // 'text' was a section id before content came out of its drawer; nothing has read this
+  // key since. The first group is what a panel should open with.
+  openSections: { typography: true },
 };
 export const MIN_WIDTH = 280;
 export const MAX_WIDTH = 560;

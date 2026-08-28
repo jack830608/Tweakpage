@@ -199,13 +199,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-disclosure .twk-disclosure .twk-disclosure-header { font-size: var(--t-quiet); font-weight: 500; color: var(--ink-2); padding: var(--space-3) 0; }
 .twk-disclosure .twk-disclosure .twk-disclosure-body { padding-bottom: var(--space-4); }
 
-.twk-selection-card { background: var(--sunken); border-radius: var(--r-card); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.twk-selection-card { background: var(--sunken); border-radius: var(--r-card); padding: var(--space-5); display: flex; flex-direction: column; gap: 8px; }
 .twk-selection-actions { display: inline-flex; gap: 6px; }
 /* Centre, not flex-start: a 12px mono line box box-aligned against a 24px button put
    their text centres 3px apart, and the thing the card exists to name read as a caption
    over its own buttons. */
 .twk-selection-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); }
-.twk-selection-label { font-weight: 600; font-size: 12px; color: var(--ink); word-break: break-all; font-family: var(--mono); }
+/* break-word, not break-all: the same bug this file already records against
+   .twk-change-target. Only an unbreakable run — a URL, a selector — should break at
+   all, and break-all split "yours" into "yo / urs" in the selection card. */
+.twk-selection-label { font-weight: 600; font-size: var(--t-body); color: var(--ink); overflow-wrap: break-word; font-family: var(--mono); }
 .twk-selection-head button { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; font-size: 11px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
 .twk-selection-head button:hover { border-color: var(--border-strong); color: var(--ink); }
 
@@ -232,7 +235,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-disclosure-header svg { color: var(--ink-3); }
 .twk-disclosure-body { padding: 2px 0 12px; }
 
-.twk-field { display: grid; grid-template-columns: minmax(0, 1fr) 158px; align-items: center; gap: 8px; margin-bottom: 7px; color: var(--ink-2); }
+.twk-field { display: grid; grid-template-columns: minmax(0, 1fr) 158px; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4); color: var(--ink-2); }
 .twk-field--stacked { grid-template-columns: minmax(0, 1fr); gap: 5px; }
 /* Reset sits in a gutter beside the property name, like a diff marker — a column of
    its own on the right stole width from every control to hold a usually-absent button. */

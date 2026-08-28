@@ -28,6 +28,8 @@ async function copied(
 async function openSection(page: import('@playwright/test').Page, id: string): Promise<void> {
   // Content — the words, the picture, the link — has no header: it is always on screen.
   if (['text', 'image', 'link'].includes(id)) return;
+  // Background renders inline inside its group; opening the group is what reaches it.
+  if (id === 'background') return openSection(page, 'box');
   for (let round = 0; round < 4; round++) {
     const wanted = page.locator(`[data-section="${id}"]`);
     if ((await wanted.count()) > 0) {
