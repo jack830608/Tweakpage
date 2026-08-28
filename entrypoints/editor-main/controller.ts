@@ -584,7 +584,20 @@ export class EditsController {
     return gen;
   }
 
+  /**
+   * The one door every change goes through, and therefore the one place preview ends.
+   *
+   * Most mutating methods said this for themselves, and two did not: cloneElement and
+   * setSimilarScope both reach setRecords directly, so pressing 複製 or ticking "apply to
+   * similar" while previewing recorded a change the page was not showing and left the
+   * panel claiming to be previewing something it had just re-applied. That was invisible
+   * only because the whole body used to be replaced during preview — a guard that was
+   * hiding a real hole rather than there being no hole.
+   *
+   * Here it cannot be forgotten by the next method somebody adds.
+   */
   private setRecords(records: EditRecord[], { mergeSnapshot = false } = {}): void {
+    if (this.previewing) this.setPreviewOriginal(false);
     if (!mergeSnapshot) {
       this.undoStack.push(this.page.records);
       if (this.undoStack.length > 50) this.undoStack.shift();

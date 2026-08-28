@@ -124,6 +124,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
    panel composited to a mid-grey — every surface in it shifted 33 levels, so what the
    dark theme's tokens describe was not what anybody saw. */
 .twk-panel:hover, .twk-panel:focus-within { opacity: 1; }
+/* Outside layout, so saying this costs no movement — which is the whole point. */
+.twk-panel[data-previewing='true'] { box-shadow: inset 0 0 0 2px var(--warn-ink), var(--shadow-panel); }
 /* Reading text over page content underneath is a real accessibility problem. */
 @media (prefers-reduced-transparency: reduce) {
   .twk-panel { opacity: 1; }

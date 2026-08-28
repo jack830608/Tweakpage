@@ -173,8 +173,14 @@ test('compare peeks at the original and comes back', () => {
   fireEvent.click(toggle());
   expect(controller.isPreviewingOriginal()).toBe(true);
   expect(document.getElementById('title')!.textContent).toBe('Original');
-  expect(screen.getByText(/Viewing the original page/)).toBeTruthy();
-  expect(toggle().getAttribute('aria-pressed'), 'and says so').toBe('true');
+  expect(toggle().getAttribute('aria-pressed'), 'the toggle says so').toBe('true');
+  // The instrument does not blank because the specimen changed. Replacing the body was
+  // a 511px collapse that moved the toggle out from under the pointer that pressed it.
+  expect(screen.getByLabelText('Text'), 'the fields stay put').toBeTruthy();
+  expect(
+    document.querySelector('.twk-panel')!.getAttribute('data-previewing'),
+    'said with a ring, which is outside layout',
+  ).toBe('true');
 
   fireEvent.click(toggle());
   expect(document.getElementById('title')!.textContent).toBe('Changed');
@@ -297,15 +303,24 @@ test('invalid line height values are not recorded', () => {
   expect(controller.getPage().records.find((r) => r.property === 'lineHeight')!.newValue).toBe('1.5');
 });
 
-test('hiding an element locks editing behind an unhide hint', () => {
+/**
+ * Hiding used to replace everything below the card with a note, which collapsed the panel
+ * by about five hundred pixels and took away the controls for an element whose properties
+ * are all still real. The button that did it already reads Unhide — that was the whole
+ * content of the note.
+ */
+test('hiding an element keeps its controls where they were', () => {
   const { controller } = setup();
+  const groups = () => document.querySelectorAll('[data-section]').length;
+  const before = groups();
   fireEvent.click(screen.getByRole('button', { name: 'Hide element' }));
-  expect(screen.getByText(/Element is hidden/)).toBeTruthy();
-  expect(screen.queryByLabelText('Text')).toBeNull();
   expect(controller.getPage().records.find((r) => r.property === 'display')!.newValue).toBe('none');
-  fireEvent.click(screen.getByRole('button', { name: 'Unhide element' }));
-  expect(screen.queryByText(/Element is hidden/)).toBeNull();
-  expect(screen.getByLabelText('Text')).toBeTruthy();
+  expect(screen.getByLabelText('Text'), 'the fields stay').toBeTruthy();
+  expect(
+    screen.getByRole('button', { name: 'Unhide element' }),
+    'and the button says what state it is in',
+  ).toBeTruthy();
+  expect(groups(), 'the groups are all still there — nothing collapsed').toBe(before);
 });
 
 /**

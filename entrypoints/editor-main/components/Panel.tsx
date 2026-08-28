@@ -297,7 +297,15 @@ export function Panel(props: PanelProps) {
   };
 
   return (
-    <aside className="twk-panel" ref={panelRef} style={{ ...style, width: prefs.width }}>
+    <aside
+      className="twk-panel"
+      ref={panelRef}
+      // Says the page is showing its original without moving anything: a box-shadow is
+      // outside layout, and the panel already uses an inset ring for "this is in a
+      // temporary state you should come back out of".
+      data-previewing={previewing ? 'true' : undefined}
+      style={{ ...style, width: prefs.width }}
+    >
       {/* The separator pattern: focusable, announcing its value, driven by arrows —
           resizing existed only for pointers before (review 2026-08-17, finding 5).
           The panel is anchored right, so ArrowLeft moves its left edge left: wider. */}
@@ -537,7 +545,15 @@ export function Panel(props: PanelProps) {
                 aria-label={t('aria_compare')}
                 aria-pressed={previewing}
                 data-testid="compare-original"
-                onClick={() => controller.setPreviewOriginal(!previewing)}
+                onClick={() => {
+                  // Preview reverts the page, so computed values change under any field
+                  // with a half-typed draft and useFieldDraft drops it. Blur first and
+                  // the draft commits.
+                  (panelRef.current?.getRootNode() as ShadowRoot | null)
+                    ?.activeElement instanceof HTMLElement &&
+                    ((panelRef.current!.getRootNode() as ShadowRoot).activeElement as HTMLElement).blur();
+                  controller.setPreviewOriginal(!previewing);
+                }}
               >
                 {t('compare_original')}
               </button>
@@ -551,7 +567,7 @@ export function Panel(props: PanelProps) {
                 {saveState.state === 'failed'
                   ? t('footer_not_saved')
                   : saveState.state === 'preview'
-                    ? ''
+                    ? t('not_saved_preview')
                     : saveState.state === 'saving'
                       ? t('saving')
                       : t('saved_just_now')}
@@ -594,11 +610,6 @@ function EditView({
   if (showOnboarding) {
     return <OnboardingCard onDismiss={onDismissOnboarding} />;
   }
-  if (previewing) {
-    return (
-      <p className="twk-preview-note">{t('preview_note')}</p>
-    );
-  }
   if (!selected) {
     return (
       <div>
@@ -610,7 +621,6 @@ function EditView({
   if (selected.tagName === 'IFRAME') {
     return <p className="twk-empty">{t('iframe_note')}</p>;
   }
-  const hidden = controller.recordFor(selected, 'display')?.newValue === 'none';
   return (
     <div className="twk-sections">
       <SelectionCard
@@ -620,9 +630,11 @@ function EditView({
         onPreviewSet={onPreviewSet}
         onReveal={onReveal}
       />
-      {hidden ? (
-        <p className="twk-preview-note">{t('hidden_note')}</p>
-      ) : (
+      {/* Hiding an element used to replace everything below the card with a note, which
+          collapsed the panel by about five hundred pixels and threw away the controls for
+          an element whose properties are all still real. The card's own button already
+          reads 顯示; that is the statement the note was making. */}
+      {(
         <>
           {CONTENT_DEFS.filter(({ applies }) => !applies || applies(selected)).map(({ id, render }) => (
             <div className="twk-content-section" key={id}>

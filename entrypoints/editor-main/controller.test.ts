@@ -439,3 +439,42 @@ test('an edit made after a text edit still describes the element it was made on'
   ).toContain('#ff0000');
   expect(fresh.querySelector('aside a')!.getAttribute('data-tweakpage')).toBeNull();
 });
+
+/**
+ * Every path that records a change leaves preview, including the two that never said so
+ * for themselves. They were unreachable while the body was replaced during preview; with
+ * the fields staying on screen they are one click away, and a change recorded against a
+ * page showing its original state is a change nobody can see.
+ */
+describe('recording anything while previewing the original', () => {
+  const previewing = () => {
+    const c = controller();
+    const el = document.getElementById('title')!;
+    c.recordEdit(el, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
+    c.setPreviewOriginal(true);
+    expect(c.isPreviewingOriginal()).toBe(true);
+    return { c, el };
+  };
+
+  test('duplicating leaves preview', () => {
+    const { c, el } = previewing();
+    c.cloneElement(el);
+    expect(c.isPreviewingOriginal(), 'a clone recorded against a reverted page').toBe(false);
+  });
+
+  test('applying to similar elements leaves preview', () => {
+    document.body.innerHTML = '<p class="x">a</p><p class="x">b</p>';
+    const c = controller();
+    const el = document.querySelector('.x')!;
+    c.recordEdit(el, 'style', 'color', 'rgb(0, 0, 0)', '#ff0000');
+    c.setPreviewOriginal(true);
+    c.setSimilarScope(el, true);
+    expect(c.isPreviewingOriginal()).toBe(false);
+  });
+
+  test('an ordinary edit still leaves preview', () => {
+    const { c, el } = previewing();
+    c.recordEdit(el, 'style', 'fontSize', '16px', '40px');
+    expect(c.isPreviewingOriginal()).toBe(false);
+  });
+});

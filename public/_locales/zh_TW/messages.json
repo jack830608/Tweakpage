@@ -640,7 +640,7 @@
     "message": "已清除 AWS 資訊，分享功能關閉。"
   },
   "not_saved_preview": {
-    "message": "預覽原始版"
+    "message": "改動暫停中"
   },
   "settings_share_on": {
     "message": "已開啟"

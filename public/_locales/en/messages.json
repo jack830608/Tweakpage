@@ -640,7 +640,7 @@
     "message": "AWS details cleared. Sharing is off."
   },
   "not_saved_preview": {
-    "message": "Previewing original"
+    "message": "Changes paused"
   },
   "settings_share_on": {
     "message": "On"

@@ -2551,3 +2551,46 @@ test('making a change does not move the panel under your hands', async ({ contex
   await page.locator('[data-testid="back-to-editing"]').click();
   expect(await cardTop(), 'returning moved it again').toBe(before);
 });
+
+/**
+ * Nothing the panel does to itself may move the panel.
+ *
+ * Compare used to replace the whole body with a note, collapsing 876px to 365px — so the
+ * toggle you had just pressed travelled 511px up the screen and getting back meant
+ * finding it somewhere else. Hiding an element did the same thing for the same reason.
+ * Neither note was needed: the controller leaves preview on any recorded change, and a
+ * hidden element's own button already reads Unhide.
+ */
+test('nothing the panel does to itself moves the panel', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await openSection(page, 'typography');
+  await page.locator('[data-testid="font-size"]').fill('54');
+  await expect(page.locator('[data-testid="compare-original"]')).toBeVisible();
+
+  const height = () =>
+    page.evaluate(() =>
+      Math.round(
+        document
+          .getElementById('tweakpage-host')!
+          .shadowRoot!.querySelector('.twk-panel')!
+          .getBoundingClientRect().height,
+      ),
+    );
+  const settled = await height();
+
+  await page.locator('[data-testid="compare-original"]').click();
+  await expect(page.locator('.twk-panel')).toHaveAttribute('data-previewing', 'true');
+  expect(await height(), 'previewing the original collapsed the panel').toBe(settled);
+  // The fields are still there, which is the half of the comparison worth having.
+  await expect(page.locator('[data-testid="font-size"]')).toBeVisible();
+
+  await page.locator('[data-testid="compare-original"]').click();
+  expect(await height(), 'coming back moved it').toBe(settled);
+
+  await page.locator('[data-testid="hide-element"]').click();
+  expect(await height(), 'hiding an element collapsed the panel').toBe(settled);
+  await expect(page.locator('[data-testid="font-size"]')).toBeVisible();
+});
