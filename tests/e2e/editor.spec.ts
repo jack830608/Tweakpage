@@ -2653,7 +2653,7 @@ test('nothing inside the panel grows under the field being edited', async ({ con
 
   // A value the field refuses.
   await page.locator('[data-testid="font-family"]').fill('Arial{bad}');
-  await expect(page.locator('.twk-prop-error')).toBeVisible();
+  await expect(page.locator('.twk-field-error')).toBeVisible();
   expect(await below(), 'an error message pushed the fields below it').toBe(settled);
   await page.locator('[data-testid="font-family"]').fill('Arial');
   expect(await below()).toBe(settled);

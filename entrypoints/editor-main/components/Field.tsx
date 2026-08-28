@@ -105,13 +105,26 @@ export function Field({
             * The label column is already two lines, and the least critical text in the
             * row is the one that can stand aside for the most critical.
             */}
-          {error ? (
-            <span className="twk-prop twk-prop-error" role="alert">{error}</span>
-          ) : (
-            translated && <span className="twk-prop" aria-hidden="true">{name}</span>
-          )}
+          {translated && <span className="twk-prop" aria-hidden="true">{name}</span>}
         </span>
       </span>
+      {/*
+        * Floated, not inserted.
+        *
+        * The message used to grow a row under the field, which pushed every field below
+        * it down while somebody was typing the value being refused. Borrowing the label's
+        * second line looked promising and was not: real messages run to thirty-odd
+        * characters and either ellipsise into uselessness or wrap and move the row anyway.
+        *
+        * Absolutely positioned it says the whole thing, costs no layout, and covers the
+        * next field for exactly as long as the value is wrong — which is the field nobody
+        * is looking at while they fix this one.
+        */}
+      {error && (
+        <p className="twk-field-error" role="alert">
+          {error}
+        </p>
+      )}
       {shownUnit ? (
         <span className="twk-unit-wrap">
           {children}
