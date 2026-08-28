@@ -108,7 +108,15 @@ export function ColorField({
           )}
         </span>
       </Field>
-      {value !== null && (
+      {/*
+        * Always here, disabled when there is no colour to be transparent.
+        *
+        * It used to appear the moment a hex became valid — which is mid-keystroke, in the
+        * field directly above it, pushing the rest of the section down while somebody was
+        * typing. A control that is present and inert costs one row; one that arrives
+        * costs the reader their place.
+        */}
+      {(
         <div className="twk-field twk-alpha-row">
           <span aria-hidden="true" />
           <span className="twk-slider-pair">
@@ -118,17 +126,20 @@ export function ColorField({
               max={100}
               aria-label={t('aria_opacity_slider', [aria])}
               data-testid={`${property}-alpha`}
-              value={alphaPercent(value)}
+              value={value === null ? 0 : alphaPercent(value)}
+              disabled={value === null}
               // Adjusting transparency is not choosing a colour.
-              onChange={(e) => apply(withAlphaPercent(value, Number(e.target.value)))}
+              onChange={(e) => value !== null && apply(withAlphaPercent(value, Number(e.target.value)))}
             />
-            <span className="twk-alpha-value">{alphaPercent(value)}%</span>
+            <span className="twk-alpha-value">{value === null ? '—' : `${alphaPercent(value)}%`}</span>
           </span>
         </div>
       )}
-      {recent.length > 0 && (
-        // Same grid as a field row, so the swatches line up under the color inputs
-        // instead of being nudged into place with a hard-coded offset.
+      {/* Its height is held whether or not there is anything in it yet: it used to arrive
+          on the first colour you committed, moving the next field under a cursor already
+          on its way there. Same grid as a field row, so the swatches line up under the
+          colour inputs instead of being nudged into place with a hard-coded offset. */}
+      {(
         <div className="twk-field twk-swatches-row">
           <span aria-hidden="true" />
           <div className="twk-swatches">

@@ -95,9 +95,21 @@ export function Field({
           >
             {translated ?? name}
           </span>
-          {/* Only when there is something else to say. A text run is labelled by its own
-              tag, and printing `h1` above `h1` says it twice. */}
-          {translated && <span className="twk-prop" aria-hidden="true">{name}</span>}
+          {/*
+            * The second line is the CSS name, and while a value is refused it is the
+            * message instead.
+            *
+            * The message used to be its own row under the field, which pushed every field
+            * below it down — while you were typing, which is exactly when it appears.
+            * Reserving that row under all eight type fields would be 136px of nothing.
+            * The label column is already two lines, and the least critical text in the
+            * row is the one that can stand aside for the most critical.
+            */}
+          {error ? (
+            <span className="twk-prop twk-prop-error" role="alert">{error}</span>
+          ) : (
+            translated && <span className="twk-prop" aria-hidden="true">{name}</span>
+          )}
         </span>
       </span>
       {shownUnit ? (
@@ -107,11 +119,6 @@ export function Field({
         </span>
       ) : (
         children
-      )}
-      {error && (
-        <p className="twk-field-error" role="alert">
-          {error}
-        </p>
       )}
     </div>
   );

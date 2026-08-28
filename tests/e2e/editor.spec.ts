@@ -2624,3 +2624,45 @@ test('the compare toggle does not move sideways when the status beside it change
   await toggle.click();
   expect(await x(), 'and again on the way back').toBe(settled);
 });
+
+/**
+ * The rest of the audit: three places where something appearing inside the content pushed
+ * the fields below it down, all of them while somebody was mid-edit.
+ *
+ * A refused value used to grow a row under its field; it now stands in for the CSS name
+ * on the label's second line, which is the least critical text in the row. A colour's
+ * alpha slider used to arrive the moment a hex became valid — mid-keystroke, in the field
+ * directly above it. Its recent-colours row used to arrive on the first colour committed,
+ * moving the next field under a cursor already travelling towards it.
+ */
+test('nothing inside the panel grows under the field being edited', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await openSection(page, 'typography');
+
+  const below = () =>
+    page.evaluate(() => {
+      const root = document.getElementById('tweakpage-host')!.shadowRoot!;
+      const el = root.querySelector('[data-property="letterSpacing"]') as HTMLElement | null;
+      return el ? Math.round(el.getBoundingClientRect().y) : -1;
+    });
+  const settled = await below();
+  expect(settled, 'the field being watched is on screen').toBeGreaterThan(0);
+
+  // A value the field refuses.
+  await page.locator('[data-testid="font-family"]').fill('Arial{bad}');
+  await expect(page.locator('.twk-prop-error')).toBeVisible();
+  expect(await below(), 'an error message pushed the fields below it').toBe(settled);
+  await page.locator('[data-testid="font-family"]').fill('Arial');
+  expect(await below()).toBe(settled);
+
+  // A colour becoming valid, then being committed.
+  await page.locator('[data-testid="color-hex"]').fill('#ff0000');
+  expect(await below(), 'the alpha row arrived and moved things').toBe(settled);
+  await page.locator('[data-testid="color-hex"]').blur();
+  await page.locator('[data-testid="color-hex"]').fill('#00ff00');
+  await page.locator('[data-testid="color-hex"]').blur();
+  expect(await below(), 'the recent-colours row arrived and moved things').toBe(settled);
+});

@@ -276,8 +276,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-unit { position: absolute; right: 8px; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); pointer-events: none; }
 .twk-field-actions { grid-column: 2; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: -3px; margin-bottom: 7px; }
 .twk-section .twk-field-actions button { padding: 3px 9px; font-size: 11px; }
-.twk-field-error { grid-column: 1 / -1; margin-top: 3px; font-size: 11px; color: var(--warn-ink); }
-.twk-field:has(.twk-field-error) input, .twk-field:has(.twk-field-error) select { border-color: var(--warn-ink); }
+/* The message now lives in the label column, so the border follows that. */
+.twk-field:has(.twk-prop-error) input, .twk-field:has(.twk-prop-error) select { border-color: var(--warn-ink); }
 /* The gutter is the width of the button that goes in it. It was 16px holding a 24px
    reset, so the moment a field was edited the button overflowed 8px and sat on top of
    the property name — invisible in a capture where nothing has been changed, and the
@@ -303,6 +303,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* The scrub handle the comment above the number-input rules has always described. */
 .twk-prop-label[data-scrub] { cursor: ew-resize; touch-action: none; }
 .twk-prop-label { font-size: var(--t-body); line-height: 1.3; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.twk-prop-error { font-family: var(--sans); color: var(--warn-ink); white-space: normal; }
 .twk-prop { font-family: var(--mono); font-size: var(--t-over); line-height: 1.3; color: var(--ink-3); letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .twk-prop-label.twk-prop--modified { color: var(--accent-ink); font-weight: 600; }
 .twk-section button.twk-reset { padding: 0; border: none; background: none; color: var(--accent); font-size: 12px; width: 24px; height: 24px; flex: none; justify-content: center; border-radius: 4px; }
@@ -316,8 +317,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-color-field button:hover { border-color: var(--border-strong); color: var(--ink); }
 .twk-alpha-row { margin-top: -3px; }
 .twk-alpha-value { flex: none; width: 40px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); text-align: right; }
-.twk-swatches-row { margin-top: -3px; }
-.twk-swatches { display: flex; gap: 4px; }
+/* Sub-controls of the colour above them, so they sit closer than two fields do. */
+.twk-swatches-row { margin-top: calc(var(--space-2) - var(--space-4)); }
+/* The height is held whether or not there is a colour in it yet. */
+.twk-swatches { display: flex; gap: var(--space-2); min-height: 16px; }
 .twk-swatches button { width: 16px; height: 16px; border: 1px solid rgba(24, 24, 27, 0.12); border-radius: 4px; cursor: pointer; padding: 0; }
 .twk-swatches button:hover { transform: scale(1.15); }
 
