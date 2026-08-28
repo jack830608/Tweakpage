@@ -2457,3 +2457,60 @@ test('a link and an image description record and replay', async ({ context }) =>
   await expect(page.locator('#anchor-link')).toHaveAttribute('href', 'https://example.com/pricing');
   await expect(page.locator('#hero')).toHaveAttribute('alt', 'A guitar amplifier');
 });
+
+/**
+ * Pressing a summary chip has to land the same way for every chip.
+ *
+ * It did not: the reveal focused the first focusable thing in the row, which is the
+ * right control for a number field and the wrong one for the two kinds that carry more
+ * than one — a colour's first input is its swatch, not its hex box, and opacity's is its
+ * slider. Both opened the section and then focused something with no visible ring, so
+ * three of the four chips looked like they had done nothing.
+ */
+/**
+ * Pressing a summary chip has to land the same way for every chip, on every kind of
+ * element. It did not: the reveal focused the first focusable thing in the row, which is
+ * right for a number field and wrong for the two kinds carrying more than one control —
+ * a colour leads with its swatch, opacity with its slider. Both opened the section and
+ * then focused something with no visible ring, so the chip looked like it had done
+ * nothing. Rather than fix the two that were reported, this walks every chip the panel
+ * can render.
+ */
+for (const [what, fixture, selector] of [
+  ['a heading', '<h1 id="probe">Heading</h1>', '#probe'],
+  ['an image', '<img id="probe" src="/one.png" width="40" height="40">', '#probe'],
+  ['a block with no words of its own', '<div id="probe" style="padding:20px"><span>in</span></div>', '#probe'],
+] as const) {
+  test(`every summary chip on ${what} lands on something you can type into`, async ({ context }) => {
+    const page = await context.newPage();
+    await page.goto('http://localhost:4173/');
+    await page.evaluate((html) => {
+      document.body.insertAdjacentHTML('afterbegin', html);
+    }, fixture);
+    await activateEditor(context);
+    await page.locator(selector).click();
+
+    const chips = await page.locator('[data-testid^="summary-"]').evaluateAll((els) =>
+      els.map((el) => el.getAttribute('data-testid')!),
+    );
+    expect(chips.length, 'the strip states four facts').toBe(4);
+
+    for (const chip of chips) {
+      await page.locator(`[data-testid="${chip}"]`).click();
+      const landed = await page.evaluate(() => {
+        const el = document.getElementById('tweakpage-host')?.shadowRoot?.activeElement as
+          | HTMLElement
+          | null;
+        if (!el) return 'nothing';
+        const type = el.getAttribute('type');
+        return `${el.tagName.toLowerCase()}${type ? `:${type}` : ''}`;
+      });
+      // A slider, a colour swatch and a button are all focusable and none of them is what
+      // "take me to it" means.
+      expect(
+        ['input:text', 'input:number', 'select', 'textarea'],
+        `${chip} landed on ${landed}`,
+      ).toContain(landed);
+    }
+  });
+}

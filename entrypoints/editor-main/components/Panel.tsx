@@ -137,6 +137,33 @@ const GROUP_DEFS: Array<{
     ],
   },
 ];
+/**
+ * The control somebody would type into, which is not always the first one in the row.
+ *
+ * A colour row leads with its swatch and opacity leads with its slider — both focusable,
+ * neither the thing being asked for, and neither shows a focus ring you can see. Three
+ * of the four chips looked like they had done nothing. Ordered by what a person means
+ * when they say "take me to it": the box you type in, then the list you choose from,
+ * then anything else that can hold focus.
+ */
+function focusPrimaryControl(field: HTMLElement): void {
+  const order = [
+    'input[type="text"]',
+    'input[type="number"]',
+    'select',
+    'textarea',
+    'input:not([type="range"]):not([type="color"])',
+    'input',
+    'button',
+  ];
+  for (const selector of order) {
+    // The box model carries the hook on the input itself rather than on a row around it,
+    // so the target can be the control instead of containing one.
+    const control = field.matches(selector) ? field : field.querySelector<HTMLElement>(selector);
+    if (control) return control.focus();
+  }
+}
+
 export function Panel(props: PanelProps) {
   const { controller, mode, onModeChange, onClose } = props;
   const [view, setView] = useState<View>('edit');
@@ -220,7 +247,7 @@ export function Panel(props: PanelProps) {
     const field = host?.querySelector<HTMLElement>(`[data-property="${pendingReveal}"]`);
     if (!field) return;
     field.scrollIntoView({ block: 'center' });
-    field.querySelector<HTMLElement>('input, select, textarea, button')?.focus();
+    focusPrimaryControl(field);
   }, [pendingReveal]);
   const { style, handleProps } = useDraggable(panelRef, {
     restoredPosition,

@@ -75,6 +75,9 @@ function BoxInput({ kind, side, element, controller }: BoxInputProps) {
       type="number"
       aria-label={t(`aria_${kind}`, [t(`side_${side}`)])}
       data-testid={`${kind}-${side}`}
+      // The box model does not use Field, so it carries the hook itself: without it the
+      // style summary had nothing to scroll to and its padding chip did nothing at all.
+      data-property={property}
       className={`twk-box-input--${side}${edited ? ' twk-box-input--edited' : ''}`}
       value={field.value}
       onChange={(e) => {

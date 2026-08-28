@@ -276,7 +276,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-section .twk-field-actions button { padding: 3px 9px; font-size: 11px; }
 .twk-field-error { grid-column: 1 / -1; margin-top: 3px; font-size: 11px; color: var(--warn-ink); }
 .twk-field:has(.twk-field-error) input, .twk-field:has(.twk-field-error) select { border-color: var(--warn-ink); }
-.twk-field-name { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; gap: 3px; min-width: 0; }
+/* The gutter is the width of the button that goes in it. It was 16px holding a 24px
+   reset, so the moment a field was edited the button overflowed 8px and sat on top of
+   the property name — invisible in a capture where nothing has been changed, and the
+   first thing anybody sees the moment they change something. */
+.twk-field-name { display: grid; grid-template-columns: var(--h-md) minmax(0, 1fr); align-items: center; gap: var(--space-2); min-width: 0; }
 .twk-section input[type='number'], .twk-section input[type='text'], .twk-section select { width: 100%; padding: 4px 7px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink); font-family: var(--mono); font-size: 12px; transition: border-color var(--ease); }
 .twk-section select { font-family: var(--sans); }
 /* One height for every field control. Derived from padding these came out 28px for an
@@ -301,7 +305,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-prop-label.twk-prop--modified { color: var(--accent-ink); font-weight: 600; }
 .twk-section button.twk-reset { padding: 0; border: none; background: none; color: var(--accent); font-size: 12px; width: 24px; height: 24px; flex: none; justify-content: center; border-radius: 4px; }
 .twk-section button.twk-reset:hover { color: var(--accent-ink); }
-.twk-reset-slot { width: 16px; height: 16px; display: inline-block; }
+.twk-reset-slot { width: var(--h-md); height: var(--h-md); display: inline-block; }
 
 .twk-color-field { display: flex; gap: var(--space-3); align-items: center; width: 100%; }
 .twk-color-field input[type='color'] { flex: none; width: 30px; height: var(--h-lg); padding: 1px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); cursor: pointer; }

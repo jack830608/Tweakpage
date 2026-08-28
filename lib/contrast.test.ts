@@ -49,3 +49,21 @@ describe.each([
     expect(Number(measure().toFixed(2))).toBeGreaterThanOrEqual(AA);
   });
 });
+
+/**
+ * The reset button lives in the property name's gutter. When the gutter was narrower
+ * than the button, an edited field put the button on top of its own label — arithmetic
+ * that no screenshot of an unedited panel could show.
+ */
+test('the reset gutter is at least as wide as the reset button', () => {
+  const css = readFileSync('entrypoints/editor-main/editor.css', 'utf8');
+  const steps = Object.fromEntries(
+    [...css.matchAll(/--(h-\w+):\s*(\d+)px/g)].map((m) => [m[1], Number(m[2])]),
+  );
+  const gutter = /\.twk-field-name \{[^}]*grid-template-columns:\s*([^\s]+)/.exec(css)?.[1] ?? '';
+  const button = /\.twk-section button\.twk-reset \{[^}]*width:\s*(\d+)px/.exec(css)?.[1];
+  const gutterPx = gutter.startsWith('var(')
+    ? steps[gutter.slice(6, -1)]
+    : Number.parseInt(gutter, 10);
+  expect(gutterPx, `gutter ${gutter}`).toBeGreaterThanOrEqual(Number(button));
+});
