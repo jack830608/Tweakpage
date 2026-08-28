@@ -640,7 +640,7 @@
     "message": "AWS details cleared. Sharing is off."
   },
   "not_saved_preview": {
-    "message": "Changes paused"
+    "message": "Not saved here"
   },
   "settings_share_on": {
     "message": "On"
@@ -1178,5 +1178,8 @@
         "content": "$1"
       }
     }
+  },
+  "footer_paused": {
+    "message": "Changes paused"
   }
 }

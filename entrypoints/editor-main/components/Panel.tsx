@@ -564,13 +564,20 @@ export function Panel(props: PanelProps) {
                 data-testid="save-state"
                 title={saveState.state === 'failed' ? t('toast_save_failed') : undefined}
               >
-                {saveState.state === 'failed'
-                  ? t('footer_not_saved')
-                  : saveState.state === 'preview'
-                    ? t('not_saved_preview')
-                    : saveState.state === 'saving'
-                      ? t('saving')
-                      : t('saved_just_now')}
+                {/* Two different previews. `preview` is somebody else's shared link,
+                    whose edits are not on this machine yet; `previewing` is looking at
+                    this page without your own changes, which are saved and merely not
+                    applied. The state slot said "Previewing original" for the first of
+                    those, which was never true of it. */}
+                {previewing
+                  ? t('footer_paused')
+                  : saveState.state === 'failed'
+                    ? t('footer_not_saved')
+                    : saveState.state === 'preview'
+                      ? t('not_saved_preview')
+                      : saveState.state === 'saving'
+                        ? t('saving')
+                        : t('saved_just_now')}
               </span>
             )}
           </div>

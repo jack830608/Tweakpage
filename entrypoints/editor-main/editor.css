@@ -512,8 +512,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Never the accent. The accent means "you changed this" everywhere in this panel, and
    this says the opposite — you are looking at the page without your changes. It is the
    colour of the note that replaces the body, so the empty panel explains itself. */
-.twk-footer-compare { flex: none; height: var(--h-md); padding: 0 var(--space-3); border: 1px solid transparent; border-radius: var(--r-control); background: none; cursor: pointer; font-size: var(--t-quiet); color: var(--ink-3); }
-.twk-footer-compare:hover { border-color: var(--border); color: var(--ink); }
+/* Looks like a button while nobody is pointing at it.
+   It shipped with a transparent border and no fill, which made it identical to the
+   save-state text beside it — the border arrived only on hover, so the affordance
+   announced itself to people who had already found it. This is the idiom the card's own
+   複製 and 隱藏 use: a visible border, a fill against its ground, and --ink-2 rather than
+   the quietest ink. The fill is --sunken here because the footer is --surface; in the
+   card it is the other way round, and the meaning is the same — a control is not its
+   background. */
+.twk-footer-compare { flex: none; height: var(--h-md); padding: 0 var(--space-3); border: 1px solid var(--border); border-radius: var(--r-control); background: var(--sunken); cursor: pointer; font-size: var(--t-quiet); font-weight: 500; color: var(--ink-2); }
+.twk-footer-compare:hover { border-color: var(--border-strong); color: var(--ink); }
 .twk-footer-compare[aria-pressed='true'] { background: var(--warn-bg); color: var(--warn-ink); font-weight: 600; }
 /* A flex item now, not a float. */
 .twk-saved { flex: none; font-size: var(--t-quiet); color: var(--ink-3); font-weight: 400; }

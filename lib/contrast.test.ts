@@ -67,3 +67,17 @@ test('the reset gutter is at least as wide as the reset button', () => {
     : Number.parseInt(gutter, 10);
   expect(gutterPx, `gutter ${gutter}`).toBeGreaterThanOrEqual(Number(button));
 });
+
+/**
+ * A control has to look like one before somebody points at it. The compare toggle shipped
+ * with a transparent border and no fill, which made it identical to the status text
+ * beside it and revealed itself only on hover — an affordance that announces itself to
+ * people who have already found it.
+ */
+test('the footer toggle is drawn as a button at rest', () => {
+  const css = readFileSync('entrypoints/editor-main/editor.css', 'utf8');
+  const rule = /\.twk-footer-compare \{([^}]*)\}/.exec(css)?.[1] ?? '';
+  expect(rule, 'a border you can see without hovering').toMatch(/border:[^;]*var\(--border/);
+  expect(rule, 'and a fill that is not its own background').toMatch(/background:\s*var\(--sunken\)/);
+  expect(rule, 'not the quietest ink, which is what labels use').not.toMatch(/color:\s*var\(--ink-3\)/);
+});
