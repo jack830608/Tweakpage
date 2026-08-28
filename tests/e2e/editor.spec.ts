@@ -721,7 +721,7 @@ test('compare switch previews the original and the badge exits preview', async (
   await page.locator('[data-testid="text"]').fill('New headline');
   await expect(page.locator('h1')).toHaveText('New headline');
 
-  await page.locator('[data-testid="mode-original"]').click();
+  await page.locator('[data-testid="compare-original"]').click();
   await expect(page.locator('h1')).toHaveText('Original Headline');
   const badge = page.locator('[data-testid="viewing-original-back-to-edited"]');
   await expect(badge).toBeVisible();
@@ -2103,8 +2103,9 @@ test('an untouched page offers nothing to hand off', async ({ context }) => {
   for (const gone of ['copy-summary', 'share-link', 'save-variant']) {
     await expect(page.locator(`[data-testid="${gone}"]`), gone).toHaveCount(0);
   }
-  // Nor a choice between two versions of a page that has only one.
-  await expect(page.locator('[data-testid="mode-original"]')).toHaveCount(0);
+  // Nor a choice between two versions of a page that has only one. It lives in the
+  // footer now, where its arrival on the first edit cannot push the panel down.
+  await expect(page.locator('[data-testid="compare-original"]')).toHaveCount(0);
   await expect(page.locator('[data-testid="mode-edit"]'), 'how the mouse behaves always applies').toBeVisible();
 
   await page.locator('h1').click();
@@ -2116,7 +2117,7 @@ test('an untouched page offers nothing to hand off', async ({ context }) => {
   const field = (await page.locator('[data-testid="text"]').boundingBox())!;
   expect(share.y, 'below the fields it describes').toBeGreaterThan(field.y);
   expect(share.y).toBeGreaterThan(hint.y);
-  await expect(page.locator('[data-testid="mode-original"]')).toBeVisible();
+  await expect(page.locator('[data-testid="compare-original"]')).toBeVisible();
 });
 
 test('the settings page says what it is asking for, and which value is wrong', async ({ context }) => {
@@ -2514,3 +2515,39 @@ for (const [what, fixture, selector] of [
     }
   });
 }
+
+/**
+ * The reported defect, in the units it was reported in.
+ *
+ * The compare controls were gated on the first edit and sat above the content, so making
+ * any change moved the panel down 88 measured pixels — while somebody was typing in the
+ * field that moved. A unit test can count the elements above the card; only this can say
+ * the card did not move.
+ */
+test('making a change does not move the panel under your hands', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto('http://localhost:4173/');
+  await activateEditor(context);
+  await page.locator('h1').click();
+  await openSection(page, 'typography');
+
+  // offsetTop inside the scroll container, not viewport y: the panel scrolls, and typing
+  // into a field scrolls it, so an absolute position measures the scrollbar rather than
+  // how much chrome sits above the card.
+  const cardTop = () =>
+    page.evaluate(() => {
+      const root = document.getElementById('tweakpage-host')!.shadowRoot!;
+      return (root.querySelector('.twk-selection-card') as HTMLElement).offsetTop;
+    });
+  const before = await cardTop();
+
+  await page.locator('[data-testid="font-size"]').fill('54');
+  await expect(page.locator('[data-testid="compare-original"]')).toBeVisible();
+  expect(await cardTop(), 'the first edit moved the panel').toBe(before);
+
+  // And back again, because reverting used to move it a second time.
+  await page.locator('[data-testid="font-size"]').fill('');
+  await page.locator('[data-testid="review-changes"]').click();
+  await page.locator('[data-testid="back-to-editing"]').click();
+  expect(await cardTop(), 'returning moved it again').toBe(before);
+});

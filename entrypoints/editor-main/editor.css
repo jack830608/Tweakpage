@@ -159,7 +159,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Reachable by keyboard, so focus has to be visible — a 6px strip needs a hard colour. */
 .twk-resize:focus-visible { outline: none; background: var(--accent); }
 .twk-theme { max-width: 84px; padding: 2px 4px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--surface); color: var(--ink-2); font-size: 11px; }
-.twk-viewport { margin-left: 10px; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; font-weight: 400; }
+.twk-viewport { font-family: var(--mono); font-size: var(--t-quiet); color: var(--ink-3); white-space: nowrap; font-weight: 400; }
 .twk-header-divider { width: 1px; height: 14px; margin: 0 3px; background: var(--border); }
 
 /* ---------- mode switches ---------- */
@@ -501,10 +501,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .twk-change button:hover { border-color: var(--border-strong); color: var(--ink); }
 
 /* ---------- footer ---------- */
-.twk-footer { position: sticky; bottom: 0; z-index: 2; display: block; width: 100%; padding: 10px 12px; border: none; border-top: 1px solid var(--border); background: var(--surface); cursor: pointer; text-align: left; color: var(--ink-3); font-size: 12px; margin-top: auto; border-radius: 0 0 var(--r-panel) var(--r-panel); }
-.twk-saved { float: right; font-size: 11px; color: var(--ink-3); font-weight: 400; }
+/* One line, and the only region where chrome may come and go: a sticky element cannot
+   displace what is above it. That is what makes the footer the right home for compare,
+   which used to sit above the content and push the panel down 88px on the first edit. */
+.twk-footer { position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; gap: var(--space-4); width: 100%; padding: var(--space-3) var(--space-5); border: none; border-top: 1px solid var(--border); background: var(--surface); margin-top: auto; border-radius: 0 0 var(--r-panel) var(--r-panel); }
+.twk-footer-count { flex: 1; min-width: 0; height: var(--h-md); padding: 0; border: none; background: none; cursor: pointer; text-align: left; font-size: var(--t-body); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.twk-footer-stale { color: var(--warn-ink); }
+/* Never the accent. The accent means "you changed this" everywhere in this panel, and
+   this says the opposite — you are looking at the page without your changes. It is the
+   colour of the note that replaces the body, so the empty panel explains itself. */
+.twk-footer-compare { flex: none; height: var(--h-md); padding: 0 var(--space-3); border: 1px solid transparent; border-radius: var(--r-control); background: none; cursor: pointer; font-size: var(--t-quiet); color: var(--ink-3); }
+.twk-footer-compare:hover { border-color: var(--border); color: var(--ink); }
+.twk-footer-compare[aria-pressed='true'] { background: var(--warn-bg); color: var(--warn-ink); font-weight: 600; }
+/* A flex item now, not a float. */
+.twk-saved { flex: none; font-size: var(--t-quiet); color: var(--ink-3); font-weight: 400; }
 .twk-footer:hover { color: var(--ink); background: var(--sunken); }
-.twk-footer-active { color: var(--accent-ink); font-weight: 600; }
+/* The count is what lights up on the first change, which is also what makes the footer
+   the place the eye goes when compare becomes relevant. */
+.twk-footer-active .twk-footer-count { color: var(--accent-ink); font-weight: 600; }
 
 /* ---------- page-level surfaces ---------- */
 .twk-badge { position: fixed; left: 16px; bottom: 16px; z-index: 2147483647; display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border: none; border-radius: 999px; background: var(--dark); color: #fff; font: 500 12px/1.4 var(--sans); cursor: pointer; box-shadow: var(--shadow-pop); }

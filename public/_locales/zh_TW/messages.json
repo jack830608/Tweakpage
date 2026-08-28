@@ -1167,5 +1167,16 @@
         "content": "$1"
       }
     }
+  },
+  "footer_not_saved": {
+    "message": "未儲存"
+  },
+  "footer_stale": {
+    "message": "$param1$ 筆無法對應",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -159,15 +159,47 @@ test('line height input keeps the typed value instead of snapping to computed px
   expect(input.value).toBe('1.5');
 });
 
-test('compare segmented toggles the original preview with an explanatory note', () => {
+/**
+ * A toggle in the footer, not a segmented control above the content. Turning it on
+ * replaces the whole editing surface, so it is somewhere you go and come back from — and
+ * it lives where its arrival cannot push anything down.
+ */
+test('compare peeks at the original and comes back', () => {
   const { controller } = setup();
   fireEvent.change(screen.getByLabelText('Text'), { target: { value: 'Changed' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Original' }));
+  const toggle = () => document.querySelector<HTMLButtonElement>('[data-testid="compare-original"]')!;
+  expect(toggle().getAttribute('aria-pressed'), 'off until pressed').toBe('false');
+
+  fireEvent.click(toggle());
   expect(controller.isPreviewingOriginal()).toBe(true);
   expect(document.getElementById('title')!.textContent).toBe('Original');
   expect(screen.getByText(/Viewing the original page/)).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: 'Edited' }));
+  expect(toggle().getAttribute('aria-pressed'), 'and says so').toBe('true');
+
+  fireEvent.click(toggle());
   expect(document.getElementById('title')!.textContent).toBe('Changed');
+});
+
+/**
+ * The reported defect: the compare block was gated on the first edit and appeared above
+ * the content, so making any change shifted the panel 88px under the cursor.
+ */
+test('making the first change adds nothing above the content', () => {
+  setup();
+  // Everything rendered before the card that is not an ancestor of it — chrome that
+  // occupies space above the thing being edited, whatever part of the tree it comes from.
+  const above = () => {
+    const panel = document.querySelector('.twk-panel')!;
+    const card = document.querySelector('.twk-selection-card')!;
+    return Array.from(panel.querySelectorAll('*')).filter(
+      (el) =>
+        !el.contains(card) &&
+        el.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).length;
+  };
+  const before = above();
+  fireEvent.change(screen.getByLabelText('Text'), { target: { value: 'Changed' } });
+  expect(above(), 'nothing new grew above the thing being edited').toBe(before);
 });
 
 test('footer navigates to the changes view and back', () => {

@@ -1167,5 +1167,16 @@
         "content": "$1"
       }
     }
+  },
+  "footer_not_saved": {
+    "message": "Not saved"
+  },
+  "footer_stale": {
+    "message": "$param1$ unmatched",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -30,6 +30,9 @@ import { plural, t } from '../../../lib/i18n';
  * control. A new setting is a new row, not a new layout.
  */
 interface SettingsViewProps {
+  /** Whether edited elements carry a visible mark on the page. */
+  showMarks: boolean;
+  onToggleMarks?: (on: boolean) => void;
   prefs: PanelPrefs;
   onPrefs: (next: PanelPrefs) => void;
   onToast: (toast: ToastContent) => void;
@@ -43,7 +46,7 @@ const THEME_OPTIONS = [
   { value: 'dark', label: t('theme_dark'), ariaLabel: t('theme_dark') },
 ] as const;
 
-export function SettingsView({ prefs, onPrefs, onToast, onDiscardEdits }: SettingsViewProps) {
+export function SettingsView({ prefs, onPrefs, onToast, onDiscardEdits, showMarks, onToggleMarks }: SettingsViewProps) {
   const [appearanceOpen, setAppearanceOpen] = useState(true);
   const [status, setStatus] = useState<ShareStatus | null>(null);
   useEffect(() => {
@@ -71,6 +74,20 @@ export function SettingsView({ prefs, onPrefs, onToast, onDiscardEdits }: Settin
         open={appearanceOpen}
         onToggle={() => setAppearanceOpen((current) => !current)}
       >
+        {/* A display preference for a page overlay: global, set once, and never touched
+            again — and it was sitting above the content, contributing to an 88px jolt on
+            the first edit of every session. It defaults to on, so this is the "get these
+            out of my way" control rather than the "turn this on" one. */}
+        {onToggleMarks && (
+          <Row label={t('show_marks')}>
+            <Switch
+              ariaLabel={t('aria_show_marks')}
+              testId="show-marks"
+              checked={showMarks}
+              onChange={onToggleMarks}
+            />
+          </Row>
+        )}
         <Row label={t('settings_theme')}>
           <ModeSwitch<ThemeChoice>
             ariaLabel={t('aria_theme')}

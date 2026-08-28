@@ -200,6 +200,9 @@ export function Panel(props: PanelProps) {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+  // The width is worth stating when an edit was made at a different one, and is chrome
+  // the rest of the time. The changes view carries the per-record width either way.
+  const surprisingViewport = records.some((r) => r.viewport !== undefined && r.viewport !== viewport);
   const saveState = controller.getSaveState();
   const canUndo = controller.canUndo();
   const canRedo = controller.canRedo();
@@ -393,51 +396,12 @@ export function Panel(props: PanelProps) {
       {/* Everything here acts on the page being edited, so settings — which act on the
           extension — stand on their own rather than under a row of unrelated controls. */}
       {view !== 'settings' && (
-        <>
-      <ModeSwitch
-        ariaLabel={t('aria_interaction_mode')}
-        options={INTERACTION_OPTIONS}
-        value={mode}
-        onChange={onModeChange}
-      />
-      {/* Two identical segmented controls stacked six pixels apart read as one
-          four-state control. This one is a view of the page, the one above is how the
-          mouse behaves, and nothing said so. With no edits it is also a distinction
-          without a difference, so it waits until there is one. */}
-      {count > 0 && (
-        <>
-          <span className="twk-share-label">{t('compare')}</span>
-          <ModeSwitch
-            ariaLabel={t('aria_compare')}
-            options={COMPARE_OPTIONS}
-            value={previewing ? 'original' : 'edited'}
-            onChange={(value) => controller.setPreviewOriginal(value === 'original')}
-          />
-        </>
-      )}
-      {view === 'edit' && count > 0 && props.onToggleMarks && (
-        <label className="twk-marks-toggle">
-          <input
-            type="checkbox"
-            aria-label={t('aria_show_marks')}
-            data-testid="show-marks"
-            checked={props.showMarks ?? true}
-            onChange={(e) => props.onToggleMarks?.(e.target.checked)}
-          />
-          {t('show_marks')}
-        </label>
-      )}
-        </>
-      )}
-      {stale > 0 && view === 'edit' && (
-        <button
-          type="button"
-          className="twk-stale-edits"
-          aria-label={t('aria_review_unmatched')} data-testid="review-unmatched-edits"
-          onClick={() => setView('changes')}
-        >
-          {t('stale_edits', [stale, count])}
-        </button>
+        <ModeSwitch
+          ariaLabel={t('aria_interaction_mode')}
+          options={INTERACTION_OPTIONS}
+          value={mode}
+          onChange={onModeChange}
+        />
       )}
       {view === 'settings' ? (
         <div>
@@ -450,6 +414,8 @@ export function Panel(props: PanelProps) {
             {t('back_row')}
           </button>
           <SettingsView
+            showMarks={props.showMarks ?? true}
+            onToggleMarks={props.onToggleMarks}
             prefs={prefs}
             onPrefs={updatePrefs}
             onToast={props.onToast}
@@ -514,33 +480,84 @@ export function Panel(props: PanelProps) {
             }}
           />
           {handOff}
-          <button
-            type="button"
-            className={count > 0 ? 'twk-footer twk-footer-active' : 'twk-footer'}
-            aria-label={t('aria_review_changes')} data-testid="review-changes"
-            onClick={() => setView('changes')}
-          >
-            {plural(count, 'footer_changes_one', 'footer_changes')}
-            {/* Two facts about the page, side by side, where the page's other facts
-                live. The width used to sit inside the "mark edited elements" label,
-                reading as part of that label rather than as a fact of its own. */}
+          {/*
+            * One quiet line, and the only place chrome may appear or disappear on state.
+            *
+            * A sticky element cannot displace what is above it, which is the whole reason
+            * compare lives here: it used to sit above the content, gated on the first
+            * edit, and arriving pushed the panel down 88px while somebody was typing in a
+            * field. The count answers the same question compare does — what have I done
+            * to this page — and it is already the thing that turns accent-green on the
+            * first change, so the edit that makes compare relevant draws the eye to where
+            * compare is.
+            *
+            * A div, not a button: the count stays a button because it navigates, and a
+            * button cannot contain one.
+            */}
+          <div className={count > 0 ? 'twk-footer twk-footer-active' : 'twk-footer'}>
+            <button
+              type="button"
+              className="twk-footer-count"
+              aria-label={t('aria_review_changes')} data-testid="review-changes"
+              onClick={() => setView('changes')}
+            >
+              {plural(count, 'footer_changes_one', 'footer_changes')}
+              {/* Records the page no longer has an element for. This used to be its own
+                  strip above the content, and it appears from a re-render on the site
+                  rather than from anything you did — the same layout bomb with a worse
+                  trigger. It is a fact about the change list, so it belongs on the way in
+                  to the change list. */}
+              {stale > 0 && (
+                <span className="twk-footer-stale" data-testid="review-unmatched-edits">
+                  {' · '}
+                  {t('footer_stale', [stale])}
+                </span>
+              )}
+              {/* Only when it is news. A width stated on every panel forever costs 41px of
+                  the line to say something that only matters when an edit was made at a
+                  different one. */}
+              {surprisingViewport && <span className="twk-viewport" data-testid="viewport-width" title={t('tip_viewport')}>{' · '}{viewport}px</span>}
+            </button>
+            {/*
+              * A toggle, not a segmented control. Turning it on replaces the whole editing
+              * surface with a note — so this is somewhere you go, look, and come back
+              * from, not a second state you live in. It also stops two identical segmented
+              * controls sitting under each other reading as one four-state control, which
+              * is what the old placement was hiding from by waiting for the first edit.
+              *
+              * Warn-coloured when pressed, never accent: the accent means "you changed
+              * this" everywhere in this panel, and this says the opposite — you are
+              * looking at the page without your changes. It matches the note that replaces
+              * the body, so the empty panel explains itself.
+              */}
             {count > 0 && (
-              <>
-              <span className="twk-viewport" data-testid="viewport-width" title={t('tip_viewport')}>
-                {viewport}px
-              </span>
-              <span className="twk-saved" data-testid="save-state">
+              <button
+                type="button"
+                className="twk-footer-compare"
+                aria-label={t('aria_compare')}
+                aria-pressed={previewing}
+                data-testid="compare-original"
+                onClick={() => controller.setPreviewOriginal(!previewing)}
+              >
+                {t('compare_original')}
+              </button>
+            )}
+            {count > 0 && (
+              <span
+                className="twk-saved"
+                data-testid="save-state"
+                title={saveState.state === 'failed' ? t('toast_save_failed') : undefined}
+              >
                 {saveState.state === 'failed'
-                  ? t('toast_save_failed')
+                  ? t('footer_not_saved')
                   : saveState.state === 'preview'
-                    ? t('not_saved_preview')
+                    ? ''
                     : saveState.state === 'saving'
                       ? t('saving')
                       : t('saved_just_now')}
               </span>
-              </>
             )}
-          </button>
+          </div>
         </>
       )}
         </>
