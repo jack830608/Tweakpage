@@ -366,3 +366,48 @@ describe('decimal values survive the round trip', () => {
     expect(control('Letter spacing').value).toBe('1.2');
   });
 });
+
+/**
+ * The stylesheet has described the property name as a scrub handle since before anything
+ * was wired to it. These are the properties that made it worth wiring: it drives the
+ * field's own input, so the section's writer runs unchanged, and it moves by the field's
+ * own step — which is how a page whose text is 15.4px stays sensible.
+ */
+describe('dragging a property name', () => {
+  function scrub(property: string, dx: number, modifiers: Partial<PointerEventInit> = {}) {
+    const row = document.querySelector<HTMLElement>(`[data-property="${property}"]`)!;
+    const handle = row.querySelector<HTMLElement>('.twk-prop-label')!;
+    handle.setPointerCapture = () => {};
+    handle.hasPointerCapture = () => true;
+    handle.releasePointerCapture = () => {};
+    fireEvent.pointerDown(handle, { button: 0, clientX: 100, pointerId: 1 });
+    fireEvent.pointerMove(handle, { clientX: 100 + dx, pointerId: 1, ...modifiers });
+    fireEvent.pointerUp(handle, { pointerId: 1 });
+  }
+
+  test('moves the number by one step per pixel, through the section that owns it', () => {
+    const controller = setup();
+    openSection('typography');
+    const before = Number(
+      document.querySelector<HTMLInputElement>('[data-testid="font-size"]')!.value,
+    );
+    scrub('fontSize', 8);
+    const record = controller.getPage().records.find((r) => r.property === 'fontSize');
+    expect(record?.newValue, 'the section wrote it, not the drag').toBe(`${before + 8}px`);
+  });
+
+  test('Alt is finer and Shift is coarser', () => {
+    const controller = setup();
+    openSection('typography');
+    scrub('letterSpacing', 4, { shiftKey: true });
+    expect(controller.getPage().records.find((r) => r.property === 'letterSpacing')?.newValue).toBe('4px');
+  });
+
+  test('a value the field forbids is not reachable by dragging', () => {
+    const controller = setup();
+    openSection('typography');
+    scrub('fontSize', -400);
+    const record = controller.getPage().records.find((r) => r.property === 'fontSize');
+    expect(Number.parseFloat(record?.newValue ?? '0'), 'min is still min').toBeGreaterThanOrEqual(1);
+  });
+});

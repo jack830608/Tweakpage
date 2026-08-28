@@ -1,7 +1,8 @@
-import { useSyncExternalStore, type ReactNode } from 'react';
+import { useRef, useSyncExternalStore, type ReactNode } from 'react';
 import type { EditsController } from '../controller';
 import { isBareNumber } from '../../../lib/css-values';
 import { ResetButton } from './ResetButton';
+import { useScrub } from '../hooks/useScrub';
 import { t } from '../../../lib/i18n';
 
 interface FieldProps {
@@ -56,9 +57,12 @@ export function Field({
   // its service worker at all — every end-to-end test timed out waiting for one.
   const key = `prop_${name.replace(/-/g, '_')}`;
   const translated = t(key) === key ? null : t(key);
+  const row = useRef<HTMLDivElement>(null);
+  const scrub = useScrub(row);
   return (
     /* The one hook the style summary needs: something to scroll to. */
     <div
+      ref={row}
       className={stacked ? 'twk-field twk-field--stacked' : 'twk-field'}
       data-property={property}
     >
@@ -79,7 +83,16 @@ export function Field({
           * connect the two. The change list an engineer receives is unchanged.
           */}
         <span className="twk-prop-names" title={name}>
-          <span className={modified ? 'twk-prop-label twk-prop--modified' : 'twk-prop-label'}>
+          {/* Drag it sideways to change the number. The input remains the accessible
+              control — this adds a pointer affordance, not a second one. */}
+          <span
+            className={modified ? 'twk-prop-label twk-prop--modified' : 'twk-prop-label'}
+            data-scrub={scrub.scrubbable() ? '' : undefined}
+            onPointerDown={scrub.onPointerDown}
+            onPointerMove={scrub.onPointerMove}
+            onPointerUp={scrub.onPointerUp}
+            onPointerCancel={scrub.onPointerCancel}
+          >
             {translated ?? name}
           </span>
           {/* Only when there is something else to say. A text run is labelled by its own
