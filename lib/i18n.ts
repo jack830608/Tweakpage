@@ -104,6 +104,7 @@ export const MESSAGES: Record<string, string> = {
   sec_box: 'Box & layout',
   sec_typography_fields: 'Text style',
   sec_advanced_fields: 'Advanced',
+  aria_reveal_property: 'Go to $1',
   prop_width: 'Width',
   prop_height: 'Height',
   prop_font_family: 'Typeface',

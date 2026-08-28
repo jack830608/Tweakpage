@@ -57,7 +57,11 @@ export function Field({
   const key = `prop_${name.replace(/-/g, '_')}`;
   const translated = t(key) === key ? null : t(key);
   return (
-    <div className={stacked ? 'twk-field twk-field--stacked' : 'twk-field'}>
+    /* The one hook the style summary needs: something to scroll to. */
+    <div
+      className={stacked ? 'twk-field twk-field--stacked' : 'twk-field'}
+      data-property={property}
+    >
       <span className="twk-field-name">
         <ResetButton
           controller={controller}

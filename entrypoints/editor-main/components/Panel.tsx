@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import {
   clampWidth,
   DEFAULT_PREFS,
@@ -24,6 +24,7 @@ import { SettingsView } from './SettingsView';
 import { CloseIcon, GearIcon, GripIcon, HandIcon, MinusIcon, PencilIcon, RedoIcon, UndoIcon } from './icons';
 import { OnboardingCard } from './OnboardingCard';
 import { SelectionCard } from './SelectionCard';
+import type { RevealRequest } from './StyleSummary';
 import { AppearanceSection } from './sections/AppearanceSection';
 import { BackgroundSection } from './sections/BackgroundSection';
 import { ImageSection } from './sections/ImageSection';
@@ -204,6 +205,23 @@ export function Panel(props: PanelProps) {
       if (pos) setRestoredPosition(pos);
     });
   }, []);
+  /**
+   * A property the summary asked to be taken to, held until it exists.
+   *
+   * A disclosure renders its body only when open, so at the moment a chip is pressed the
+   * field is not in the document. Querying for it in the click handler finds nothing;
+   * the layout effect below runs after React has committed the newly-open section.
+   */
+  const [pendingReveal, setPendingReveal] = useState<string | null>(null);
+  useLayoutEffect(() => {
+    if (!pendingReveal) return;
+    setPendingReveal(null);
+    const host = panelRef.current;
+    const field = host?.querySelector<HTMLElement>(`[data-property="${pendingReveal}"]`);
+    if (!field) return;
+    field.scrollIntoView({ block: 'center' });
+    field.querySelector<HTMLElement>('input, select, textarea, button')?.focus();
+  }, [pendingReveal]);
   const { style, handleProps } = useDraggable(panelRef, {
     restoredPosition,
     onDragEnd: savePanelPosition,
@@ -456,6 +474,17 @@ export function Panel(props: PanelProps) {
                 return next;
               })
             }
+            onReveal={(request) => {
+              setOpenSections((open) => {
+                const next = { ...open };
+                for (const id of request.path) next[id] = true;
+                savePanelPrefs({ ...prefs, openSections: next });
+                return next;
+              });
+              // Parked, not acted on: CollapsibleSection renders its body only when open,
+              // so the field being asked for does not exist yet at this moment.
+              setPendingReveal(request.property);
+            }}
           />
           {handOff}
           <button
@@ -503,6 +532,7 @@ interface EditViewProps {
   onSelect: (el: Element) => void;
   openSections: Record<string, boolean>;
   onToggleSection: (title: string) => void;
+  onReveal: (request: RevealRequest) => void;
 }
 
 function EditView({
@@ -515,6 +545,7 @@ function EditView({
   onPreviewSet,
   openSections,
   onToggleSection,
+  onReveal,
 }: EditViewProps) {
   if (showOnboarding) {
     return <OnboardingCard onDismiss={onDismissOnboarding} />;
@@ -543,6 +574,7 @@ function EditView({
         controller={controller}
         onSelect={onSelect}
         onPreviewSet={onPreviewSet}
+        onReveal={onReveal}
       />
       {hidden ? (
         <p className="twk-preview-note">{t('hidden_note')}</p>

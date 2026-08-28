@@ -1,7 +1,7 @@
 import { fakeBrowser } from 'wxt/testing';
 import { t } from '../../../lib/i18n';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Panel } from './Panel';
 import { getBreadcrumb } from './Breadcrumb';
 import { EditsController } from '../controller';
@@ -290,4 +290,34 @@ test('an element with no text still opens to something', async () => {
       'at least one section is open',
     ).toBeGreaterThan(0),
   );
+});
+
+/**
+ * The strip reads and never writes. That is the whole reason it is a summary rather than
+ * the row of editors it started as: a second field binding on a property fights the first
+ * over the draft, and no arrangement of two editors avoids it.
+ */
+test('the style summary states the element without recording anything', () => {
+  const { controller } = setup();
+  expect(document.querySelector('[data-testid="summary-fontSize"]')).toBeTruthy();
+  fireEvent.click(document.querySelector<HTMLButtonElement>('[data-testid="summary-color"]')!);
+  expect(controller.getPage().records, 'pressing a chip is navigation, not an edit').toHaveLength(0);
+});
+
+test('a chip marks itself when its property has been changed', () => {
+  const { controller } = setup();
+  const chip = () => document.querySelector('[data-testid="summary-fontSize"]')!;
+  expect(chip().className).not.toContain('modified');
+  act(() => {
+    controller.recordEdit(document.getElementById('title')!, 'style', 'fontSize', '16px', '40px');
+  });
+  expect(chip().className, 'the accent means changed here too').toContain('modified');
+});
+
+/** Font size says nothing about a picture. A summary is allowed to vary; a fixed bar is not. */
+test('the summary describes the element it is looking at', () => {
+  document.body.innerHTML = '<img id="pic" src="/a.png">';
+  setup(document.getElementById('pic'));
+  expect(document.querySelector('[data-testid="summary-width"]')).toBeTruthy();
+  expect(document.querySelector('[data-testid="summary-fontSize"]')).toBeNull();
 });

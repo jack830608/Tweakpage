@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { buildElementLabel } from '../../../lib/selector/generate';
 import type { EditsController } from '../controller';
 import { Breadcrumb } from './Breadcrumb';
+import { StyleSummary, type RevealRequest } from './StyleSummary';
 import { CopyIcon, EyeIcon, EyeOffIcon } from './icons';
 import { t } from '../../../lib/i18n';
 
@@ -10,6 +11,8 @@ interface SelectionCardProps {
   controller: EditsController;
   onSelect: (el: Element) => void;
   onPreviewSet: (els: Element[]) => void;
+  /** Pressing a summary chip asks the panel to go to that property's real control. */
+  onReveal: (request: RevealRequest) => void;
 }
 
 /** The family this selector names, from the document the element is actually in. */
@@ -23,7 +26,7 @@ function matches(el: Element, selector: string): Element[] {
 
 // Ternary titles slip past the hard-coded-label guard, so these go through t() by hand.
 
-export function SelectionCard({ element, controller, onSelect, onPreviewSet }: SelectionCardProps) {
+export function SelectionCard({ element, controller, onSelect, onPreviewSet, onReveal }: SelectionCardProps) {
   useSyncExternalStore(controller.subscribe, controller.getPage);
   const similar = controller.similarTo(element);
   const hasStyleEdit = controller.getPage().records.some(
@@ -72,6 +75,7 @@ export function SelectionCard({ element, controller, onSelect, onPreviewSet }: S
         </div>
       </div>
       <Breadcrumb element={element} onSelect={onSelect} />
+      <StyleSummary element={element} controller={controller} onReveal={onReveal} />
       {similar && (
         // Shown before it is done. Ticking this restyled elements the user had never
         // been shown and could not name — the count was the only evidence they existed.

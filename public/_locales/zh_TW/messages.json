@@ -1159,5 +1159,13 @@
   },
   "sec_advanced_fields": {
     "message": "進階"
+  },
+  "aria_reveal_property": {
+    "message": "前往$1",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
   }
 }

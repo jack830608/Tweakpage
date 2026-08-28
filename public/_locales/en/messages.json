@@ -1159,5 +1159,13 @@
   },
   "sec_advanced_fields": {
     "message": "Advanced"
+  },
+  "aria_reveal_property": {
+    "message": "Go to $1",
+    "placeholders": {
+      "param1": {
+        "content": "$1"
+      }
+    }
   }
 }
