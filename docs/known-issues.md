@@ -105,6 +105,48 @@ Shadow DOM, iframes, canvas and WebGL. The editor says so when you hover them. S
 
 ---
 
+# Fixed in 1.2.0
+
+An interface pass, from a design review that measured the rendered panel rather than
+reading the stylesheet, and then from the person who uses this every day finding seven
+things the review and the renders both missed. Every one of those was something only
+using it would show.
+
+**Nothing the panel does moves the panel.** This was the whole of the second half. The
+compare controls appeared on the first edit and pushed everything down 88px while
+somebody was typing; pressing compare then replaced the body and collapsed the panel
+511px, taking the button that had just been pressed with it; the status text beside that
+button changed width and moved it 13px sideways. Hiding an element did the same as
+compare, for the same reason. Inside the content, a refused value grew a row under its
+field, a colour's alpha slider arrived mid-keystroke, and its recent-colours row arrived
+on the first colour committed. All measured, all zero now, all guarded — and every guard
+was confirmed to fail against the version that shipped.
+
+The rule the fixes came from, worth keeping: *a control must not sit inside or below the
+region its own action resizes, and chrome whose presence depends on state must not sit in
+the flow above the content it modifies.* Stickiness protects against shifts from above,
+not from a control's own action.
+
+**The panel says what it is instead of naming CSS.** Every property row leads with what
+the control does and carries the CSS name underneath. The change list an engineer
+receives is unchanged — that is where the CSS name is load-bearing.
+
+**Eight drawers became three groups**, and what an element *is* — its words, its picture,
+where it points — sits above them with no disclosure at all. Colour used to be spread
+across three drawers all offering something called colour.
+
+**A style summary in the selection card**: four facts about the element, each a way back
+to the control that sets it. It reads and never writes, which is what makes it safe.
+
+**Dragging a property name changes its number.** The stylesheet had described this for as
+long as the number-input rules existed and nothing was ever wired to it.
+
+**Contrast, spacing and type became systems.** White on the dark accent was 1.92:1 —
+every primary button in the product. Seventeen spacing values became six steps, nine type
+sizes became four, with one rule over the scale: nothing localized below 12px.
+
+---
+
 # Fixed in 1.1.0
 
 From the 2026-08-28 review. Each was verified before being believed, and each is guarded.

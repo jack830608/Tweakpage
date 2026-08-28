@@ -8,6 +8,53 @@ One section per submission. The point is to be able to answer, months later, wha
 actually on the store and what was already known to be wrong when it went there — without
 reconstructing it from memory or from a merge commit's date.
 
+## 1.2.0 — submitted 2026-08-28
+
+An interface release. No permission change, no record-format change, no change to what a
+hand-off contains — so an update review rather than the deeper one.
+
+### Where the work came from
+
+A design review that measured the rendered panel instead of reading the stylesheet, and
+then seven defects found by the person who uses this daily, in an afternoon of using it.
+That ratio is the finding worth recording: the review was good — it found white text at
+1.92:1 on every primary button, a slider drawn in the accent while sitting at its default,
+and seven section dividers drawn in a colour 8/255 from their background — and it still
+missed everything that only appears when a hand is on the keyboard.
+
+Reported, in order, each after the previous was fixed: colour and opacity chips not
+focusing what you would type into; the reset button overflowing its gutter onto the label
+the moment a field was edited; the panel jumping 88px down on the first change; the panel
+collapsing 511px when compare was pressed, taking the pressed button with it; the compare
+toggle not looking like a control; and that same toggle moving 13px sideways when the
+status text beside it changed width.
+
+The last four are one class, and the rule now written into known-issues.md came out of
+them: a control must not sit inside or below the region its own action resizes, and chrome
+whose presence depends on state must not sit in the flow above the content it modifies.
+
+### Checked before submitting
+
+- `pnpm test` — 63 files, 701 tests
+- `pnpm e2e` — 79 tests
+- `pnpm package` — ZIP built, unpacked, driven in a real browser
+- `pnpm audit --prod` — no known vulnerabilities
+- Every guard added this release was confirmed to fail against the version that shipped.
+  Three did not on the first attempt: an 88px probe that a flex column shrank to zero
+  height, a horizontal guard that survived removing a redundant margin (which is how the
+  margin was found to be redundant), and a `data-property` selector pointing at the old
+  class name. A guard nobody has watched fail is a guard nobody has read.
+- The rendered panel was looked at, in both themes, after each substantive change. The
+  last such look found two more defects — a truncated error message and, after fixing it,
+  a floating message drawn over the row beneath it in a 22% tint.
+
+### Not done before submitting
+
+- `docs/qa-checklist.md` — the eight manual paths. **Fifth release running.** Nothing in
+  this release touches the sharing code, but "did not touch" and "still works" are
+  different statements, and only one of them has been checked.
+- `pnpm audit:selectors` — not re-run. Resolution is untouched by this release.
+
 ## 1.1.0 — submitted 2026-08-28
 
 A reliability release, from an outside review that found four real defects the project's
