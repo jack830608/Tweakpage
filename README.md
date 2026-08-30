@@ -19,6 +19,10 @@
 
 ![Tweakpage editing a demo page](docs/assets/screenshot.png)
 
+**[Install](#install)** · **[Quick start](#quick-start)** · **[Guide](#guide)** ·
+**[Share links](docs/share-links.md)** · **[What it cannot reach](#what-it-cannot-reach)** ·
+**[Internals](docs/internals.md)** · **[Privacy](PRIVACY.md)**
+
 Tweakpage is a Chrome extension for anyone who wants to try a page change before asking
 someone to build it — designers, marketers, PMs, and engineers who'd rather not open
 DevTools for a copy tweak. Every edit is recorded as a structured diff
@@ -26,42 +30,21 @@ DevTools for a copy tweak. Every edit is recorded as a structured diff
 
 ## Features
 
-- **Edit text where it lives** — double-click any text and type; inline markup (the link
-  or coloured span inside a heading) survives, paste arrives as plain text.
-- **Edit almost anything** — text (inline markup preserved, one box per run), typography,
-  colors with an eyedropper and alpha, backgrounds, images (local file or URL), links,
-  size, spacing, layout, borders, shadows, opacity — and an **Advanced** box for any CSS
-  the fields don't cover, one declaration per line.
-- **Reorder, duplicate, hide** — ▲▼ on the selection outline swap an element with its
-  siblings; Duplicate inserts an editable copy right after it; Hide removes it
-  non-destructively.
-- **Apply to every similar element** — style a card once, restyle the family.
-- **Leave parts of the page alone** — a list of CSS selectors the picker skips, so a chat
-  launcher or a consent banner stops absorbing clicks meant for the page. Not protection:
-  an edit on a third-party widget reproduces for nobody, and this keeps it out of the
-  hand-off in the first place.
-- **Compare** — flip the whole page between Edited and Original with one switch.
-- **Edits persist** — saved locally per page, replayed on reload and across client-side
-  navigation. A page is its address without the query string, so a `?variant=` a shop
-  appends, a session id or a page number doesn't lose the work you just did.
-- **Honest pages** — a page showing edits says so with a chip in the bottom-left corner,
-  whether or not the editor is open. One chip, one home: while the panel is open its
-  footer carries the count; minimize or close and the chip takes over in the same spot.
-- **Proposals** — save the current edits under a name and switch between directions
-  without rebuilding either. They travel with exports.
-- **Hand-off** — copy a Markdown change list for Slack/Jira, export/import JSON, or snap
-  one image with the original and edited page side by side. Each change can carry a note — the why under the what — which travels
-  with exports and share links.
-- **Share links** — upload a page's edits to your own S3 bucket and send a URL.
-  The recipient needs Tweakpage and nothing else. Opening a link previews; nothing is
-  saved on their machine until they choose **Keep**. Images you picked from your own
-  machine go up with it — optionally compressed through TinyPNG first.
-- **Undo everything** — `⌘Z`/`⇧⌘Z`, per-edit toggles, per-element resets, revert all.
-- **Nothing leaves quietly** — edits live on your machine. The first time a hand-off
-  would upload anything, Tweakpage says what is about to go where and waits. Credentials
-  are entered on the extension's own page, never in the site you are editing.
-- **Keyboard-first friendly** — pick, navigate, resize, and edit without a mouse;
-  visible text and screen-reader labels ship in English and Traditional Chinese.
+- **Edit text in place** — double-click and type; inline markup and links inside survive.
+- **Edit almost anything** — typography, colour with an eyedropper, backgrounds, images,
+  links, size, spacing, layout, borders, shadows — plus an Advanced box for raw CSS.
+- **Reorder, duplicate, hide** without touching the site.
+- **Style one card, restyle the family** — apply an edit to every similar element.
+- **Compare** — flip the page between your version and the original.
+- **Edits stay** — saved on your machine, per page, replayed on reload.
+- **Proposals** — keep two directions side by side and switch between them.
+- **Hand off** — a Markdown change list, a JSON export, or one before-and-after image.
+- **[Share links](docs/share-links.md)** — send a URL from your own S3 bucket; the
+  recipient needs Tweakpage and nothing else.
+- **Undo everything** — `⌘Z`, per-edit toggles, per-element resets, revert all.
+- **Nothing leaves quietly** — the first hand-off that would upload says what is about to
+  go where, and waits.
+- **Keyboard-first**, in English and 繁體中文.
 
 ## Install
 
@@ -117,7 +100,7 @@ broken into more than twelve runs of text is not offered either way: past that t
 no field to record a change under, and typing that records nothing is worse than a
 field that isn't there.
 
-Fields are named after the CSS property they write — an edited one shows a ↺ reset
+Fields say what they do, with the CSS property underneath — an edited one shows a ↺ reset
 beside it, and reset restores what the page holds *now*, not a stale snapshot, even if
 the site updated the value underneath you. Text with inline markup gets one box per run,
 so a heading keeps the link or coloured span inside it. Image URLs apply on Enter or
@@ -159,114 +142,6 @@ them from there.
 | `← →` on the resize edge | Narrow / widen the panel (`⇧` for bigger steps) |
 | `Enter` in an image URL field | Apply the URL |
 
-## Share links
-
-Upload a page's edits to **your own** S3 bucket and share the link. Whoever opens it
-needs Tweakpage and nothing else — no AWS account, no setup.
-
-Opening a link **shows** the edits; it does not save them. The panel says they came from
-someone else and offers **Keep on this page**, which is what puts them in the reader's
-own storage. Look at a colleague's proposal, close the tab, and your copy of the page is
-as it was.
-
-### Setup
-
-Credentials are entered on the extension's own settings page — panel gear → **Share
-links** → **Open secure settings**, or right-click the toolbar icon → Options. They are
-deliberately not editable from the panel: that panel is rendered inside whatever site
-you are editing, and anything it displays is one `querySelector` away from that site's
-own JavaScript. The panel shows whether sharing is configured, never with what.
-
-Fill in bucket, region, access key id and secret (and optionally a TinyPNG key). Until
-all four AWS fields are set, the Share link button stays disabled. This repo ships no
-defaults.
-
-Everything Tweakpage writes lives under one prefix, sorted by what it is, so a single
-policy line covers the lot:
-
-```
-tweakpage/
-  shares/<id>.json          the page a link points at
-  images/<sha256>.<ext>     pictures those pages reference
-```
-
-### Images
-
-An image picked from your machine (up to 1.5MB) is stored as data until it exists
-somewhere else — right for this machine and useless in a share, where the bytes make the
-page too big to survive the import limits and the recipient would quietly see the
-original picture. A hand-off that uploads lifts each image into
-`tweakpage/images/<sha256>.<ext>` and points at it instead.
-
-The first time a hand-off would actually upload something, Tweakpage stops and says
-what is about to leave: how many images, which bucket, that uploaded images are readable
-by anyone with the link, that the local edit will point at the uploaded file afterwards,
-and — if compression is on — that each image goes to tinify.com first. Saying "not now"
-still completes the hand-off, with the images inside it. The answer is remembered per
-bucket, and **Ask me again before uploading** in Settings takes it back.
-
-Under gear icon → **Images**, one switch per hand-off — Copy summary, Copy JSON,
-Download JSON, Share link — with **All hand-offs** above them to set the lot. All on by
-default; with no bucket configured nothing uploads, so "on" means "upload when there is
-somewhere to upload to".
-
-Once an image is hosted, the local edit points at it too: the bytes were only ever the
-right answer while the picture existed nowhere else. Storage stops carrying them, the
-change list reads as a URL instead of a wall of base64, and this page describes the
-image the same way the shared one does.
-
-An image is named after its own content and remembered once uploaded, so sharing the
-same picture again costs neither a second upload nor a slice of the TinyPNG quota. The
-remembered URL is checked before it is reused — an emptied bucket means a fresh upload,
-not a broken link.
-
-- Switch one off to keep that hand-off self-contained: the images travel inside it and
-  the local edit keeps its bytes. They still arrive — hosting is what keeps a share
-  small, not what makes it work — but a page carrying several pictures can grow past the
-  24MB a share is allowed to be, and then the share is refused with a reason rather than
-  handed over broken.
-- A summary that could not upload names each image and its size rather than pasting
-  hundreds of kilobytes of base64 into your ticket.
-- **TinyPNG** — paste a [tinify.com](https://tinypng.com/developers) key and switch on
-  **Compress with TinyPNG first** to shrink images before they are uploaded. It sends
-  the image to a third party, which is why the switch is separate from the key. If the
-  month's free quota runs out or the service is down, the original is uploaded instead —
-  a share is never blocked by it.
-
-The key needs to write, and to be allowed to mark what it writes as readable:
-
-```json
-{ "Effect": "Allow", "Action": ["s3:PutObject", "s3:PutObjectAcl"],
-  "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
-```
-
-Then the bucket has to let a stranger read a share — either a bucket policy:
-
-```json
-{ "Effect": "Allow", "Principal": "*", "Action": "s3:GetObject",
-  "Resource": "arn:aws:s3:::YOUR_BUCKET/tweakpage/*" }
-```
-
-or leave ACLs enabled with Block Public Access off, and Tweakpage marks each file public
-as it uploads. Either way it verifies: after writing, it reads the object back with no
-credentials, exactly as a recipient would, and refuses to hand you a link that would 403.
-
-### What to know before pasting a key
-
-- Extension storage is not a vault: anyone with access to the browser profile can read
-  what you paste, and this extension is open source. Use a key that can do nothing
-  except write that one prefix, and rotate it like any other credential. The secret
-  never leaves the machine — requests carry a signature derived from it.
-- The object name is 113 bits of randomness, so the link is the permission — but the
-  file is readable by anyone holding it. Don't share pages whose content is
-  confidential. A lifecycle rule on `tweakpage/shares/` expires old links; one on
-  `tweakpage/images/` expires pictures, which are content-addressed and therefore shared
-  between every link that used the same image — expire them and older links lose their
-  pictures, not just the one you had in mind.
-- A link carries an id, bucket and region as separate validated parts — never a URL —
-  so it can only resolve to an address Tweakpage builds itself, and what arrives is
-  validated exactly like an imported file.
-
 ## What it cannot reach
 
 Tweakpage edits the DOM of the page you are looking at. Three kinds of content are
@@ -283,55 +158,6 @@ text has no fingerprint, so if the page's structure moves under it the record is
 reported as not found rather than guessed at. See [docs/selection.md](docs/selection.md)
 for what survives what, measured.
 
-## The hand-off format
-
-`Copy JSON` / `Download JSON` produce one object per page, `version: 1`, with a `records`
-array. Each record says what changed — `type`, `property`, `oldValue`, `newValue` — and
-carries what is needed to find the element again (`selector`, `fallbackSelectors`,
-`textFingerprint`) and what is needed to find it in a repository (`context`).
-
-`context` is the chain from the edited element outwards, six deep at most, with each
-ancestor's `tag`, `id`, `role`, `aria-label`, test id and authored class names. It exists
-because the element you edit is often bare — a `<span>` with no class and no id, whose
-selector can only be positional — while its ancestors carry the two things a reader
-needs: the region named in the author's own words, and a class naming the component.
-
-Build hashes are stripped from those class names: `product-selector_optIn__qe980` is
-recorded as `product-selector_optIn`, because the hash changes on every build that
-touches the file and `optIn` does not. Classes that are nothing but a hash —
-styled-components, emotion — are dropped, since they say nothing about the source.
-
-`context` also carries the nearest heading above the element, which on stacks where
-every class is a utility is the only thing naming where you are. Across eight real sites
-it takes the share of records that name their region from as low as 8% to 93–100%.
-
-`context` is recorded and never resolved against. Replay is the selectors' job; giving
-these a vote would mean more chances to land on the wrong element, not fewer — and the
-audit puts a number on what that would buy: 38 of 661 refusals. See
-[docs/selection.md](docs/selection.md) for how an element is found again, what survives
-a rebuild, and what 1920 resolutions across eight real sites measured.
-
-## How it works
-
-- A tiny always-on content script replays saved edits and draws the corner chip; the
-  editor itself loads lazily into a Shadow DOM, so pages you never edit pay almost
-  nothing.
-- Style edits go through one injected stylesheet targeting a `data-tweakpage` marker
-  stamped on the resolved element — a selector can never fan out to elements you didn't
-  pick.
-- Selectors prove uniqueness, not identity. A hit is held against the remembered text
-  before it is believed, so a site inserting a sibling can't get the wrong element
-  edited — and a selector minted after Tweakpage's own reorder or duplicate waits until
-  those are replayed, because it describes the page as it looked then, not as the site
-  serves it.
-- Everything lives in `chrome.storage.local`, keyed by normalized URL. Nothing leaves
-  the machine unless you export or share.
-- Credentials never enter the page. The editor's Shadow DOM is UI encapsulation, not a
-  security boundary — a site can reach into it — so the AWS and TinyPNG keys are read
-  and written only on the extension's own page, and the panel receives status, never
-  values. The one message that changes stored data carries a per-page token the site
-  cannot guess.
-
 ## Development
 
 ```bash
@@ -342,7 +168,7 @@ pnpm e2e         # builds, then drives the real extension in Chromium (Playwrigh
 pnpm shots       # regenerates the store screenshots from the built extension
 ```
 
-[Privacy policy](PRIVACY.md) · [store submission notes](docs/store-listing.md) ·
+[Privacy policy](PRIVACY.md) · [internals](docs/internals.md) · [share links](docs/share-links.md) · [store submission notes](docs/store-listing.md) ·
 [release QA checklist](docs/qa-checklist.md), which runs before each release. Issues and
 PRs welcome — please keep both
 locales in step (tests enforce it) and anchor E2E assertions on `data-testid`, never on
